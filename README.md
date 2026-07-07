@@ -16,11 +16,10 @@ Well-off students have a network to guide them (an uncle who's an architect, a f
 
 ## What it does
 
-Three stages, narrowing from *"everything"* down to *"the one life you actually want"*:
+Two stages, narrowing from *"everything"* down to *"the one life you actually want"*:
 
 1. **Discover** — explore every career path (filter, search, or chat with an AI guide). Understand what each really means: subjects, exams, fees, salary, and the doors it opens or closes.
-2. **Guide** — book a paid 1-on-1 call with a vetted career counsellor who arrives already knowing your shortlist.
-3. **Reality-check** — talk to someone who *actually does the job* (a "day in the life"), so you know before you commit.
+2. **Reality-check** — book a paid 1-on-1 call with a practitioner who *actually does the job* (a "day in the life"), so you know before you commit — not a generic counsellor, someone living it.
 
 ## Who it's for
 
@@ -31,7 +30,7 @@ Three stages, narrowing from *"everything"* down to *"the one life you actually 
 ## Why it's different
 
 - **Not an information site — a trust engine.** Information is free online; what's scarce is *credible, personalised* guidance. We supply the credibility.
-- **Neutral by design.** We're paid for guidance itself — not for referring students to a coaching institute — so there's no hidden agenda.
+- **Neutral by design.** We're paid for the conversation itself — not for referring students to a coaching institute — so there's no hidden agenda.
 - **Surfaces the unknown.** We reveal paths students didn't even know existed, not just the ones they think to ask about.
 
 ## Tech stack
@@ -42,7 +41,7 @@ Three stages, narrowing from *"everything"* down to *"the one life you actually 
 | Database · Auth · Storage | **Supabase** (Postgres, Google OAuth) |
 | Analytics | **PostHog** (funnel drop-off, session replay) |
 | AI guide | Gemini API (RAG over our verified career data) |
-| Booking | Cal.com / Calendly (counsellor calls) |
+| Booking | Cal.com / Calendly (practitioner calls) |
 
 ## Status & roadmap
 
@@ -53,7 +52,7 @@ Early build. Phased plan (each phase builds on the last):
 - [ ] **Phase 2** — analytics wired (funnel events)
 - [ ] **Phase 3** — career data moved to Supabase
 - [ ] **Phase 4** — auth (Google login) + wishlists
-- [ ] **Phase 5** — counsellor booking + media
+- [ ] **Phase 5** — practitioner booking + media
 - [ ] **Phase 6** — soft-launch, measure, iterate
 
 ## Getting started
