@@ -1,57 +1,21 @@
-# Career Clarity Platform — Phase 0 skeleton
+# Career Clarity Platform
 
-This is the whole point of Phase 0: get something on GitHub, have it show up live
-on Netlify, and prove the pipeline works before anyone writes real features.
+*(working title — name not finalised)*
 
-## What this is (and isn't)
+A career-clarity platform that helps Indian students discover *every* path open to them — and reach credible people who've actually walked it — before they make choices they can't undo.
 
-A single page that says "the deploy pipeline works." No Supabase, no PostHog,
-no real UI yet — those come in Phases 2-4. Don't build on top of this file
-structure expecting it to survive; Phase 1 will replace `App.jsx` entirely
-with the real Explore flow.
+> PSM Project Part B · a product built to learn the product-development process.
 
-## Getting this live
+---
 
-1. Clone your team's existing GitHub repo locally (the one Netlify is already
-   connected to).
-2. Copy everything from this folder into the repo — all files, including the
-   hidden `.gitignore`.
-3. From inside the repo:
-   ```
-   npm install
-   npm run dev
-   ```
-   Open the local URL it prints and confirm you see "Career Clarity Platform"
-   with a green "Deploy pipeline connected" pill. If that works locally, the
-   build will work on Netlify too.
-4. Commit and push (through whatever branch/PR flow your team agreed on, or
-   straight to `main` if you haven't set branch protection yet):
-   ```
-   git add .
-   git commit -m "Phase 0: skeleton"
-   git push
-   ```
-5. In the Netlify dashboard, open the Deploys tab and watch it build. Takes
-   under a minute typically.
+## The problem
 
-## One thing to double check in Netlify
+Indian students make **irreversible** career decisions — streams, subjects, entrance exams — as early as age 15, with almost no clarity. Information is scattered, contradictory, and overwhelming; most don't even know which options exist. Choices quietly close doors they never saw.
 
-Since Netlify was connected before there was any real code to build, go to
-**Site settings → Build & deploy → Build settings** and confirm:
-- Build command: `npm run build`
-- Publish directory: `dist`
+Well-off students have a network to guide them (an uncle who's an architect, a family friend who's a CA). Aspirational students from smaller towns have the same ambition — and no one to ask. **This platform gives every student that guidance.**
 
-This repo also includes a `netlify.toml` with those same settings — Netlify
-should pick it up automatically, but if the dashboard shows something blank
-or different, the `netlify.toml` values are the correct ones; update the
-dashboard to match.
+## What it does
 
-<<<<<<< HEAD
-## Done when
-
-You visit your `*.netlify.app` URL (not localhost) and see this same page live.
-That's Phase 0 complete — ping me and we'll move into Phase 1.
-=======
 Two stages, narrowing from *"everything"* down to *"the one life you actually want"*:
 
 1. **Discover** — explore every career path (filter, search, or chat with an AI guide). Understand what each really means: subjects, exams, fees, salary, and the doors it opens or closes.
@@ -81,9 +45,9 @@ Two stages, narrowing from *"everything"* down to *"the one life you actually wa
 
 ## Status & roadmap
 
-Early build. Phased plan (each phase builds on the last):
+Phased plan (each phase builds on the last):
 
-- [ ] **Phase 0** — project skeleton + Netlify deploy
+- [x] **Phase 0** — project skeleton + Netlify deploy ✅ live at the deployed URL
 - [ ] **Phase 1** — Discover experience (filter / chat / search), local data
 - [ ] **Phase 2** — analytics wired (funnel events)
 - [ ] **Phase 3** — career data moved to Supabase
@@ -93,13 +57,15 @@ Early build. Phased plan (each phase builds on the last):
 
 ## Getting started
 
-> Setup instructions will go here once the app is scaffolded.
-
 ```bash
-# coming soon
+git clone <this repo>
+cd PSM-
 npm install
-npm run dev
+npm run dev      # local dev server
+npm run build    # production build (what Netlify runs)
 ```
+
+Netlify build settings (also in `netlify.toml`): build command `npm run build`, publish directory `dist`.
 
 ## Team
 
@@ -107,4 +73,3 @@ npm run dev
 |---|---|
 | _add name_ | _add role_ |
 | _add name_ | _add role_ |
->>>>>>> 6d7d7cdeab58f5113f46df5459d56e977db35442
