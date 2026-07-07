@@ -30,6 +30,11 @@ function App() {
       <p className="footnote">
         Next up: the real Explore flow replaces this page in Phase 1.
       </p>
+
+      <p className="footnote">
+        🔴 Live-deploy test — if you can read this line on the *.netlify.app
+        URL, the GitHub → Netlify pipeline is confirmed working.
+      </p>
     </main>
   );
 }
