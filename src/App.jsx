@@ -32,8 +32,8 @@ function App() {
       </p>
 
       <p className="footnote">
-        🔴 Live-deploy test — if you can read this line on the *.netlify.app
-        URL, the GitHub → Netlify pipeline is confirmed working.
+        🟢 Live-deploy test #2 — repo is now public, multi-contributor builds
+        should work. If you can read this, the pipeline is confirmed working.
       </p>
     </main>
   );
