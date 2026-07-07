@@ -1,5 +1,32 @@
 :root {
-  font-family: 'Segoe UI', system-ui, sans-serif;
+  /* brand */
+  --navy: #1b2a4a;
+  --navy-deep: #101a30;
+  --gold: #f2c572;
+  --gold-deep: #d9a94a;
+
+  /* neutrals */
+  --ink: #161c28;
+  --muted: #5b6478;
+  --line: #e4e8f0;
+  --bg: #fafbfe;
+  --surface: #ffffff;
+  --tint: #eef1f6;
+
+  /* status */
+  --success-bg: #e7f7ee;
+  --success-ink: #1a7a44;
+
+  /* type */
+  --font-head: 'Fraunces', Georgia, serif;
+  --font-body: 'Inter', 'Segoe UI', system-ui, sans-serif;
+
+  /* shape */
+  --radius: 16px;
+  --radius-sm: 10px;
+  --shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+  --shadow-lift: 0 10px 30px rgba(16, 24, 40, 0.08);
+
   color-scheme: light;
 }
 
@@ -9,6 +36,20 @@
 
 body {
   margin: 0;
-  background: #fafbfe;
-  color: #161c28;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-head);
+  font-weight: 600;
+  margin: 0;
+}
+
+button {
+  font-family: var(--font-body);
 }
