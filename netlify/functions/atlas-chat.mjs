@@ -1,9 +1,10 @@
 // Atlas's real backend — runs on Netlify's servers, never in the browser,
 // so GEMINI_API_KEY is never exposed to a client. Grounded in our own
 // verified career data (RAG) rather than letting the model invent specifics.
-import { careerPaths } from '../../src/data/careerPaths.js'
+import { getCareerPaths } from './lib/careerData.mjs'
 
-function buildSystemInstruction() {
+async function buildSystemInstruction() {
+  const careerPaths = await getCareerPaths()
   const dataSummary = careerPaths
     .map(
       (c) =>
@@ -64,7 +65,7 @@ export default async (req) => {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        systemInstruction: buildSystemInstruction(),
+        systemInstruction: await buildSystemInstruction(),
         contents: messages,
       }),
     })

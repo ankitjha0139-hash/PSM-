@@ -1,16 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { careerPaths } from '../data/careerPaths.js'
+import { useCareerPaths } from '../hooks/useCareerPaths.js'
 import CareerCard from '../components/CareerCard.jsx'
 
 const INTEREST_LABELS = { creative: 'Creative', tech: 'Tech', business: 'Business' }
-// Pulled from the data, not hardcoded — a new interest_tag in the sheet
-// shows up here automatically, no code change needed.
-const ALL_INTERESTS = [...new Set(careerPaths.flatMap((c) => c.interest_tags))]
 
 // initialFocus lets the routing question hint at intent: "goal" answers
 // focus the search box, "direction" answers leave the chips as the start —
 // same screen either way, since both are really the same filter engine.
 export default function FilterExplore({ shortlist, onOpenDetail, initialFocus }) {
+  const { data: careerPaths, loading, error } = useCareerPaths()
   const [search, setSearch] = useState('')
   const [interests, setInterests] = useState([])
   const [avoidMaths, setAvoidMaths] = useState(false)
@@ -23,15 +21,40 @@ export default function FilterExplore({ shortlist, onOpenDetail, initialFocus })
   const toggleInterest = (tag) =>
     setInterests((prev) => (prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]))
 
+  // Pulled from the data, not hardcoded — a new interest_tag in the sheet
+  // shows up here automatically, no code change needed.
+  const allInterests = useMemo(
+    () => [...new Set((careerPaths || []).flatMap((c) => c.interest_tags))],
+    [careerPaths]
+  )
+
   const results = useMemo(() => {
     const q = search.trim().toLowerCase()
-    return careerPaths.filter((c) => {
+    return (careerPaths || []).filter((c) => {
       if (q && !c.title.toLowerCase().includes(q)) return false
       if (interests.length && !c.interest_tags.some((t) => interests.includes(t))) return false
       if (avoidMaths && c.requires_maths) return false
       return true
     })
-  }, [search, interests, avoidMaths])
+  }, [careerPaths, search, interests, avoidMaths])
+
+  if (loading && !careerPaths) {
+    return (
+      <main className="screen screen--scroll">
+        <h2 className="screen__title screen__title--md">Explore paths</h2>
+        <p className="empty-state">Loading career paths…</p>
+      </main>
+    )
+  }
+
+  if (error && !careerPaths) {
+    return (
+      <main className="screen screen--scroll">
+        <h2 className="screen__title screen__title--md">Explore paths</h2>
+        <p className="empty-state">Couldn't load career data — check your connection and try again.</p>
+      </main>
+    )
+  }
 
   return (
     <main className="screen screen--scroll">
@@ -45,7 +68,7 @@ export default function FilterExplore({ shortlist, onOpenDetail, initialFocus })
           onChange={(e) => setSearch(e.target.value)}
         />
         <div className="chip-row">
-          {ALL_INTERESTS.map((tag) => (
+          {allInterests.map((tag) => (
             <button
               key={tag}
               className={`chip ${interests.includes(tag) ? 'chip--on' : ''}`}

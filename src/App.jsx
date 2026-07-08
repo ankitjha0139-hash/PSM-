@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import './App.css'
-import { careerPaths } from './data/careerPaths.js'
 import { practitioners } from './data/practitioners.js'
 import { useShortlist } from './hooks/useShortlist.js'
+import { useCareerPaths } from './hooks/useCareerPaths.js'
 
 import Landing from './screens/Landing.jsx'
 import RoleGate from './screens/RoleGate.jsx'
@@ -26,8 +26,9 @@ function App() {
   const [selectedCareerId, setSelectedCareerId] = useState(null)
   const [selectedPractitionerId, setSelectedPractitionerId] = useState(null)
   const shortlist = useShortlist()
+  const { data: careerPaths } = useCareerPaths()
 
-  const selectedCareer = careerPaths.find((c) => c.id === selectedCareerId)
+  const selectedCareer = (careerPaths || []).find((c) => c.id === selectedCareerId)
   const selectedPractitioner = practitioners.find((p) => p.id === selectedPractitionerId)
 
   // --- Onboarding sequence ---
