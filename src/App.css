@@ -599,8 +599,8 @@
   flex-wrap: wrap;
 }
 
-/* ===== Practitioners ===== */
-.practitioner-list {
+/* ===== Practitioners — directory cards ===== */
+.prac-list {
   max-width: 560px;
   margin: 0 auto;
   width: 100%;
@@ -609,18 +609,25 @@
   gap: 12px;
 }
 
-.practitioner-card {
+.prac-card {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 14px;
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--radius);
   padding: 14px 16px;
   box-shadow: var(--shadow);
+  cursor: pointer;
 }
 
-.practitioner-card__avatar {
+.prac-card:hover {
+  border-color: var(--gold-deep);
+  box-shadow: var(--shadow-lift);
+}
+
+.prac-card__avatar,
+.prac-profile-avatar {
   flex: none;
   width: 44px;
   height: 44px;
@@ -633,25 +640,170 @@
   font-weight: 700;
 }
 
-.practitioner-card__info {
-  flex: 1;
+.prac-profile-avatar {
+  width: 64px;
+  height: 64px;
+  font-size: 22px;
+  margin: 0 auto 10px;
 }
 
-.practitioner-card__name {
+.prac-card__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.prac-card__name {
   font-weight: 600;
   font-size: 14.5px;
+  color: var(--ink);
 }
 
-.practitioner-card__role,
-.practitioner-card__price {
-  font-size: 12.5px;
+.prac-card__credibility {
+  font-size: 12px;
   color: var(--muted);
   margin-top: 2px;
 }
 
-.star {
-  color: var(--gold-deep);
+.prac-card__stats {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   font-size: 12px;
+  color: var(--muted);
+  margin-top: 6px;
+}
+
+.prac-rating {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  color: var(--gold-deep);
+  font-weight: 600;
+}
+
+.prac-card__dot {
+  color: var(--line);
+}
+
+.prac-card__topics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 8px;
+}
+
+.prac-card__price {
+  flex: none;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--navy);
+  white-space: nowrap;
+}
+
+/* ===== Practitioner profile ===== */
+.prac-profile-head {
+  max-width: 560px;
+  margin: 0 auto 18px;
+  width: 100%;
+  text-align: center;
+}
+
+.session-list {
+  max-width: 560px;
+  margin: 0 auto;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.session-card {
+  text-align: left;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 13px 15px;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+}
+
+.session-card:hover {
+  border-color: var(--gold-deep);
+}
+
+.session-card__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.session-card__label {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--ink);
+}
+
+.session-card__price {
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--navy);
+}
+
+.session-card__desc {
+  font-size: 12.5px;
+  color: var(--muted);
+  margin: 5px 0;
+  line-height: 1.5;
+}
+
+.session-card__duration {
+  font-size: 11px;
+  color: var(--muted);
+  background: var(--tint);
+  padding: 2px 8px;
+  border-radius: 8px;
+}
+
+.testimonial-list {
+  max-width: 560px;
+  margin: 0 auto;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.testimonial {
+  background: var(--tint);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+}
+
+.testimonial__text {
+  margin: 0;
+  font-size: 13px;
+  font-style: italic;
+  color: var(--ink);
+  line-height: 1.5;
+}
+
+.testimonial__name {
+  display: block;
+  margin-top: 6px;
+  font-size: 11.5px;
+  color: var(--muted);
+}
+
+.prac-confirm-check {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--success-bg);
+  color: var(--success-ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 8px;
 }
 
 .demo-flag {
@@ -715,7 +867,10 @@
   .metric-grid,
   .section,
   .detail-actions,
-  .practitioner-list,
+  .prac-list,
+  .session-list,
+  .testimonial-list,
+  .prac-profile-head,
   .chat-log,
   .career-grid {
     max-width: 720px;
@@ -751,7 +906,10 @@
   .metric-grid,
   .section,
   .detail-actions,
-  .practitioner-list,
+  .prac-list,
+  .session-list,
+  .testimonial-list,
+  .prac-profile-head,
   .chat-log,
   .career-grid {
     max-width: 960px;
@@ -768,4 +926,198 @@
   .bottom-nav {
     max-width: 960px;
   }
+}
+
+/* ============================================================
+   Support widget — floating help button + panel. First real use
+   of the "glass" effect: a blurred, translucent surface instead
+   of flat white, plus proper SVG icons instead of emoji.
+   ============================================================ */
+.support-fab {
+  position: fixed;
+  right: 18px;
+  bottom: 96px; /* clears the bottom nav */
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: none;
+  background: var(--navy);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 10px 24px rgba(27, 42, 74, 0.35);
+  z-index: 40;
+}
+
+.support-fab:hover {
+  background: var(--navy-deep);
+}
+
+.support-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(16, 24, 40, 0.32);
+  z-index: 50;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+/* The glass panel: translucent background + backdrop blur + a hairline
+   border to catch light — the actual "glassmorphism" recipe. */
+.support-panel {
+  width: 100%;
+  max-width: 480px;
+  max-height: 72vh;
+  overflow-y: auto;
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 22px 22px 0 0;
+  padding: 18px 18px calc(20px + env(safe-area-inset-bottom));
+  box-shadow: 0 -10px 40px rgba(16, 24, 40, 0.18);
+}
+
+@media (min-width: 640px) {
+  /* Desktop: dock like a real chat widget (Intercom/Crisp/Drift-style) —
+     anchored bottom-right near the button that opened it, page stays
+     visible behind it. Not a centred modal, which was the bug: a modal
+     interrupts the whole screen; a docked widget doesn't. */
+  .support-overlay {
+    background: transparent;
+    align-items: flex-end;
+    justify-content: flex-end;
+    padding: 0 18px 88px 0;
+  }
+  .support-panel {
+    width: 380px;
+    max-width: 380px;
+    max-height: min(600px, 75vh);
+    border-radius: 20px;
+  }
+}
+
+.support-panel__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: var(--font-head);
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 12px;
+}
+
+.support-close {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(0, 0, 0, 0.06);
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.support-search {
+  width: 100%;
+  font-family: var(--font-body);
+  font-size: 14.5px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: var(--radius-sm);
+  padding: 11px 14px;
+  margin-bottom: 10px;
+}
+
+.support-search:focus {
+  outline: none;
+  border-color: var(--gold-deep);
+}
+
+.support-results {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 40px;
+}
+
+.support-faq {
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: var(--radius-sm);
+  padding: 11px 13px;
+}
+
+.support-faq__q {
+  font-weight: 600;
+  font-size: 13.5px;
+  color: var(--ink);
+}
+
+.support-faq__a {
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 4px;
+  line-height: 1.5;
+}
+
+.support-empty {
+  font-size: 13px;
+  color: var(--muted);
+  text-align: center;
+  padding: 10px 0;
+}
+
+.support-ticket-btn {
+  width: 100%;
+  margin-top: 12px;
+  background: none;
+  border: 1px dashed rgba(0, 0, 0, 0.18);
+  border-radius: var(--radius-sm);
+  padding: 11px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--navy);
+  cursor: pointer;
+}
+
+.support-ticket-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.support-textarea {
+  width: 100%;
+  font-family: var(--font-body);
+  font-size: 14px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: var(--radius-sm);
+  padding: 11px 14px;
+  resize: vertical;
+}
+
+.support-confirm {
+  text-align: center;
+  padding: 18px 6px;
+}
+
+.support-confirm__check {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--success-bg);
+  color: var(--success-ink);
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 12px;
 }
