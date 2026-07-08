@@ -58,7 +58,11 @@ export default async (req) => {
   }
 
   const MODEL = 'gemini-2.5-flash'
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${apiKey}`
+  // streamGenerateContent + alt=sse: Gemini sends the reply as it's
+  // generated, not all at once. We relay that stream straight through to
+  // the browser (see src/lib/streamChat.js) instead of buffering the
+  // whole reply here — that's what gives the real "typing" effect.
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:streamGenerateContent?key=${apiKey}&alt=sse`
 
   try {
     const geminiRes = await fetch(url, {
@@ -70,20 +74,19 @@ export default async (req) => {
       }),
     })
 
-    const data = await geminiRes.json()
-
     if (!geminiRes.ok) {
+      const errData = await geminiRes.json().catch(() => ({}))
       return new Response(
-        JSON.stringify({ error: data.error?.message || 'Gemini request failed' }),
+        JSON.stringify({ error: errData.error?.message || 'Gemini request failed' }),
         { status: geminiRes.status, headers: { 'Content-Type': 'application/json' } }
       )
     }
 
-    const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "Sorry, I couldn't generate a reply."
-
-    return new Response(JSON.stringify({ reply }), {
+    // Relay Gemini's event stream directly — no buffering, no waiting for
+    // the full reply before anything reaches the browser.
+    return new Response(geminiRes.body, {
       status: 200,
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache' },
     })
   } catch (err) {
     return new Response(JSON.stringify({ error: String(err) }), { status: 500 })

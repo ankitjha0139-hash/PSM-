@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useSupportTickets } from '../hooks/useSupportTickets.js'
+import { streamChat } from '../lib/streamChat.js'
 
 // Real chat now, same pattern as AtlasChat — calls
 // netlify/functions/support-chat.mjs, grounded in faqs.js. "Talk to a real
@@ -34,26 +35,35 @@ export default function SupportWidget() {
     if (!trimmed || loading) return
 
     const nextMessages = [...messages, { role: 'user', text: trimmed }]
-    setMessages(nextMessages)
+    // Empty placeholder bubble — shows as typing dots until the first
+    // streamed chunk arrives, then fills in progressively.
+    setMessages([...nextMessages, { role: 'model', text: '' }])
     setInput('')
     setLoading(true)
 
     try {
-      const res = await fetch('/api/support-chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          messages: nextMessages.map((m) => ({ role: m.role, parts: [{ text: m.text }] })),
-        }),
-      })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error || 'Request failed')
-      setMessages((prev) => [...prev, { role: 'model', text: data.reply }])
+      let acc = ''
+      await streamChat(
+        '/api/support-chat',
+        nextMessages.map((m) => ({ role: m.role, parts: [{ text: m.text }] })),
+        (delta) => {
+          acc += delta
+          setMessages((prev) => {
+            const copy = [...prev]
+            copy[copy.length - 1] = { role: 'model', text: acc }
+            return copy
+          })
+        }
+      )
     } catch {
-      setMessages((prev) => [
-        ...prev,
-        { role: 'model', text: "Sorry, I'm having trouble right now — try 'Talk to a real person' below." },
-      ])
+      setMessages((prev) => {
+        const copy = [...prev]
+        copy[copy.length - 1] = {
+          role: 'model',
+          text: "Sorry, I'm having trouble right now — try 'Talk to a real person' below.",
+        }
+        return copy
+      })
     } finally {
       setLoading(false)
     }
@@ -106,21 +116,26 @@ export default function SupportWidget() {
             {!ticketMode && !submitted && (
               <>
                 <div className="support-chat-log" ref={logRef}>
-                  {messages.map((m, i) => (
-                    <div
-                      key={i}
-                      className={`bubble ${m.role === 'model' ? 'bubble--atlas' : 'bubble--me'}`}
-                    >
-                      {m.text}
-                    </div>
-                  ))}
-                  {loading && (
-                    <div className="bubble bubble--atlas bubble--typing">
-                      <span className="typing-dot" />
-                      <span className="typing-dot" />
-                      <span className="typing-dot" />
-                    </div>
-                  )}
+                  {messages.map((m, i) => {
+                    const isStreamingEmpty =
+                      loading && i === messages.length - 1 && m.role === 'model' && m.text === ''
+                    return (
+                      <div
+                        key={i}
+                        className={`bubble ${m.role === 'model' ? 'bubble--atlas' : 'bubble--me'}`}
+                      >
+                        {isStreamingEmpty ? (
+                          <span className="typing-dots-inline">
+                            <span className="typing-dot" />
+                            <span className="typing-dot" />
+                            <span className="typing-dot" />
+                          </span>
+                        ) : (
+                          m.text
+                        )}
+                      </div>
+                    )
+                  })}
                 </div>
                 <form
                   className="chat-input-row"

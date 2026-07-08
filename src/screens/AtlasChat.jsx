@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
+import { streamChat } from '../lib/streamChat.js'
 
-// Real conversation now — calls netlify/functions/atlas-chat.mjs, which
-// talks to Gemini server-side (key never reaches the browser) and answers
-// grounded in our own career data. The old fixed 2-question decision tree
-// doesn't make sense anymore now that Atlas can genuinely understand
-// free text — starters below are just a nudge for anyone unsure what to ask.
+// Real, streamed conversation — calls netlify/functions/atlas-chat.mjs,
+// which talks to Gemini server-side (key never reaches the browser) and
+// answers grounded in our own career data. Replies stream in token by
+// token (a real "typing" effect) rather than appearing all at once.
 const STARTERS = [
   "I like creative things but I'm not sure what job that means",
   'What careers don’t need Maths?',
@@ -28,7 +28,7 @@ export default function AtlasChat() {
   const [messages, setMessages] = useState([
     {
       role: 'model',
-      text: "Hey, I'm Atlas 👋 Let's figure this out together — ask me anything, or tap a suggestion below to start.",
+      text: "Hi, I'm Atlas 👋 I'll be your guide on this journey — ask me anything, and let's find some clarity on the path ahead.",
     },
   ])
   const [input, setInput] = useState('')
@@ -44,29 +44,35 @@ export default function AtlasChat() {
     if (!trimmed || loading) return
 
     const nextMessages = [...messages, { role: 'user', text: trimmed }]
-    setMessages(nextMessages)
+    // Empty placeholder bubble — shows as typing dots until the first
+    // streamed chunk arrives, then fills in progressively.
+    setMessages([...nextMessages, { role: 'model', text: '' }])
     setInput('')
     setLoading(true)
 
     try {
-      const res = await fetch('/api/atlas-chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          messages: nextMessages.map((m) => ({ role: m.role, parts: [{ text: m.text }] })),
-        }),
-      })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error || 'Request failed')
-      setMessages((prev) => [...prev, { role: 'model', text: data.reply }])
+      let acc = ''
+      await streamChat(
+        '/api/atlas-chat',
+        nextMessages.map((m) => ({ role: m.role, parts: [{ text: m.text }] })),
+        (delta) => {
+          acc += delta
+          setMessages((prev) => {
+            const copy = [...prev]
+            copy[copy.length - 1] = { role: 'model', text: acc }
+            return copy
+          })
+        }
+      )
     } catch {
-      setMessages((prev) => [
-        ...prev,
-        {
+      setMessages((prev) => {
+        const copy = [...prev]
+        copy[copy.length - 1] = {
           role: 'model',
           text: "Sorry, I'm having trouble connecting right now. Try again in a moment, or explore careers directly from the Explore tab.",
-        },
-      ])
+        }
+        return copy
+      })
     } finally {
       setLoading(false)
     }
@@ -79,18 +85,26 @@ export default function AtlasChat() {
       <h2 className="screen__title screen__title--md">Atlas</h2>
 
       <div className="chat-log" ref={logRef}>
-        {messages.map((m, i) => (
-          <div key={i} className={`bubble ${m.role === 'model' ? 'bubble--atlas' : 'bubble--me'}`}>
-            {m.text}
-          </div>
-        ))}
-        {loading && (
-          <div className="bubble bubble--atlas bubble--typing">
-            <span className="typing-dot" />
-            <span className="typing-dot" />
-            <span className="typing-dot" />
-          </div>
-        )}
+        {messages.map((m, i) => {
+          const isStreamingEmpty =
+            loading && i === messages.length - 1 && m.role === 'model' && m.text === ''
+          return (
+            <div
+              key={i}
+              className={`bubble ${m.role === 'model' ? 'bubble--atlas' : 'bubble--me'}`}
+            >
+              {isStreamingEmpty ? (
+                <span className="typing-dots-inline">
+                  <span className="typing-dot" />
+                  <span className="typing-dot" />
+                  <span className="typing-dot" />
+                </span>
+              ) : (
+                m.text
+              )}
+            </div>
+          )
+        })}
       </div>
 
       {showStarters && (
