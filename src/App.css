@@ -1122,38 +1122,14 @@
   border-color: var(--gold-deep);
 }
 
-.support-results {
+.support-chat-log {
+  min-height: 120px;
+  max-height: 42vh;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 8px;
-  min-height: 40px;
-}
-
-.support-faq {
-  background: rgba(255, 255, 255, 0.55);
-  border: 1px solid rgba(0, 0, 0, 0.06);
-  border-radius: var(--radius-sm);
-  padding: 11px 13px;
-}
-
-.support-faq__q {
-  font-weight: 600;
-  font-size: 13.5px;
-  color: var(--ink);
-}
-
-.support-faq__a {
-  font-size: 13px;
-  color: var(--muted);
-  margin-top: 4px;
-  line-height: 1.5;
-}
-
-.support-empty {
-  font-size: 13px;
-  color: var(--muted);
-  text-align: center;
-  padding: 10px 0;
+  padding-right: 2px;
 }
 
 .support-ticket-btn {

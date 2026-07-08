@@ -1,42 +1,62 @@
-import { useMemo, useState } from 'react'
-import { faqs } from '../data/faqs.js'
+import { useEffect, useRef, useState } from 'react'
 import { useSupportTickets } from '../hooks/useSupportTickets.js'
 
-// Simple keyword scoring — no LLM needed for v1. Swappable later for real
-// matching without changing how this component is used.
-function searchFaqs(query) {
-  const q = query.trim().toLowerCase()
-  if (!q) return []
-  return faqs
-    .map((f) => {
-      let score = 0
-      if (f.q.toLowerCase().includes(q)) score += 3
-      f.keywords.forEach((k) => {
-        if (q.includes(k) || k.includes(q)) score += 2
-      })
-      return { ...f, score }
-    })
-    .filter((f) => f.score > 0)
-    .sort((a, b) => b.score - a.score)
-}
-
+// Real chat now, same pattern as AtlasChat — calls
+// netlify/functions/support-chat.mjs, grounded in faqs.js. "Talk to a real
+// person" stays as the escape hatch for anything the FAQ data can't cover.
 export default function SupportWidget() {
   const [open, setOpen] = useState(false)
-  const [query, setQuery] = useState('')
+  const [messages, setMessages] = useState([
+    { role: 'model', text: 'Hi! Ask me anything about using the platform.' },
+  ])
+  const [input, setInput] = useState('')
+  const [loading, setLoading] = useState(false)
   const [ticketMode, setTicketMode] = useState(false)
   const [ticketMsg, setTicketMsg] = useState('')
   const [ticketContact, setTicketContact] = useState('')
   const [submitted, setSubmitted] = useState(false)
+  const logRef = useRef(null)
   const { raise } = useSupportTickets()
 
-  const results = useMemo(() => searchFaqs(query), [query])
+  useEffect(() => {
+    logRef.current?.scrollTo({ top: logRef.current.scrollHeight, behavior: 'smooth' })
+  }, [messages, loading])
 
   const close = () => {
     setOpen(false)
     setTicketMode(false)
     setSubmitted(false)
-    setQuery('')
     setTicketMsg('')
+  }
+
+  const send = async (text) => {
+    const trimmed = text.trim()
+    if (!trimmed || loading) return
+
+    const nextMessages = [...messages, { role: 'user', text: trimmed }]
+    setMessages(nextMessages)
+    setInput('')
+    setLoading(true)
+
+    try {
+      const res = await fetch('/api/support-chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: nextMessages.map((m) => ({ role: m.role, parts: [{ text: m.text }] })),
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Request failed')
+      setMessages((prev) => [...prev, { role: 'model', text: data.reply }])
+    } catch {
+      setMessages((prev) => [
+        ...prev,
+        { role: 'model', text: "Sorry, I'm having trouble right now — try 'Talk to a real person' below." },
+      ])
+    } finally {
+      setLoading(false)
+    }
   }
 
   const submitTicket = () => {
@@ -85,26 +105,45 @@ export default function SupportWidget() {
 
             {!ticketMode && !submitted && (
               <>
-                <input
-                  className="support-search"
-                  placeholder="Type a question…"
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  autoFocus
-                />
-                <div className="support-results">
-                  {results.map((f) => (
-                    <div key={f.id} className="support-faq">
-                      <div className="support-faq__q">{f.q}</div>
-                      <div className="support-faq__a">{f.a}</div>
+                <div className="support-chat-log" ref={logRef}>
+                  {messages.map((m, i) => (
+                    <div
+                      key={i}
+                      className={`bubble ${m.role === 'model' ? 'bubble--atlas' : 'bubble--me'}`}
+                    >
+                      {m.text}
                     </div>
                   ))}
-                  {query.trim() && results.length === 0 && (
-                    <p className="support-empty">No matching answer yet.</p>
+                  {loading && (
+                    <div className="bubble bubble--atlas bubble--typing">
+                      <span className="typing-dot" />
+                      <span className="typing-dot" />
+                      <span className="typing-dot" />
+                    </div>
                   )}
                 </div>
+                <form
+                  className="chat-input-row"
+                  style={{ maxWidth: 'none', margin: '10px 0 0' }}
+                  onSubmit={(e) => {
+                    e.preventDefault()
+                    send(input)
+                  }}
+                >
+                  <input
+                    className="chat-input"
+                    placeholder="Ask a question…"
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    disabled={loading}
+                    autoFocus
+                  />
+                  <button className="chat-send" type="submit" disabled={loading || !input.trim()}>
+                    →
+                  </button>
+                </form>
                 <button className="support-ticket-btn" onClick={() => setTicketMode(true)}>
-                  Didn't find your answer? Ask a real person →
+                  Talk to a real person →
                 </button>
               </>
             )}
