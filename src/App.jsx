@@ -110,9 +110,7 @@ function App() {
           initialFocus={routingAnswer === 'goal' ? 'search' : 'filter'}
         />
       )}
-      {screen === 'atlas' && (
-        <AtlasChat shortlist={shortlist} onOpenDetail={setSelectedCareerId} />
-      )}
+      {screen === 'atlas' && <AtlasChat />}
       {screen === 'shortlist' && (
         <Shortlist shortlist={shortlist} onOpenDetail={setSelectedCareerId} />
       )}

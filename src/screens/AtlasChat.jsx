@@ -1,98 +1,131 @@
-import { useState } from 'react'
-import { careerPaths } from '../data/careerPaths.js'
-import CareerCard from '../components/CareerCard.jsx'
+import { useEffect, useRef, useState } from 'react'
 
-// SCRIPTED FOR NOW — a small decision tree, not a live call to Gemini.
-// Wiring the real LLM needs a serverless function so the API key never
-// sits in browser code; that's a separate, later piece of work. This
-// screen exists so the hand-off and conversational feel are real to test
-// before that backend exists.
-const STEPS = [
-  {
-    id: 'interest',
-    atlas: "Hey, I'm Atlas 👋 Let's figure this out together — no pressure. What kind of things do you enjoy?",
-    options: [
-      { id: 'creative', label: 'Creative things' },
-      { id: 'tech', label: 'Tech & building things' },
-      { id: 'business', label: 'Business & numbers' },
-    ],
-  },
-  {
-    id: 'maths',
-    atlas: 'Got it. Quick one — does Maths make you nervous?',
-    options: [
-      { id: 'yes', label: "Yes, I'd rather avoid it" },
-      { id: 'no', label: "No, I'm fine with it" },
-    ],
-  },
+// Real conversation now — calls netlify/functions/atlas-chat.mjs, which
+// talks to Gemini server-side (key never reaches the browser) and answers
+// grounded in our own career data. The old fixed 2-question decision tree
+// doesn't make sense anymore now that Atlas can genuinely understand
+// free text — starters below are just a nudge for anyone unsure what to ask.
+const STARTERS = [
+  "I like creative things but I'm not sure what job that means",
+  'What careers don’t need Maths?',
+  'How do I become a Chartered Accountant?',
 ]
 
-export default function AtlasChat({ shortlist, onOpenDetail }) {
-  const [step, setStep] = useState(0)
-  const [answers, setAnswers] = useState({})
-  const [messages, setMessages] = useState([{ from: 'atlas', text: STEPS[0].atlas }])
+function SendIcon() {
+  return (
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none">
+      <path
+        d="M4 12L20 4L14 20L11 13L4 12Z"
+        stroke="currentColor"
+        strokeWidth="1.7"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
+}
 
-  const done = step >= STEPS.length
+export default function AtlasChat() {
+  const [messages, setMessages] = useState([
+    {
+      role: 'model',
+      text: "Hey, I'm Atlas 👋 Let's figure this out together — ask me anything, or tap a suggestion below to start.",
+    },
+  ])
+  const [input, setInput] = useState('')
+  const [loading, setLoading] = useState(false)
+  const logRef = useRef(null)
 
-  const results = done
-    ? careerPaths.filter((c) => {
-        if (answers.interest && !c.interest_tags.includes(answers.interest)) return false
-        if (answers.maths === 'yes' && c.requires_maths) return false
-        return true
+  useEffect(() => {
+    logRef.current?.scrollTo({ top: logRef.current.scrollHeight, behavior: 'smooth' })
+  }, [messages, loading])
+
+  const send = async (text) => {
+    const trimmed = text.trim()
+    if (!trimmed || loading) return
+
+    const nextMessages = [...messages, { role: 'user', text: trimmed }]
+    setMessages(nextMessages)
+    setInput('')
+    setLoading(true)
+
+    try {
+      const res = await fetch('/api/atlas-chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: nextMessages.map((m) => ({ role: m.role, parts: [{ text: m.text }] })),
+        }),
       })
-    : []
-
-  const pick = (optionId, label) => {
-    setMessages((prev) => [...prev, { from: 'me', text: label }])
-    setAnswers((prev) => ({ ...prev, [STEPS[step].id]: optionId }))
-
-    const next = step + 1
-    if (next < STEPS.length) {
-      setMessages((prev) => [...prev, { from: 'atlas', text: STEPS[next].atlas }])
-    } else {
-      setMessages((prev) => [...prev, { from: 'atlas', text: "Here's what I found for you 👇" }])
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Request failed')
+      setMessages((prev) => [...prev, { role: 'model', text: data.reply }])
+    } catch {
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: 'model',
+          text: "Sorry, I'm having trouble connecting right now. Try again in a moment, or explore careers directly from the Explore tab.",
+        },
+      ])
+    } finally {
+      setLoading(false)
     }
-    setStep(next)
   }
+
+  const showStarters = messages.length === 1
 
   return (
     <main className="screen screen--scroll">
       <h2 className="screen__title screen__title--md">Atlas</h2>
 
-      <div className="chat-log">
+      <div className="chat-log" ref={logRef}>
         {messages.map((m, i) => (
-          <div key={i} className={`bubble ${m.from === 'atlas' ? 'bubble--atlas' : 'bubble--me'}`}>
+          <div key={i} className={`bubble ${m.role === 'model' ? 'bubble--atlas' : 'bubble--me'}`}>
             {m.text}
           </div>
         ))}
+        {loading && (
+          <div className="bubble bubble--atlas bubble--typing">
+            <span className="typing-dot" />
+            <span className="typing-dot" />
+            <span className="typing-dot" />
+          </div>
+        )}
       </div>
 
-      {!done && (
+      {showStarters && (
         <div className="chip-row">
-          {STEPS[step].options.map((opt) => (
-            <button key={opt.id} className="chip" onClick={() => pick(opt.id, opt.label)}>
-              {opt.label}
+          {STARTERS.map((s) => (
+            <button key={s} className="chip" onClick={() => send(s)}>
+              {s}
             </button>
           ))}
         </div>
       )}
 
-      {done && (
-        <div className="career-grid">
-          {results.map((c) => (
-            <CareerCard
-              key={c.id}
-              career={c}
-              shortlisted={shortlist.has(c.id)}
-              onToggleShortlist={shortlist.toggle}
-              onOpen={onOpenDetail}
-            />
-          ))}
-          {results.length === 0 && (
-            <p className="empty-state">Nothing matched exactly — try Explore instead.</p>
-          )}
-        </div>
-      )}
+      <form
+        className="chat-input-row"
+        onSubmit={(e) => {
+          e.preventDefault()
+          send(input)
+        }}
+      >
+        <input
+          className="chat-input"
+          placeholder="Ask Atlas anything…"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          disabled={loading}
+        />
+        <button
+          className="chat-send"
+          type="submit"
+          disabled={loading || !input.trim()}
+          aria-label="Send"
+        >
+          <SendIcon />
+        </button>
+      </form>
     </main>
   )
 }
