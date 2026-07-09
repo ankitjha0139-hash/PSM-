@@ -53,6 +53,14 @@ export default function SupportWidget() {
             copy[copy.length - 1] = { role: 'model', text: acc }
             return copy
           })
+        },
+        () => {
+          acc = ''
+          setMessages((prev) => {
+            const copy = [...prev]
+            copy[copy.length - 1] = { role: 'model', text: '' }
+            return copy
+          })
         }
       )
     } catch {

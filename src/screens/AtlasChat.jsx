@@ -5,11 +5,6 @@ import { streamChat } from '../lib/streamChat.js'
 // which talks to Gemini server-side (key never reaches the browser) and
 // answers grounded in our own career data. Replies stream in token by
 // token (a real "typing" effect) rather than appearing all at once.
-const STARTERS = [
-  "I like creative things but I'm not sure what job that means",
-  'What careers don’t need Maths?',
-  'How do I become a Chartered Accountant?',
-]
 
 function SendIcon() {
   return (
@@ -62,6 +57,16 @@ export default function AtlasChat() {
             copy[copy.length - 1] = { role: 'model', text: acc }
             return copy
           })
+        },
+        () => {
+          // First attempt failed — reset so the retry starts clean
+          // instead of appending onto a partial reply.
+          acc = ''
+          setMessages((prev) => {
+            const copy = [...prev]
+            copy[copy.length - 1] = { role: 'model', text: '' }
+            return copy
+          })
         }
       )
     } catch {
@@ -77,8 +82,6 @@ export default function AtlasChat() {
       setLoading(false)
     }
   }
-
-  const showStarters = messages.length === 1
 
   return (
     <main className="screen screen--scroll">
@@ -106,16 +109,6 @@ export default function AtlasChat() {
           )
         })}
       </div>
-
-      {showStarters && (
-        <div className="chip-row">
-          {STARTERS.map((s) => (
-            <button key={s} className="chip" onClick={() => send(s)}>
-              {s}
-            </button>
-          ))}
-        </div>
-      )}
 
       <form
         className="chat-input-row"

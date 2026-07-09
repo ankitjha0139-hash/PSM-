@@ -2,7 +2,8 @@
 // (atlas-chat, support-chat) and calls onDelta with each incremental text
 // chunk as it arrives — this is what gives the real "typing" effect,
 // shared by AtlasChat and SupportWidget instead of duplicated in both.
-export async function streamChat(endpoint, messages, onDelta) {
+
+async function attemptStream(endpoint, messages, onDelta) {
   const res = await fetch(endpoint, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -11,7 +12,7 @@ export async function streamChat(endpoint, messages, onDelta) {
 
   if (!res.ok) {
     const data = await res.json().catch(() => ({}))
-    throw new Error(data.error || 'Request failed')
+    throw new Error(data.error || `Request failed (${res.status})`)
   }
 
   const reader = res.body.getReader()
@@ -39,5 +40,21 @@ export async function streamChat(endpoint, messages, onDelta) {
         // an incomplete JSON fragment split across reads — safe to skip
       }
     }
+  }
+}
+
+// Network blips, Netlify cold starts, and occasional rate-limit brushes
+// are normal when calling an external API — one quiet automatic retry
+// recovers from most of them before the user ever sees an error.
+// onRetry lets the caller reset its own accumulated text first, so a
+// retry doesn't glue a partial first attempt onto the second one.
+export async function streamChat(endpoint, messages, onDelta, onRetry) {
+  try {
+    await attemptStream(endpoint, messages, onDelta)
+  } catch (err) {
+    console.error('streamChat: first attempt failed, retrying once —', err)
+    onRetry?.()
+    await new Promise((r) => setTimeout(r, 900))
+    await attemptStream(endpoint, messages, onDelta)
   }
 }
