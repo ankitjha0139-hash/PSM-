@@ -1029,8 +1029,24 @@
   color: var(--navy);
 }
 
-.bottom-nav__emoji {
-  font-size: 19px;
+/* Icon sits in a small chip; on the active tab the chip frosts over
+   (same glass language as the cards) and the stroke turns accent-blue. */
+.bottom-nav__icon {
+  width: 34px;
+  height: 26px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid transparent;
+}
+
+.bottom-nav__item--active .bottom-nav__icon {
+  background: var(--tint);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border-color: var(--glass-border);
+  color: var(--gold-deep);
 }
 
 .bottom-nav__label {
