@@ -111,7 +111,18 @@ function App() {
           initialFocus={routingAnswer === 'goal' ? 'search' : 'filter'}
         />
       )}
-      {screen === 'atlas' && <AtlasChat />}
+      {screen === 'atlas' && (
+        <AtlasChat
+          careers={careerPaths || []}
+          onOpenCareer={setSelectedCareerId}
+          profile={{
+            journeyStage: routingAnswer,
+            shortlisted: (careerPaths || [])
+              .filter((c) => shortlist.has(c.id))
+              .map((c) => c.title),
+          }}
+        />
+      )}
       {screen === 'shortlist' && (
         <Shortlist shortlist={shortlist} onOpenDetail={setSelectedCareerId} />
       )}

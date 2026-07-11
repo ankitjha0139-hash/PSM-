@@ -3,11 +3,11 @@
 // chunk as it arrives — this is what gives the real "typing" effect,
 // shared by AtlasChat and SupportWidget instead of duplicated in both.
 
-async function attemptStream(endpoint, messages, onDelta) {
+async function attemptStream(endpoint, messages, onDelta, extra) {
   const res = await fetch(endpoint, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ messages }),
+    body: JSON.stringify({ messages, ...extra }),
   })
 
   if (!res.ok) {
@@ -48,13 +48,13 @@ async function attemptStream(endpoint, messages, onDelta) {
 // recovers from most of them before the user ever sees an error.
 // onRetry lets the caller reset its own accumulated text first, so a
 // retry doesn't glue a partial first attempt onto the second one.
-export async function streamChat(endpoint, messages, onDelta, onRetry) {
+export async function streamChat(endpoint, messages, onDelta, onRetry, extra) {
   try {
-    await attemptStream(endpoint, messages, onDelta)
+    await attemptStream(endpoint, messages, onDelta, extra)
   } catch (err) {
     console.error('streamChat: first attempt failed, retrying once —', err)
     onRetry?.()
     await new Promise((r) => setTimeout(r, 900))
-    await attemptStream(endpoint, messages, onDelta)
+    await attemptStream(endpoint, messages, onDelta, extra)
   }
 }
