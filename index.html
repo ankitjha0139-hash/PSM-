@@ -14,6 +14,26 @@
   </head>
   <body>
     <div id="root"></div>
+
+    <!-- Hidden form declarations: Netlify's build bot scans deployed HTML
+         for these and provisions the collection endpoints. The real UI is
+         React; it POSTs matching form-names to "/" (see src/lib/netlifyForms.js).
+         Submissions land in Netlify dashboard -> Forms. -->
+    <form name="support-ticket" data-netlify="true" netlify-honeypot="bot-field" hidden>
+      <input name="bot-field" />
+      <input name="message" />
+      <input name="contact" />
+    </form>
+    <form name="booking" data-netlify="true" netlify-honeypot="bot-field" hidden>
+      <input name="bot-field" />
+      <input name="bookingId" />
+      <input name="practitioner" />
+      <input name="session" />
+      <input name="when" />
+      <input name="name" />
+      <input name="contact" />
+    </form>
+
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

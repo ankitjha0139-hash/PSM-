@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { StarIcon, CheckIcon, VerifiedIcon, CalendarIcon } from '../components/icons.jsx'
 import { getSlotDays, makeBookingId, downloadIcs } from '../lib/bookingUtils.js'
 import { useBookings } from '../hooks/useBookings.js'
+import { submitNetlifyForm } from '../lib/netlifyForms.js'
 
 // Full profile + the booking flow: pick a session type, pick a real
 // day/time slot, leave contact details, get a confirmation with a booking
@@ -16,6 +17,8 @@ export default function PractitionerProfile({ practitioner, onBack }) {
   const [contactName, setContactName] = useState('')
   const [contact, setContact] = useState('')
   const [booking, setBooking] = useState(null)
+  const [notified, setNotified] = useState(false)
+  const [saving, setSaving] = useState(false)
   const { add } = useBookings()
 
   const slotDays = useMemo(() => getSlotDays(practitioner?.id), [practitioner?.id])
@@ -23,8 +26,9 @@ export default function PractitionerProfile({ practitioner, onBack }) {
 
   if (!practitioner) return null
 
-  const confirmBooking = () => {
-    if (!contactName.trim() || !contact.trim()) return
+  const confirmBooking = async () => {
+    if (!contactName.trim() || !contact.trim() || saving) return
+    setSaving(true)
     const b = {
       id: makeBookingId(),
       practitionerId: practitioner.id,
@@ -40,8 +44,27 @@ export default function PractitionerProfile({ practitioner, onBack }) {
       contact: contact.trim(),
       createdAt: new Date().toISOString(),
     }
+    // Notify the team through the Netlify Forms pipe. The booking itself
+    // never fails — worst case the local record exists and the
+    // confirmation copy tells the user to ping support.
+    let sent = false
+    try {
+      await submitNetlifyForm('booking', {
+        bookingId: b.id,
+        practitioner: b.practitionerName,
+        session: `${b.sessionLabel} (${b.duration}, ${b.price})`,
+        when: `${b.dayLabel}, ${b.dateLabel} at ${b.time}`,
+        name: b.contactName,
+        contact: b.contact,
+      })
+      sent = true
+    } catch {
+      sent = false
+    }
     add(b)
     setBooking(b)
+    setNotified(sent)
+    setSaving(false)
     setStep('confirmed')
   }
 
@@ -75,14 +98,15 @@ export default function PractitionerProfile({ practitioner, onBack }) {
           </div>
         </div>
         <p className="screen__sub">
-          We'll confirm your slot and share the call link on {booking.contact}.
+          {notified
+            ? `Our team has been notified — we'll confirm your slot and share the call link on ${booking.contact}.`
+            : `Saved on this device, but we couldn't notify the team just now — please ping us via the help button with your booking ID.`}
         </p>
         <button className="btn btn--ghost" onClick={() => downloadIcs(booking)}>
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 7 }}>
             <CalendarIcon /> Add to calendar
           </span>
         </button>
-        <p className="demo-flag">Demo: saved on this device — confirmations go live soon.</p>
         <button className="btn btn--primary" onClick={onBack}>
           Done
         </button>
@@ -122,10 +146,10 @@ export default function PractitionerProfile({ practitioner, onBack }) {
           </p>
           <button
             className="btn btn--primary"
-            disabled={!contactName.trim() || !contact.trim()}
+            disabled={!contactName.trim() || !contact.trim() || saving}
             onClick={confirmBooking}
           >
-            Confirm booking →
+            {saving ? 'Booking…' : 'Confirm booking →'}
           </button>
         </div>
       </main>

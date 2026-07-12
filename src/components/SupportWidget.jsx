@@ -16,6 +16,8 @@ export default function SupportWidget() {
   const [ticketMsg, setTicketMsg] = useState('')
   const [ticketContact, setTicketContact] = useState('')
   const [submitted, setSubmitted] = useState(false)
+  const [sending, setSending] = useState(false)
+  const [sendError, setSendError] = useState(false)
   const logRef = useRef(null)
   const { raise } = useSupportTickets()
 
@@ -28,6 +30,7 @@ export default function SupportWidget() {
     setTicketMode(false)
     setSubmitted(false)
     setTicketMsg('')
+    setSendError(false)
   }
 
   const send = async (text) => {
@@ -77,10 +80,18 @@ export default function SupportWidget() {
     }
   }
 
-  const submitTicket = () => {
-    if (!ticketMsg.trim()) return
-    raise(ticketMsg.trim(), ticketContact.trim())
-    setSubmitted(true)
+  const submitTicket = async () => {
+    if (!ticketMsg.trim() || sending) return
+    setSending(true)
+    setSendError(false)
+    try {
+      await raise(ticketMsg.trim(), ticketContact.trim())
+      setSubmitted(true)
+    } catch {
+      setSendError(true)
+    } finally {
+      setSending(false)
+    }
   }
 
   return (
@@ -187,19 +198,21 @@ export default function SupportWidget() {
                   value={ticketContact}
                   onChange={(e) => setTicketContact(e.target.value)}
                 />
-                <button className="btn btn--primary" onClick={submitTicket}>
-                  Send
+                <button className="btn btn--primary" onClick={submitTicket} disabled={sending}>
+                  {sending ? 'Sending…' : 'Send'}
                 </button>
+                {sendError && (
+                  <p className="demo-flag" style={{ color: '#b3455c' }}>
+                    Couldn't send just now — check your connection and try again.
+                  </p>
+                )}
               </div>
             )}
 
             {submitted && (
               <div className="support-confirm">
                 <div className="support-confirm__check">✓</div>
-                <p>Got it — someone from our team will get back to you.</p>
-                <p className="demo-flag">
-                  ⚠ Demo only: this is saved locally for now, not yet sent anywhere real.
-                </p>
+                <p>Got it — your message has reached our team. We'll get back to you.</p>
               </div>
             )}
           </div>

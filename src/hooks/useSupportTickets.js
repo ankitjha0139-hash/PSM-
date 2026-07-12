@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useState } from 'react'
+import { submitNetlifyForm } from '../lib/netlifyForms.js'
 
 const STORAGE_KEY = 'supportTickets'
 
-// Tickets persisted locally for now — Wizard-of-Oz, same as practitioner
-// booking. A "ticket" is just a saved record; Phase 3/5 swaps this for a
-// real Supabase table + email/WhatsApp notification without screens
-// needing to change (same pattern as useShortlist).
+// Tickets now actually reach the team: sent through Netlify Forms
+// (dashboard -> Forms -> support-ticket). A local copy is still kept so
+// the user has a record on their device even if they close the tab.
 export function useSupportTickets() {
   const [tickets, setTickets] = useState(() => {
     try {
@@ -19,7 +19,7 @@ export function useSupportTickets() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(tickets))
   }, [tickets])
 
-  const raise = useCallback((message, contact) => {
+  const raise = useCallback(async (message, contact) => {
     const ticket = {
       id: crypto.randomUUID(),
       message,
@@ -27,6 +27,7 @@ export function useSupportTickets() {
       status: 'open',
       created_at: new Date().toISOString(),
     }
+    await submitNetlifyForm('support-ticket', { message, contact })
     setTickets((prev) => [...prev, ticket])
     return ticket
   }, [])
