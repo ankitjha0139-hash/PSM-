@@ -8,7 +8,10 @@ import { streamChat } from '../lib/streamChat.js'
 export default function SupportWidget() {
   const [open, setOpen] = useState(false)
   const [messages, setMessages] = useState([
-    { role: 'model', text: 'Hi! Ask me anything about using the platform.' },
+    {
+      role: 'model',
+      text: "Hi, I'm Compass 👋 — ask me anything about using the platform, and if I can't help, I'll connect you to a real person.",
+    },
   ])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
@@ -119,7 +122,7 @@ export default function SupportWidget() {
         <div className="support-overlay" onClick={close}>
           <div className="support-panel" onClick={(e) => e.stopPropagation()}>
             <div className="support-panel__head">
-              <span>How can we help?</span>
+              <span>Compass · Help</span>
               <button className="support-close" onClick={close} aria-label="Close">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
                   <path
