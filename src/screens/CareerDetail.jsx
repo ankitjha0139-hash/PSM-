@@ -179,9 +179,9 @@ export default function CareerDetail({
           {shortlisted ? '♥ Shortlisted' : '♡ Add to shortlist'}
         </button>
         {/* Second-opinion share — parents, seniors, anyone whose take
-            matters. The share text carries the key facts so the recipient
-            doesn't even need to open the link. */}
-        <button className="btn btn--ghost" onClick={handleShare}>
+            matters. Filled accent, not ghost: sharing is a loop we WANT
+            people to notice. */}
+        <button className="btn btn--share" onClick={handleShare}>
           {shareResult || '↗ Share for a second opinion'}
         </button>
       </div>

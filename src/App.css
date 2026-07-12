@@ -166,6 +166,18 @@
   flex: none;
 }
 
+/* Share CTA — filled accent so it pops next to the ghost buttons; the
+   share loop is how new people discover the product. */
+.btn--share {
+  background: var(--gold-deep);
+  color: #fff;
+  box-shadow: 0 6px 16px -6px rgba(28, 127, 163, 0.5);
+}
+
+.btn--share:hover {
+  background: #16688a;
+}
+
 /* ===== Back button — a real tap target, not bare text ===== */
 .link-back {
   width: 38px;

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import './App.css'
 import { practitioners } from './data/practitioners.js'
 import { useShortlist } from './hooks/useShortlist.js'
@@ -24,12 +24,34 @@ const MAIN_TABS = ['explore', 'atlas', 'shortlist', 'practitioners']
 // one lands straight on that career's page, skipping onboarding.
 const sharedCareerId = new URLSearchParams(window.location.search).get('career')
 
+// Where you are survives a refresh (screens are state, not URLs — without
+// this, F5 dumped everyone back on the landing video). A shared link wins
+// over the saved spot; a fresh tab starts clean.
+const NAV_KEY = 'appNav'
+function savedNav() {
+  try {
+    return JSON.parse(sessionStorage.getItem(NAV_KEY)) || {}
+  } catch {
+    return {}
+  }
+}
+
 function App() {
-  const [screen, setScreen] = useState(sharedCareerId ? 'explore' : 'landing')
-  const [role, setRole] = useState(null)
-  const [routingAnswer, setRoutingAnswer] = useState(null)
-  const [selectedCareerId, setSelectedCareerId] = useState(sharedCareerId)
-  const [selectedPractitionerId, setSelectedPractitionerId] = useState(null)
+  const nav = sharedCareerId ? { screen: 'explore', selectedCareerId: sharedCareerId } : savedNav()
+  const [screen, setScreen] = useState(nav.screen || 'landing')
+  const [role, setRole] = useState(nav.role || null)
+  const [routingAnswer, setRoutingAnswer] = useState(nav.routingAnswer || null)
+  const [selectedCareerId, setSelectedCareerId] = useState(nav.selectedCareerId || null)
+  const [selectedPractitionerId, setSelectedPractitionerId] = useState(
+    nav.selectedPractitionerId || null
+  )
+
+  useEffect(() => {
+    sessionStorage.setItem(
+      NAV_KEY,
+      JSON.stringify({ screen, role, routingAnswer, selectedCareerId, selectedPractitionerId })
+    )
+  }, [screen, role, routingAnswer, selectedCareerId, selectedPractitionerId])
   const shortlist = useShortlist()
   const { data: careerPaths } = useCareerPaths()
 
