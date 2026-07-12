@@ -1043,6 +1043,74 @@
   color: var(--muted);
 }
 
+/* ===== Shortlist compare table ===== */
+.compare-toggle-row {
+  max-width: 640px;
+  margin: 0 auto 14px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.compare-wrap {
+  max-width: 640px;
+  margin: 0 auto 18px;
+  width: 100%;
+  overflow-x: auto;
+  background: var(--surface);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.compare-table {
+  border-collapse: collapse;
+  width: 100%;
+  min-width: 480px;
+  font-size: 12.5px;
+}
+
+.compare-table th,
+.compare-table td {
+  padding: 10px 12px;
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid var(--line);
+  min-width: 120px;
+}
+
+.compare-table tr:last-child td {
+  border-bottom: none;
+}
+
+.compare-label {
+  font-weight: 700;
+  color: var(--muted);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  position: sticky;
+  left: 0;
+  background: var(--bg);
+  min-width: 92px;
+}
+
+.compare-title {
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--gold-deep);
+  text-align: left;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
 /* ===== Practitioner application — perk cards on the pitch screen ===== */
 .perk-card {
   display: flex;
