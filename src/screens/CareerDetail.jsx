@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { shareCareer } from '../lib/share.js'
 
 // Turns the schema fields into a step-by-step "how to get there" — this is
 // what serves the "I know exactly what I want" case, folded into the detail
@@ -39,7 +40,16 @@ export default function CareerDetail({
   onTalkToPractitioner,
 }) {
   const [howOpen, setHowOpen] = useState(false)
+  const [shareResult, setShareResult] = useState(null)
   if (!career) return null
+
+  const handleShare = async () => {
+    const result = await shareCareer(career)
+    if (result === 'copied') {
+      setShareResult('Copied — paste it anywhere')
+      setTimeout(() => setShareResult(null), 2500)
+    }
+  }
   const steps = buildSteps(career)
   const primaryRole = career.roles?.[0] || career.title
 
@@ -167,6 +177,12 @@ export default function CareerDetail({
           onClick={() => onToggleShortlist(career.id)}
         >
           {shortlisted ? '♥ Shortlisted' : '♡ Add to shortlist'}
+        </button>
+        {/* Second-opinion share — parents, seniors, anyone whose take
+            matters. The share text carries the key facts so the recipient
+            doesn't even need to open the link. */}
+        <button className="btn btn--ghost" onClick={handleShare}>
+          {shareResult || '↗ Share for a second opinion'}
         </button>
       </div>
     </main>

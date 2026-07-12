@@ -9,6 +9,11 @@ import { getCareerPaths } from './lib/careerData.mjs'
 function describeProfile(profile) {
   if (!profile) return ''
   const lines = []
+  if (profile.role === 'parent') {
+    lines.push(
+      'You are talking to a PARENT, not a student. Lead with evidence: costs, time to first income, stability, and government-job overlap. Treat their caution as reasonable, never dismissive — the anxiety behind their questions is usually "is this safe for my child?". Say "your child", not "you". Suggest questions the family can discuss together.'
+    )
+  }
   const stageText = {
     goal: 'They said they know exactly what they want.',
     direction: "They said they have some direction but aren't sure yet.",
@@ -19,7 +24,7 @@ function describeProfile(profile) {
     lines.push(`They have shortlisted: ${profile.shortlisted.join(', ')}. Reference these when relevant.`)
   }
   if (!lines.length) return ''
-  return `\nABOUT THIS STUDENT:\n${lines.join('\n')}\n`
+  return `\nABOUT THIS VISITOR:\n${lines.join('\n')}\n`
 }
 
 async function buildSystemInstruction(profile) {

@@ -20,10 +20,15 @@ import SupportWidget from './components/SupportWidget.jsx'
 // Screens that show the persistent bottom nav — everything past onboarding.
 const MAIN_TABS = ['explore', 'atlas', 'shortlist', 'practitioners']
 
+// Shared links (see src/lib/share.js) carry ?career=<id> — someone opening
+// one lands straight on that career's page, skipping onboarding.
+const sharedCareerId = new URLSearchParams(window.location.search).get('career')
+
 function App() {
-  const [screen, setScreen] = useState('landing')
+  const [screen, setScreen] = useState(sharedCareerId ? 'explore' : 'landing')
+  const [role, setRole] = useState(null)
   const [routingAnswer, setRoutingAnswer] = useState(null)
-  const [selectedCareerId, setSelectedCareerId] = useState(null)
+  const [selectedCareerId, setSelectedCareerId] = useState(sharedCareerId)
   const [selectedPractitionerId, setSelectedPractitionerId] = useState(null)
   const shortlist = useShortlist()
   const { data: careerPaths } = useCareerPaths()
@@ -40,9 +45,10 @@ function App() {
     return (
       <RoleGate
         onBack={() => setScreen('landing')}
-        onSelect={(role) =>
-          setScreen(role === 'practitioner' ? 'practitionerPlaceholder' : 'routingQuestion')
-        }
+        onSelect={(picked) => {
+          setRole(picked)
+          setScreen(picked === 'practitioner' ? 'practitionerPlaceholder' : 'routingQuestion')
+        }}
       />
     )
   }
@@ -54,6 +60,7 @@ function App() {
   if (screen === 'routingQuestion') {
     return (
       <RoutingQuestion
+        role={role}
         onBack={() => setScreen('roleGate')}
         onAnswer={(answer) => {
           setRoutingAnswer(answer)
@@ -116,6 +123,7 @@ function App() {
           careers={careerPaths || []}
           onOpenCareer={setSelectedCareerId}
           profile={{
+            role,
             journeyStage: routingAnswer,
             shortlisted: (careerPaths || [])
               .filter((c) => shortlist.has(c.id))
