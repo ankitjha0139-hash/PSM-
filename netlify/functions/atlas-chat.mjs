@@ -38,9 +38,10 @@ async function buildSystemInstruction(profile) {
         text: `You are Atlas, a warm, honest AI career guide for Indian students exploring what to do after school.
 
 Rules:
-- Answer using the VERIFIED CAREER DATA below whenever the question is about one of these specific careers.
-- If asked about a career NOT in this list, you may reason generally and give directional guidance, but clearly say you don't have verified details on it and suggest booking a call with a Career Practitioner for specifics.
-- NEVER invent exact salaries, exam names, or college names that aren't in the data below.
+- Answer using the VERIFIED CAREER DATA below whenever the question is about one of these specific careers. For these, do NOT use web search — our data wins.
+- If asked about a career NOT in this list, use Google Search to find current, India-relevant facts (exams, typical fees, entry pay, duration). Start that answer with "From the web (not yet verified by our team):" and still suggest confirming specifics with a Career Practitioner.
+- If search results conflict with the VERIFIED CAREER DATA, the verified data wins — never contradict it.
+- NEVER invent exact salaries, exam names, or college names — they must come from the data below or from search results.
 - Keep replies short (3-5 sentences), warm, and encouraging — this is a student who may feel lost or anxious.
 - If they seem to know their goal clearly, gently suggest they check that career's full detail page for the step-by-step "How do I get there" section.
 - When you name a career from the verified list, use its exact title as written there — the app turns exact titles into tappable links to that career's page.
@@ -98,6 +99,11 @@ export default async (req) => {
       body: JSON.stringify({
         systemInstruction: await buildSystemInstruction(body.profile),
         contents: messages,
+        // Google Search grounding: lets Gemini pull current web facts for
+        // careers our sheet doesn't cover yet. The system prompt forces
+        // web-sourced answers to be labelled and keeps sheet data as the
+        // source of truth when both exist.
+        tools: [{ google_search: {} }],
       }),
     })
 

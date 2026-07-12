@@ -1031,6 +1031,32 @@
   color: var(--muted);
 }
 
+/* ===== Practitioner application — perk cards on the pitch screen ===== */
+.perk-card {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  background: var(--surface);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  box-shadow: var(--shadow);
+}
+
+.perk-card__title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.perk-card__body {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
 /* ===== Booking flow — day strip, time slots, summary, my-bookings ===== */
 .verified-badge {
   display: inline-flex;
