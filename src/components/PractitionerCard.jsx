@@ -8,7 +8,13 @@ export default function PractitionerCard({ practitioner, onOpen }) {
   const nextSlot = nextAvailableLabel(practitioner.id)
   return (
     <div className="prac-card" onClick={() => onOpen(practitioner.id)}>
-      <div className="prac-card__avatar">{practitioner.name[0]}</div>
+      <div className="prac-card__avatar">
+        {practitioner.photo ? (
+          <img className="avatar-img" src={practitioner.photo} alt={practitioner.name} />
+        ) : (
+          practitioner.name[0]
+        )}
+      </div>
       <div className="prac-card__body">
         <div className="prac-card__name">
           {practitioner.name}

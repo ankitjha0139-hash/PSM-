@@ -1,10 +1,17 @@
 // Dummy practitioner supply — Wizard-of-Oz, matching our 3 seed careers so
 // "Talk to a real X" from a career detail page can link to someone
 // specific. Swap for real onboarded profiles in Phase 5.
+// photo: paste a URL (or /images/... path) and it replaces the initials
+// avatar everywhere. videoId: the YouTube id of the practitioner's 5-6 min
+// intro — currently a SAMPLE video (Steve Jobs' Stanford address) on all
+// three so the embed is visible end-to-end; swap per practitioner as real
+// intros get recorded.
 export const practitioners = [
   {
     id: 'meera-nair',
     name: 'Meera Nair',
+    photo: null,
+    videoId: 'UF8uR6Z6KLc',
     role: 'UX Designer',
     credibility: '6 yrs · UX Designer @ Flipkart · ex-Swiggy',
     matchesRole: 'UX Designer',
@@ -31,6 +38,8 @@ export const practitioners = [
   {
     id: 'aditya-rao',
     name: 'Aditya Rao',
+    photo: null,
+    videoId: 'UF8uR6Z6KLc',
     role: 'Architect',
     credibility: '9 yrs · Architect @ Studio Lotus',
     matchesRole: 'Architect',
@@ -56,6 +65,8 @@ export const practitioners = [
   {
     id: 'vikram-shah',
     name: 'CA Vikram Shah',
+    photo: null,
+    videoId: 'UF8uR6Z6KLc',
     role: 'Chartered Accountant',
     credibility: '12 yrs · Partner at a mid-size CA firm',
     matchesRole: 'Chartered Accountant',

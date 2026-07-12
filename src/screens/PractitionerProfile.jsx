@@ -223,7 +223,13 @@ export default function PractitionerProfile({ practitioner, onBack }) {
       </button>
 
       <div className="prac-profile-head">
-        <div className="prac-profile-avatar">{practitioner.name[0]}</div>
+        <div className="prac-profile-avatar">
+          {practitioner.photo ? (
+            <img className="avatar-img" src={practitioner.photo} alt={practitioner.name} />
+          ) : (
+            practitioner.name[0]
+          )}
+        </div>
         <h2 className="detail-title">
           {practitioner.name}
           <span className="verified-badge" title="Vetted by the Lighthouse team">
@@ -250,6 +256,26 @@ export default function PractitionerProfile({ practitioner, onBack }) {
         <h3 className="section__h">About</h3>
         <p className="section__text">{practitioner.bio}</p>
       </div>
+
+      {practitioner.videoId && (
+        <div className="section">
+          <h3 className="section__h">Meet {practitioner.name.split(' ')[0]}</h3>
+          <div className="video-wrap">
+            <iframe
+              src={`https://www.youtube-nocookie.com/embed/${practitioner.videoId}`}
+              title={`Intro video — ${practitioner.name}`}
+              loading="lazy"
+              allow="accelerometer; encrypted-media; picture-in-picture"
+              allowFullScreen
+            />
+          </div>
+          {/* Drop this note once real per-practitioner intros replace the
+              sample videoId in practitioners.js */}
+          <p className="booking-note" style={{ marginTop: 8 }}>
+            Sample video — each practitioner's own 5-minute intro is coming.
+          </p>
+        </div>
+      )}
 
       {practitioner.journey?.length > 0 && (
         <div className="section">

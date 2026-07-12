@@ -6,7 +6,7 @@ import Mark from '../components/Mark.jsx'
 // video every single time, which is wasteful and gets old fast.
 const INTRO_KEY = 'introShown'
 
-export default function Landing({ onStart }) {
+export default function Landing({ onStart, onStory }) {
   const [phase, setPhase] = useState(() =>
     sessionStorage.getItem(INTRO_KEY) ? 'cta' : 'video'
   )
@@ -46,6 +46,9 @@ export default function Landing({ onStart }) {
           </p>
           <button className="btn btn--primary" onClick={onStart}>
             Get started →
+          </button>
+          <button className="link-quiet" onClick={onStory}>
+            Our story →
           </button>
         </div>
       )}

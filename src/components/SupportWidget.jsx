@@ -5,7 +5,7 @@ import { streamChat } from '../lib/streamChat.js'
 // Real chat now, same pattern as AtlasChat — calls
 // netlify/functions/support-chat.mjs, grounded in faqs.js. "Talk to a real
 // person" stays as the escape hatch for anything the FAQ data can't cover.
-export default function SupportWidget() {
+export default function SupportWidget({ onOpenAbout }) {
   const [open, setOpen] = useState(false)
   const [messages, setMessages] = useState([
     {
@@ -182,6 +182,18 @@ export default function SupportWidget() {
                 <button className="support-ticket-btn" onClick={() => setTicketMode(true)}>
                   Talk to a real person →
                 </button>
+                {onOpenAbout && (
+                  <button
+                    className="link-quiet"
+                    style={{ margin: '10px auto 0', display: 'block' }}
+                    onClick={() => {
+                      close()
+                      onOpenAbout()
+                    }}
+                  >
+                    Who's behind this? Our story →
+                  </button>
+                )}
               </>
             )}
 

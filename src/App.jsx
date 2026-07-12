@@ -5,6 +5,7 @@ import { useShortlist } from './hooks/useShortlist.js'
 import { useCareerPaths } from './hooks/useCareerPaths.js'
 
 import Landing from './screens/Landing.jsx'
+import AboutStory from './screens/AboutStory.jsx'
 import RoleGate from './screens/RoleGate.jsx'
 import PractitionerPlaceholder from './screens/PractitionerPlaceholder.jsx'
 import RoutingQuestion from './screens/RoutingQuestion.jsx'
@@ -45,6 +46,7 @@ function App() {
   const [selectedPractitionerId, setSelectedPractitionerId] = useState(
     nav.selectedPractitionerId || null
   )
+  const [aboutFrom, setAboutFrom] = useState(null)
 
   useEffect(() => {
     sessionStorage.setItem(
@@ -58,9 +60,20 @@ function App() {
   const selectedCareer = (careerPaths || []).find((c) => c.id === selectedCareerId)
   const selectedPractitioner = practitioners.find((p) => p.id === selectedPractitionerId)
 
+  // "Our story" is reachable from the landing screen and the help panel;
+  // back returns wherever the reader came from.
+  const openAbout = () => {
+    setAboutFrom(screen)
+    setScreen('about')
+  }
+
+  if (screen === 'about') {
+    return <AboutStory onBack={() => setScreen(aboutFrom || 'landing')} />
+  }
+
   // --- Onboarding sequence ---
   if (screen === 'landing') {
-    return <Landing onStart={() => setScreen('roleGate')} />
+    return <Landing onStart={() => setScreen('roleGate')} onStory={openAbout} />
   }
 
   if (screen === 'roleGate') {
@@ -161,7 +174,7 @@ function App() {
       )}
 
       {MAIN_TABS.includes(screen) && <BottomNav active={screen} onNavigate={setScreen} />}
-      <SupportWidget />
+      <SupportWidget onOpenAbout={openAbout} />
     </div>
   )
 }

@@ -1043,6 +1043,61 @@
   color: var(--muted);
 }
 
+/* ===== Practitioner intro video + photo avatars + about page ===== */
+.video-wrap {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--radius);
+  overflow: hidden;
+  border: 1px solid var(--line);
+  background: #0a1420;
+  box-shadow: var(--shadow);
+}
+
+.video-wrap iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+/* Real photo drops into the same circle the initials use */
+.avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+  display: block;
+}
+
+.link-quiet {
+  background: none;
+  border: none;
+  padding: 4px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.link-quiet:hover {
+  color: var(--gold-deep);
+}
+
+.about-head {
+  max-width: 560px;
+  margin: 0 auto 18px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+}
+
 /* ===== Shortlist compare table ===== */
 .compare-toggle-row {
   max-width: 640px;
