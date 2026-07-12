@@ -1,61 +1,191 @@
-import { useState } from 'react'
-import { StarIcon, CheckIcon } from '../components/icons.jsx'
+import { useMemo, useState } from 'react'
+import { StarIcon, CheckIcon, VerifiedIcon, CalendarIcon } from '../components/icons.jsx'
+import { getSlotDays, makeBookingId, downloadIcs } from '../lib/bookingUtils.js'
+import { useBookings } from '../hooks/useBookings.js'
 
-const SLOTS = ['Today, 8:00 PM', 'Tomorrow, 6:00 PM', 'Sat, 11:00 AM']
-
-// Full profile — bio, topics, testimonials, and a choice of session types
-// (not one fixed slot) — the pattern real expert-booking platforms
-// (Topmate, Preplaced) use so a stranger feels worth paying to talk to.
+// Full profile + the booking flow: pick a session type, pick a real
+// day/time slot, leave contact details, get a confirmation with a booking
+// ID and a calendar file. Symbolic for now — nothing reaches a server —
+// but the flow is the exact shape Cal.com slots into later.
 export default function PractitionerProfile({ practitioner, onBack }) {
+  // step: 'profile' → 'slot' → 'contact' → 'confirmed'
+  const [step, setStep] = useState('profile')
   const [sessionType, setSessionType] = useState(null)
-  const [slot, setSlot] = useState(null)
-  const [confirmed, setConfirmed] = useState(false)
+  const [dayKey, setDayKey] = useState(null)
+  const [time, setTime] = useState(null)
+  const [contactName, setContactName] = useState('')
+  const [contact, setContact] = useState('')
+  const [booking, setBooking] = useState(null)
+  const { add } = useBookings()
 
-  if (confirmed) {
+  const slotDays = useMemo(() => getSlotDays(practitioner?.id), [practitioner?.id])
+  const selectedDay = slotDays.find((d) => d.dateKey === dayKey)
+
+  if (!practitioner) return null
+
+  const confirmBooking = () => {
+    if (!contactName.trim() || !contact.trim()) return
+    const b = {
+      id: makeBookingId(),
+      practitionerId: practitioner.id,
+      practitionerName: practitioner.name,
+      sessionLabel: sessionType.label,
+      duration: sessionType.duration,
+      price: sessionType.price,
+      dateKey,
+      dateLabel: selectedDay.dateLabel,
+      dayLabel: selectedDay.dayLabel,
+      time,
+      contactName: contactName.trim(),
+      contact: contact.trim(),
+      createdAt: new Date().toISOString(),
+    }
+    add(b)
+    setBooking(b)
+    setStep('confirmed')
+  }
+
+  if (step === 'confirmed') {
     return (
       <main className="screen screen--center">
         <div className="prac-confirm-check">
           <CheckIcon size={26} />
         </div>
         <h2 className="screen__title screen__title--md">Booking confirmed!</h2>
+        <div className="booking-summary">
+          <div className="booking-summary__row">
+            <span>Session</span>
+            <b>{booking.sessionLabel} · {booking.duration}</b>
+          </div>
+          <div className="booking-summary__row">
+            <span>With</span>
+            <b>{booking.practitionerName}</b>
+          </div>
+          <div className="booking-summary__row">
+            <span>When</span>
+            <b>{booking.dayLabel}, {booking.dateLabel} · {booking.time}</b>
+          </div>
+          <div className="booking-summary__row">
+            <span>Price</span>
+            <b>{booking.price} — pay after the call</b>
+          </div>
+          <div className="booking-summary__row">
+            <span>Booking ID</span>
+            <b>{booking.id}</b>
+          </div>
+        </div>
         <p className="screen__sub">
-          Your {sessionType.label.toLowerCase()} with {practitioner.name} is set for {slot}. A
-          link will be emailed to you.
+          We'll confirm your slot and share the call link on {booking.contact}.
         </p>
-        <p className="demo-flag">⚠ Demo only — no real booking or payment happens yet.</p>
-        <button className="btn btn--ghost" onClick={onBack} style={{ marginTop: 14 }}>
-          Back to Practitioners
+        <button className="btn btn--ghost" onClick={() => downloadIcs(booking)}>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 7 }}>
+            <CalendarIcon /> Add to calendar
+          </span>
+        </button>
+        <p className="demo-flag">Demo: saved on this device — confirmations go live soon.</p>
+        <button className="btn btn--primary" onClick={onBack}>
+          Done
         </button>
       </main>
     )
   }
 
-  if (sessionType) {
+  if (step === 'contact') {
     return (
       <main className="screen screen--scroll">
-        <button className="link-back" onClick={() => setSessionType(null)} aria-label="Back">
+        <button className="link-back" onClick={() => setStep('slot')} aria-label="Back">
+          ←
+        </button>
+        <div className="screen__body">
+          <h2 className="screen__title screen__title--md">Almost there</h2>
+          <p className="screen__sub">
+            {sessionType.label} with {practitioner.name} · {selectedDay.dayLabel},{' '}
+            {selectedDay.dateLabel} · {time}
+          </p>
+          <input
+            className="search-input"
+            style={{ margin: 0 }}
+            placeholder="Your name"
+            value={contactName}
+            onChange={(e) => setContactName(e.target.value)}
+            autoFocus
+          />
+          <input
+            className="search-input"
+            style={{ margin: 0 }}
+            placeholder="WhatsApp number or email"
+            value={contact}
+            onChange={(e) => setContact(e.target.value)}
+          />
+          <p className="booking-note">
+            This is where we'll confirm the slot and send the call link.
+          </p>
+          <button
+            className="btn btn--primary"
+            disabled={!contactName.trim() || !contact.trim()}
+            onClick={confirmBooking}
+          >
+            Confirm booking →
+          </button>
+        </div>
+      </main>
+    )
+  }
+
+  if (step === 'slot') {
+    return (
+      <main className="screen screen--scroll">
+        <button className="link-back" onClick={() => setStep('profile')} aria-label="Back">
           ←
         </button>
         <div className="screen__body">
           <h2 className="screen__title screen__title--md">
-            Book {sessionType.label} with {practitioner.name}
+            Pick a time with {practitioner.name}
           </h2>
           <p className="screen__sub">
-            {sessionType.duration} · {sessionType.price}
+            {sessionType.label} · {sessionType.duration} · {sessionType.price}
           </p>
-          <div className="chip-row">
-            {SLOTS.map((s) => (
+
+          <div className="day-strip">
+            {slotDays.map((d) => (
               <button
-                key={s}
-                className={`chip ${slot === s ? 'chip--on' : ''}`}
-                onClick={() => setSlot(s)}
+                key={d.dateKey}
+                className={`day-pill ${dayKey === d.dateKey ? 'day-pill--on' : ''}`}
+                onClick={() => {
+                  setDayKey(d.dateKey)
+                  setTime(null)
+                }}
               >
-                {s}
+                <span className="day-pill__day">{d.dayLabel}</span>
+                <span className="day-pill__date">{d.dateLabel}</span>
               </button>
             ))}
           </div>
-          <button className="btn btn--primary" onClick={() => slot && setConfirmed(true)}>
-            Confirm booking
+
+          {selectedDay ? (
+            <div className="slot-grid">
+              {selectedDay.slots.map((s) => (
+                <button
+                  key={s.time}
+                  className={`slot ${time === s.time ? 'slot--on' : ''}`}
+                  disabled={s.taken}
+                  onClick={() => setTime(s.time)}
+                >
+                  {s.time}
+                  {s.taken && <span className="slot__taken">taken</span>}
+                </button>
+              ))}
+            </div>
+          ) : (
+            <p className="booking-note">Pick a day to see available times.</p>
+          )}
+
+          <button
+            className="btn btn--primary"
+            disabled={!time}
+            onClick={() => setStep('contact')}
+          >
+            Continue →
           </button>
         </div>
       </main>
@@ -70,7 +200,12 @@ export default function PractitionerProfile({ practitioner, onBack }) {
 
       <div className="prac-profile-head">
         <div className="prac-profile-avatar">{practitioner.name[0]}</div>
-        <h2 className="detail-title">{practitioner.name}</h2>
+        <h2 className="detail-title">
+          {practitioner.name}
+          <span className="verified-badge" title="Vetted by the Lighthouse team">
+            <VerifiedIcon /> Verified
+          </span>
+        </h2>
         <p className="detail-tagline">{practitioner.credibility}</p>
         <div className="prac-card__stats" style={{ justifyContent: 'center', marginTop: 6 }}>
           <span className="prac-rating">
@@ -78,6 +213,12 @@ export default function PractitionerProfile({ practitioner, onBack }) {
           </span>
           <span className="prac-card__dot">·</span>
           <span>{practitioner.sessionsCompleted} sessions</span>
+          {practitioner.languages?.length > 0 && (
+            <>
+              <span className="prac-card__dot">·</span>
+              <span>{practitioner.languages.join(' / ')}</span>
+            </>
+          )}
         </div>
       </div>
 
@@ -85,6 +226,20 @@ export default function PractitionerProfile({ practitioner, onBack }) {
         <h3 className="section__h">About</h3>
         <p className="section__text">{practitioner.bio}</p>
       </div>
+
+      {practitioner.journey?.length > 0 && (
+        <div className="section">
+          <h3 className="section__h">How they got here</h3>
+          <ol className="journey">
+            {practitioner.journey.map((j, i) => (
+              <li key={i} className="journey__step">
+                <span className="journey__when">{j.when}</span>
+                <span className="journey__what">{j.what}</span>
+              </li>
+            ))}
+          </ol>
+        </div>
+      )}
 
       <div className="section">
         <h3 className="section__h">Can help with</h3>
@@ -101,7 +256,14 @@ export default function PractitionerProfile({ practitioner, onBack }) {
         <h3 className="section__h">Pick a session</h3>
         <div className="session-list">
           {practitioner.sessionTypes.map((st) => (
-            <button key={st.id} className="session-card" onClick={() => setSessionType(st)}>
+            <button
+              key={st.id}
+              className="session-card"
+              onClick={() => {
+                setSessionType(st)
+                setStep('slot')
+              }}
+            >
               <div className="session-card__top">
                 <span className="session-card__label">{st.label}</span>
                 <span className="session-card__price">{st.price}</span>

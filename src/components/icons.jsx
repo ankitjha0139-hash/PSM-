@@ -21,3 +21,30 @@ export function CheckIcon({ size = 20 }) {
     </svg>
   )
 }
+
+// Shield-with-tick — "we vetted this person" signal on practitioner
+// profiles and cards.
+export function VerifiedIcon({ size = 14 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
+      <path d="M12 2l7 3v6c0 4.6-3 8.7-7 10-4-1.3-7-5.4-7-10V5l7-3z" />
+      <path
+        d="M8.8 12l2.2 2.2 4.2-4.4"
+        stroke="#fff"
+        strokeWidth="1.9"
+        fill="none"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
+}
+
+export function CalendarIcon({ size = 15 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round">
+      <rect x="4" y="5.5" width="16" height="15" rx="2.5" />
+      <path d="M4 10h16M8.5 3.5v3.5M15.5 3.5v3.5" />
+    </svg>
+  )
+}

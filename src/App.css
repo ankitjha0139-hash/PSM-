@@ -1031,6 +1031,269 @@
   color: var(--muted);
 }
 
+/* ===== Booking flow — day strip, time slots, summary, my-bookings ===== */
+.verified-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--success-ink);
+  background: var(--success-bg);
+  border-radius: 10px;
+  padding: 3px 9px;
+  margin-left: 8px;
+  vertical-align: 3px;
+}
+
+.prac-card__verified {
+  display: inline-flex;
+  color: var(--success-ink);
+  margin-left: 5px;
+  vertical-align: -1px;
+}
+
+.prac-card__next {
+  color: var(--gold-deep);
+  font-weight: 600;
+}
+
+/* "How they got here" — the practitioner's own journey, the honest_note
+   of a person. when-labels instead of step numbers. */
+.journey {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.journey__step {
+  display: flex;
+  gap: 12px;
+  padding-bottom: 14px;
+  position: relative;
+}
+
+.journey__step:not(:last-child)::before {
+  content: '';
+  position: absolute;
+  left: 27px;
+  top: 24px;
+  bottom: 0;
+  width: 1px;
+  background: var(--line);
+}
+
+.journey__when {
+  flex: none;
+  width: 54px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--gold-deep);
+  text-align: left;
+  padding-top: 2px;
+}
+
+.journey__what {
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--ink);
+}
+
+.day-strip {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.day-pill {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  font-family: var(--font-body);
+  background: var(--surface);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 9px 14px;
+  cursor: pointer;
+}
+
+.day-pill--on {
+  border-color: var(--gold-deep);
+  background: var(--navy);
+}
+
+.day-pill--on .day-pill__day,
+.day-pill--on .day-pill__date {
+  color: #fff;
+}
+
+.day-pill__day {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.day-pill__date {
+  font-size: 10.5px;
+  color: var(--muted);
+}
+
+.slot-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.slot {
+  position: relative;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+  background: var(--surface);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 11px 8px;
+  cursor: pointer;
+}
+
+.slot--on {
+  background: var(--navy);
+  border-color: var(--navy);
+  color: #fff;
+}
+
+.slot:disabled {
+  cursor: default;
+  opacity: 0.45;
+  text-decoration: line-through;
+}
+
+.slot__taken {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  text-decoration: none;
+}
+
+.booking-note {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.booking-summary {
+  width: 100%;
+  max-width: 360px;
+  background: var(--surface);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  text-align: left;
+}
+
+.booking-summary__row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 13px;
+}
+
+.booking-summary__row span {
+  color: var(--muted);
+  flex: none;
+}
+
+.booking-summary__row b {
+  font-weight: 600;
+  color: var(--ink);
+  text-align: right;
+}
+
+.booking-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.booking-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--surface);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 11px 13px;
+}
+
+.booking-card__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.booking-card__title {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.booking-card__meta {
+  font-size: 11.5px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+.booking-card__actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.booking-card__btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--font-body);
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--navy);
+  background: none;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 6px 10px;
+  cursor: pointer;
+}
+
+.booking-card__btn:hover {
+  border-color: var(--gold-deep);
+}
+
+.booking-card__btn--cancel {
+  color: #b3455c;
+}
+
 .prac-confirm-check {
   width: 52px;
   height: 52px;

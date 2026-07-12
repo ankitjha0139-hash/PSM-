@@ -11,6 +11,13 @@ export const practitioners = [
     rating: 4.9,
     sessionsCompleted: 41,
     bio: 'Started in graphic design, moved into UX after a bootcamp and a lot of self-taught portfolio work. Happy to talk through whether the degree route or bootcamp route makes more sense for you.',
+    languages: ['English', 'Hindi', 'Malayalam'],
+    journey: [
+      { when: 'School', what: 'Loved art, was told design "isn\'t a real career"' },
+      { when: '2017', what: 'Graphic design degree — first proof it pays' },
+      { when: '2019', what: 'UX bootcamp + 40 portfolio rejections before the first yes' },
+      { when: 'Now', what: 'UX Designer at Flipkart, ex-Swiggy' },
+    ],
     topics: ['Portfolio review', 'Bootcamp vs degree', 'Breaking into UX with no design background'],
     testimonials: [
       { name: 'Ananya, Class 12', text: 'Gave me a clear, honest plan — not just "follow your passion" advice.' },
@@ -30,6 +37,13 @@ export const practitioners = [
     rating: 4.8,
     sessionsCompleted: 29,
     bio: 'Cleared NATA after two attempts, so knows the exam pressure firsthand. Works on residential and institutional projects now — can talk through what studio life is really like.',
+    languages: ['English', 'Hindi', 'Kannada'],
+    journey: [
+      { when: 'School', what: 'PCM stream, sketched buildings in the margins' },
+      { when: '2013', what: 'Failed NATA on the first attempt' },
+      { when: '2014', what: 'Cleared it, started the 5-year B.Arch grind' },
+      { when: 'Now', what: 'Architect at Studio Lotus, 9 years in' },
+    ],
     topics: ['NATA prep reality check', 'Studio workload & thesis year', 'Is architecture right for you?'],
     testimonials: [
       { name: 'Kabir, Class 11', text: 'Told me things about workload nobody else was honest about.' },
@@ -48,6 +62,13 @@ export const practitioners = [
     rating: 4.7,
     sessionsCompleted: 54,
     bio: 'Cleared CA on the second attempt at Foundation — happy to talk honestly about the exam difficulty and what articleship really pays and demands.',
+    languages: ['English', 'Hindi', 'Gujarati'],
+    journey: [
+      { when: 'School', what: 'Commerce with Maths, family expected engineering' },
+      { when: '2011', what: 'Failed CA Foundation on the first try' },
+      { when: '2012–16', what: 'Cleared all levels; articleship at ₹8k/month' },
+      { when: 'Now', what: 'Partner at a mid-size CA firm' },
+    ],
     topics: ['CA Foundation prep', 'Articleship reality (pay & hours)', 'CA vs CS vs CMA'],
     testimonials: [
       { name: 'Priya, Class 12', text: 'Finally someone who told me the real pass rates instead of sugar-coating it.' },
