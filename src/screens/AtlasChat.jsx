@@ -43,9 +43,11 @@ function linkifyCareers(text, careers) {
   const tokens = []
   sorted.forEach((c, i) => {
     // control-char delimiters can never appear in model output, so a
-    // token can't collide with real text or an earlier replacement
+    // token can't collide with real text or an earlier replacement.
+    // No 'g' flag: only the FIRST mention of a career in a reply becomes
+    // a link — repeating the same link every time reads as clutter.
     const token = String.fromCharCode(1) + i + String.fromCharCode(1)
-    out = out.replace(new RegExp(escapeRegex(c.title), 'gi'), () => {
+    out = out.replace(new RegExp(escapeRegex(c.title), 'i'), () => {
       tokens[i] = c
       return token
     })
