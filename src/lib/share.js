@@ -3,25 +3,21 @@
 // reads the gist inside WhatsApp without clicking anything; the link opens
 // the exact career page (App.jsx reads ?career= on boot) if they want more.
 
-// Short on purpose: a teaser, not the whole page. The link unfurls into a
-// titled card (og tags) and the site is where they read the rest — a wall
-// of text in WhatsApp gets skimmed and never clicked.
-function buildShareText(career) {
-  return [
-    `*${career.title}* — what do you think of this path?`,
-    `${career.duration_years} · ${career.fees} · starts at ${career.entry_pay}`,
-    `The full picture, honest bits included 👇`,
-  ].join('\n')
+// One short line + link, nothing more. The /s/<id> endpoint serves
+// career-specific og tags, so the link unfurls into a card carrying the
+// career's name and facts — the card sells, the site tells.
+function buildShareText() {
+  return 'What do you think of this path? 👇'
 }
 
 export function careerUrl(career) {
-  return `${window.location.origin}/?career=${encodeURIComponent(career.id)}`
+  return `${window.location.origin}/s/${encodeURIComponent(career.id)}`
 }
 
 // Native share sheet where available (all mobile browsers), WhatsApp web
 // link as fallback on desktop, clipboard as the last resort.
 export async function shareCareer(career) {
-  const text = buildShareText(career)
+  const text = buildShareText()
   const url = careerUrl(career)
 
   if (navigator.share) {
