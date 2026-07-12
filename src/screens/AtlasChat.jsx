@@ -11,9 +11,20 @@ import { streamChat } from '../lib/streamChat.js'
 
 const STORAGE_KEY = 'atlasChat'
 
-const GREETING = {
-  role: 'model',
-  text: "Hi, I'm Atlas 👋 I'll be your guide on this journey — ask me anything, and let's find some clarity on the path ahead.",
+// The greeting matches where they are: someone who said "no idea" gets the
+// first discovery question immediately (free — no model call), instead of a
+// blank "ask me anything" they don't know how to answer.
+function greetingFor(profile) {
+  if (profile?.journeyStage === 'none') {
+    return {
+      role: 'model',
+      text: "Hi, I'm Atlas 👋 Starting with no idea is the most common way to start — that's exactly what I'm for. First question: which school subjects feel easiest to you, the ones you don't have to force yourself to study?",
+    }
+  }
+  return {
+    role: 'model',
+    text: "Hi, I'm Atlas 👋 I'll be your guide on this journey — ask me anything, and let's find some clarity on the path ahead.",
+  }
 }
 
 // The model ends every reply with a hidden "FOLLOWUPS: a | b | c" line

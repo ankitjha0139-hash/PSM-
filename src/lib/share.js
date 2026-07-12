@@ -3,23 +3,15 @@
 // reads the gist inside WhatsApp without clicking anything; the link opens
 // the exact career page (App.jsx reads ?career= on boot) if they want more.
 
+// Short on purpose: a teaser, not the whole page. The link unfurls into a
+// titled card (og tags) and the site is where they read the rest — a wall
+// of text in WhatsApp gets skimmed and never clicked.
 function buildShareText(career) {
-  const lines = [
-    `*${career.title}* — via Lighthouse.guide`,
-    '',
-    career.what_it_is,
-    '',
-    `💰 Fees: ${career.fees} · Entry pay: ${career.entry_pay}`,
-    `⏱ Duration: ${career.duration_years}`,
-  ]
-  if (career.honest_note) {
-    lines.push(`🎯 The honest bit: ${career.honest_note}`)
-  }
-  if (career.govt_job_overlap) {
-    lines.push(`🏛 Stability: ${career.govt_job_overlap}`)
-  }
-  lines.push('', 'Full details, checked by the Lighthouse team:')
-  return lines.join('\n')
+  return [
+    `*${career.title}* — what do you think of this path?`,
+    `${career.duration_years} · ${career.fees} · starts at ${career.entry_pay}`,
+    `The full picture, honest bits included 👇`,
+  ].join('\n')
 }
 
 export function careerUrl(career) {

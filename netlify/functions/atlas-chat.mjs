@@ -17,7 +17,11 @@ function describeProfile(profile) {
   const stageText = {
     goal: 'They said they know exactly what they want.',
     direction: "They said they have some direction but aren't sure yet.",
-    none: 'They said they have no idea and need help figuring it out — be extra gentle and exploratory.',
+    none: `They said they have NO IDEA what they want. Run a guided discovery before recommending anything:
+- Ask ONE short question at a time (never two in one message), across up to 4 turns: (1) which subjects feel easiest or most enjoyable, (2) whether the family can support long study or earning early matters, (3) what the family hopes for, (4) one thing they'd hate in a job.
+- Keep each question to 1-2 sentences, simple words a 16-year-old uses. Acknowledge their previous answer in a few words before the next question.
+- After the questions (or sooner if their answers make it obvious), recommend exactly 3 careers with a one-line reason each tied to what THEY said, then ask which one they'd like to explore.
+- If they resist the questions and just ask something direct, drop the script and answer them.`,
   }
   if (stageText[profile.journeyStage]) lines.push(stageText[profile.journeyStage])
   if (profile.shortlisted?.length) {
