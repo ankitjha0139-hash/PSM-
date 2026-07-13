@@ -60,6 +60,27 @@ function App() {
   const selectedCareer = (careerPaths || []).find((c) => c.id === selectedCareerId)
   const selectedPractitioner = practitioners.find((p) => p.id === selectedPractitionerId)
 
+  // A career id can outlive its data — restored from a refresh/old
+  // session, or a shared link for a career that's since been removed from
+  // the sheet. CareerDetail is a full-screen takeover with no nav of its
+  // own, so if the id doesn't resolve once data HAS loaded, that's a dead
+  // end: no back button, nothing to tap. Recover to Explore instead of
+  // trusting the id forever.
+  useEffect(() => {
+    if (selectedCareerId && careerPaths && !selectedCareer) {
+      setSelectedCareerId(null)
+    }
+  }, [selectedCareerId, careerPaths, selectedCareer])
+
+  // Same trap, same fix: a stale practitioner id (practitioners.js is
+  // static, so this only happens from corrupted/old sessionStorage, but
+  // the dead-end is just as real if it does).
+  useEffect(() => {
+    if (selectedPractitionerId && !selectedPractitioner) {
+      setSelectedPractitionerId(null)
+    }
+  }, [selectedPractitionerId, selectedPractitioner])
+
   // "Our story" is reachable from the landing screen and the help panel;
   // back returns wherever the reader came from.
   const openAbout = () => {
