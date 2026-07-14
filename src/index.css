@@ -14,6 +14,10 @@
   --bg: #eaf7fc;
   --surface: rgba(255, 255, 255, 0.55);
   --tint: rgba(255, 255, 255, 0.4);
+  /* The dock sits fixed over arbitrary scrolling content (photos, dark
+     cards), unlike --surface which only ever sits on the fixed gradient
+     stage — it needs to stay readable regardless of what scrolls under it. */
+  --dock-surface: rgba(255, 255, 255, 0.92);
 
   /* status */
   --success-bg: #e7f7ee;
