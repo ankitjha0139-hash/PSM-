@@ -3,6 +3,7 @@ import './App.css'
 import { practitioners } from './data/practitioners.js'
 import { useShortlist } from './hooks/useShortlist.js'
 import { useCareerPaths } from './hooks/useCareerPaths.js'
+import { useAuth } from './hooks/useAuth.js'
 
 import Landing from './screens/Landing.jsx'
 import AboutStory from './screens/AboutStory.jsx'
@@ -17,6 +18,8 @@ import PractitionerDirectory from './screens/PractitionerDirectory.jsx'
 import PractitionerProfile from './screens/PractitionerProfile.jsx'
 import BottomNav from './components/BottomNav.jsx'
 import SupportWidget from './components/SupportWidget.jsx'
+import AccountButton from './components/AccountButton.jsx'
+import SignInModal from './components/SignInModal.jsx'
 
 // Screens that show the persistent bottom nav — everything past onboarding.
 const MAIN_TABS = ['explore', 'atlas', 'shortlist', 'practitioners']
@@ -56,6 +59,25 @@ function App() {
   }, [screen, role, routingAnswer, selectedCareerId, selectedPractitionerId])
   const shortlist = useShortlist()
   const { data: careerPaths } = useCareerPaths()
+  const auth = useAuth()
+  // null | 'shortlist' | 'booking' | 'account' — which sign-in prompt (if
+  // any) is open. Sign-in is optional everywhere except the moment someone
+  // tries to shortlist or start a booking; see requireAuth below.
+  const [signInReason, setSignInReason] = useState(null)
+
+  // Gate for anything that needs an identity: run the action if already
+  // signed in, otherwise open the sign-in modal instead. OAuth takes the
+  // whole tab away and back, so there's no "resume the action after
+  // login" here — the visitor just retries once they're signed in.
+  const requireAuth = (reason, action) => {
+    if (auth.user) {
+      action()
+    } else {
+      setSignInReason(reason)
+    }
+  }
+
+  const handleToggleShortlist = (id) => requireAuth('shortlist', () => shortlist.toggle(id))
 
   const selectedCareer = (careerPaths || []).find((c) => c.id === selectedCareerId)
   const selectedPractitioner = practitioners.find((p) => p.id === selectedPractitionerId)
@@ -135,7 +157,7 @@ function App() {
       <CareerDetail
         career={selectedCareer}
         shortlisted={shortlist.has(selectedCareerId)}
-        onToggleShortlist={shortlist.toggle}
+        onToggleShortlist={handleToggleShortlist}
         onBack={() => setSelectedCareerId(null)}
         onTalkToPractitioner={() => {
           // If a practitioner matches this career's primary role, jump
@@ -160,16 +182,22 @@ function App() {
       <PractitionerProfile
         practitioner={selectedPractitioner}
         onBack={() => setSelectedPractitionerId(null)}
+        onRequireAuth={(action) => requireAuth('booking', action)}
       />
     )
   }
+
+  // Same shortlist state, but with an auth-gated toggle — screens keep
+  // calling shortlist.toggle exactly like before, they just get the
+  // gated version instead of the raw one.
+  const gatedShortlist = { ...shortlist, toggle: handleToggleShortlist }
 
   // --- Main app, with persistent bottom nav ---
   return (
     <div className="app-shell">
       {screen === 'explore' && (
         <FilterExplore
-          shortlist={shortlist}
+          shortlist={gatedShortlist}
           onOpenDetail={setSelectedCareerId}
           initialFocus={routingAnswer === 'goal' ? 'search' : 'filter'}
         />
@@ -188,14 +216,26 @@ function App() {
         />
       )}
       {screen === 'shortlist' && (
-        <Shortlist shortlist={shortlist} onOpenDetail={setSelectedCareerId} />
+        <Shortlist shortlist={gatedShortlist} onOpenDetail={setSelectedCareerId} />
       )}
       {screen === 'practitioners' && (
         <PractitionerDirectory onOpenProfile={setSelectedPractitionerId} />
       )}
 
       {MAIN_TABS.includes(screen) && <BottomNav active={screen} onNavigate={setScreen} />}
+      <AccountButton
+        user={auth.user}
+        onSignIn={() => setSignInReason('account')}
+        onSignOut={auth.signOut}
+      />
       <SupportWidget onOpenAbout={openAbout} />
+      {signInReason && (
+        <SignInModal
+          reason={signInReason}
+          onSignIn={auth.signInWithGoogle}
+          onClose={() => setSignInReason(null)}
+        />
+      )}
     </div>
   )
 }

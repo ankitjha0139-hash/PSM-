@@ -1781,3 +1781,117 @@
   justify-content: center;
   margin: 0 auto 12px;
 }
+
+/* ============================================================
+   Account button + sign-in modal — Google auth is optional
+   everywhere except the moment someone shortlists or books.
+   ============================================================ */
+.account-btn {
+  position: fixed;
+  top: max(14px, env(safe-area-inset-top));
+  right: 18px;
+  z-index: 40;
+  background: var(--dock-surface);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  border-radius: 999px;
+  padding: 8px 16px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--navy);
+  cursor: pointer;
+  box-shadow: var(--glass-shadow);
+}
+
+.account-chip-wrap {
+  position: fixed;
+  top: max(14px, env(safe-area-inset-top));
+  right: 18px;
+  z-index: 40;
+}
+
+.account-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 1px solid var(--glass-border);
+  background: var(--navy);
+  color: #fff;
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  overflow: hidden;
+  box-shadow: var(--glass-shadow);
+}
+
+.account-dropdown {
+  position: absolute;
+  top: 46px;
+  right: 0;
+  min-width: 180px;
+  background: var(--dock-surface);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-sm);
+  padding: 10px;
+  box-shadow: var(--glass-shadow);
+}
+
+.account-dropdown__name {
+  font-size: 12.5px;
+  color: var(--muted);
+  margin: 0 0 8px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.account-dropdown__signout {
+  width: 100%;
+  background: none;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 7px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--navy);
+  cursor: pointer;
+}
+
+.auth-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(16, 24, 40, 0.32);
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.auth-panel {
+  position: relative;
+  width: 100%;
+  max-width: 340px;
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: var(--radius);
+  padding: 22px;
+  box-shadow: 0 20px 50px rgba(16, 24, 40, 0.22);
+  text-align: center;
+}
+
+.auth-panel .support-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+}

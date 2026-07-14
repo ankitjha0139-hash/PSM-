@@ -8,7 +8,7 @@ import { submitNetlifyForm } from '../lib/netlifyForms.js'
 // day/time slot, leave contact details, get a confirmation with a booking
 // ID and a calendar file. Symbolic for now — nothing reaches a server —
 // but the flow is the exact shape Cal.com slots into later.
-export default function PractitionerProfile({ practitioner, onBack }) {
+export default function PractitionerProfile({ practitioner, onBack, onRequireAuth }) {
   // step: 'profile' → 'slot' → 'contact' → 'confirmed'
   const [step, setStep] = useState('profile')
   const [sessionType, setSessionType] = useState(null)
@@ -309,10 +309,12 @@ export default function PractitionerProfile({ practitioner, onBack }) {
             <button
               key={st.id}
               className="session-card"
-              onClick={() => {
-                setSessionType(st)
-                setStep('slot')
-              }}
+              onClick={() =>
+                onRequireAuth(() => {
+                  setSessionType(st)
+                  setStep('slot')
+                })
+              }
             >
               <div className="session-card__top">
                 <span className="session-card__label">{st.label}</span>
