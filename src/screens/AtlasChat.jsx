@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import { streamChat } from '../lib/streamChat.js'
+import { SendIcon } from '../components/icons.jsx'
 
 // Real, streamed conversation — calls netlify/functions/atlas-chat.mjs,
 // which talks to Gemini server-side (key never reaches the browser) and
@@ -68,19 +69,6 @@ function linkifyCareers(text, careers) {
     out = out.replaceAll(String.fromCharCode(1) + i + String.fromCharCode(1), `[${c.title}](#career:${c.id})`)
   })
   return out
-}
-
-function SendIcon() {
-  return (
-    <svg width="17" height="17" viewBox="0 0 24 24" fill="none">
-      <path
-        d="M4 12L20 4L14 20L11 13L4 12Z"
-        stroke="currentColor"
-        strokeWidth="1.7"
-        strokeLinejoin="round"
-      />
-    </svg>
-  )
 }
 
 export default function AtlasChat({ careers = [], onOpenCareer, profile }) {

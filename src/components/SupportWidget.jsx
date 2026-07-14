@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useSupportTickets } from '../hooks/useSupportTickets.js'
 import { streamChat } from '../lib/streamChat.js'
+import { CloseIcon, SendIcon, CheckIcon, ArrowRightIcon } from './icons.jsx'
 
 // Real chat now, same pattern as AtlasChat — calls
 // netlify/functions/support-chat.mjs, grounded in faqs.js. "Talk to a real
@@ -124,14 +125,7 @@ export default function SupportWidget({ onOpenAbout }) {
             <div className="support-panel__head">
               <span>Compass · Help</span>
               <button className="support-close" onClick={close} aria-label="Close">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                  <path
-                    d="M6 6L18 18M6 18L18 6"
-                    stroke="currentColor"
-                    strokeWidth="1.8"
-                    strokeLinecap="round"
-                  />
-                </svg>
+                <CloseIcon />
               </button>
             </div>
 
@@ -176,22 +170,22 @@ export default function SupportWidget({ onOpenAbout }) {
                     autoFocus
                   />
                   <button className="chat-send" type="submit" disabled={loading || !input.trim()}>
-                    →
+                    <SendIcon />
                   </button>
                 </form>
                 <button className="support-ticket-btn" onClick={() => setTicketMode(true)}>
-                  Talk to a real person →
+                  Talk to a real person <ArrowRightIcon />
                 </button>
                 {onOpenAbout && (
                   <button
                     className="link-quiet"
-                    style={{ margin: '10px auto 0', display: 'block' }}
+                    style={{ margin: '10px auto 0', display: 'flex', justifyContent: 'center' }}
                     onClick={() => {
                       close()
                       onOpenAbout()
                     }}
                   >
-                    Who's behind this? Our story →
+                    Who's behind this? Our story <ArrowRightIcon size={11} />
                   </button>
                 )}
               </>
@@ -217,7 +211,7 @@ export default function SupportWidget({ onOpenAbout }) {
                   {sending ? 'Sending…' : 'Send'}
                 </button>
                 {sendError && (
-                  <p className="demo-flag" style={{ color: '#b3455c' }}>
+                  <p className="demo-flag" style={{ color: 'var(--destructive)' }}>
                     Couldn't send just now — check your connection and try again.
                   </p>
                 )}
@@ -226,7 +220,9 @@ export default function SupportWidget({ onOpenAbout }) {
 
             {submitted && (
               <div className="support-confirm">
-                <div className="support-confirm__check">✓</div>
+                <div className="support-confirm__check">
+                  <CheckIcon size={20} />
+                </div>
                 <p>Got it — your message has reached our team. We'll get back to you.</p>
               </div>
             )}

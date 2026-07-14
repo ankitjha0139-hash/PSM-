@@ -45,6 +45,9 @@
   position: absolute;
   top: max(18px, env(safe-area-inset-top));
   right: 18px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   background: rgba(255, 255, 255, 0.12);
   color: #fff;
   border: 1px solid rgba(255, 255, 255, 0.35);
@@ -67,7 +70,7 @@
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--gold-deep);
+  color: var(--accent-deep);
   margin: 0;
 }
 
@@ -129,12 +132,17 @@
 
 /* ===== Buttons ===== */
 .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   font-size: 15px;
   font-weight: 600;
   border: none;
   border-radius: 999px;
   padding: 14px 26px;
   cursor: pointer;
+  transition: background-color 150ms ease, color 150ms ease, border-color 150ms ease;
 }
 
 .btn--primary {
@@ -149,13 +157,13 @@
 
 .btn--ghost {
   background: none;
-  border: 1px solid var(--line);
+  border: 1px solid var(--border);
   color: var(--ink);
 }
 
 .btn--ghost-on {
-  border-color: var(--gold-deep);
-  color: var(--gold-deep);
+  border-color: var(--accent);
+  color: var(--accent);
 }
 
 .btn--sm {
@@ -169,13 +177,13 @@
 /* Share CTA — filled accent so it pops next to the ghost buttons; the
    share loop is how new people discover the product. */
 .btn--share {
-  background: var(--gold-deep);
+  background: var(--accent);
   color: #fff;
-  box-shadow: 0 6px 16px -6px rgba(28, 127, 163, 0.5);
+  box-shadow: 0 6px 16px -6px rgba(3, 105, 161, 0.5);
 }
 
 .btn--share:hover {
-  background: #16688a;
+  background: var(--accent-deep);
 }
 
 /* ===== Back button — a real tap target, not bare text ===== */
@@ -185,10 +193,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--surface);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  border: 1px solid var(--line);
+  background: var(--card);
+  border: 1px solid var(--border);
   border-radius: 50%;
   font-size: 17px;
   color: var(--ink);
@@ -196,10 +202,12 @@
   align-self: flex-start;
   box-shadow: var(--shadow);
   z-index: 1; /* stays above card content on scrolling screens */
+  transition: border-color 150ms ease, box-shadow 150ms ease;
 }
 
 .link-back:hover {
-  border-color: var(--gold-deep);
+  border-color: var(--accent);
+  box-shadow: var(--shadow-lift);
 }
 
 .link-back--floating {
@@ -223,24 +231,28 @@
   font-size: 15.5px;
   font-weight: 600;
   color: var(--ink);
-  background: var(--surface);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  border: 1px solid var(--line);
+  background: var(--card);
+  border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 18px 20px;
   cursor: pointer;
   text-align: left;
   box-shadow: var(--shadow);
+  transition: transform 150ms ease, box-shadow 150ms ease, border-color 150ms ease;
 }
 
 .choice-card:hover {
-  border-color: var(--gold-deep);
+  border-color: var(--accent);
   box-shadow: var(--shadow-lift);
+  transform: scale(1.02);
 }
 
 .choice-card__emoji {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   font-size: 20px;
+  color: var(--accent);
 }
 
 /* ===== Explore screen ===== */
@@ -254,18 +266,17 @@
   width: 100%;
   font-family: var(--font-body);
   font-size: 15px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   padding: 12px 16px;
   margin: 14px 0;
-  background: var(--surface);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
+  background: var(--card);
+  transition: border-color 150ms ease;
 }
 
 .search-input:focus {
   outline: none;
-  border-color: var(--gold-deep);
+  border-color: var(--accent);
 }
 
 .chip-row {
@@ -275,15 +286,19 @@
 }
 
 .chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   font-family: var(--font-body);
   font-size: 13px;
   font-weight: 600;
   padding: 8px 14px;
   border-radius: 999px;
-  border: 1px solid var(--line);
-  background: var(--tint);
+  border: 1px solid var(--border);
+  background: var(--card);
   color: var(--ink);
   cursor: pointer;
+  transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease;
 }
 
 .chip--on {
@@ -310,18 +325,18 @@
 
 .career-card {
   position: relative;
-  background: var(--surface);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  border: 1px solid var(--line);
+  background: var(--card);
+  border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 14px 16px;
   cursor: pointer;
   box-shadow: var(--shadow);
+  transition: transform 150ms ease, box-shadow 150ms ease;
 }
 
 .career-card:hover {
   box-shadow: var(--shadow-lift);
+  transform: scale(1.02);
 }
 
 .career-card__title {
@@ -348,9 +363,10 @@
   right: 12px;
   background: none;
   border: none;
-  font-size: 17px;
+  display: flex;
   color: var(--line);
   cursor: pointer;
+  transition: color 150ms ease;
 }
 
 .heart--on {
@@ -418,9 +434,8 @@
 }
 
 .bubble--atlas {
-  background: var(--tint);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
+  background: var(--card);
+  border: 1px solid var(--border);
   color: var(--ink);
   align-self: flex-start;
   border-bottom-left-radius: 4px;
@@ -457,7 +472,7 @@
   padding: 0;
   font: inherit;
   font-weight: 600;
-  color: var(--gold-deep);
+  color: var(--accent);
   text-decoration: underline;
   text-underline-offset: 2px;
   cursor: pointer;
@@ -477,16 +492,14 @@
 }
 
 .chip--followup {
-  background: var(--surface);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  border-color: var(--line);
-  color: var(--gold-deep);
+  background: var(--card);
+  border-color: var(--border);
+  color: var(--accent);
   font-weight: 600;
 }
 
 .chip--followup:hover {
-  border-color: var(--gold-deep);
+  border-color: var(--accent);
 }
 
 .typing-dots-inline {
@@ -535,17 +548,16 @@
   flex: 1;
   font-family: var(--font-body);
   font-size: 14.5px;
-  border: 1px solid var(--line);
-  background: var(--surface);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--border);
+  background: var(--card);
   border-radius: 999px;
   padding: 12px 18px;
+  transition: border-color 150ms ease;
 }
 
 .chat-input:focus {
   outline: none;
-  border-color: var(--gold-deep);
+  border-color: var(--accent);
 }
 
 .chat-input:disabled {
@@ -600,9 +612,8 @@
 }
 
 .metric {
-  background: var(--tint);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
+  background: var(--card);
+  border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   padding: 12px 10px;
   text-align: center;
@@ -653,10 +664,8 @@
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  background: var(--surface);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  border: 1px solid var(--line);
+  background: var(--card);
+  border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   padding: 13px 16px;
   font-family: var(--font-body);
@@ -666,15 +675,18 @@
   text-align: left;
   cursor: pointer;
   box-shadow: var(--shadow);
+  transition: border-color 150ms ease, box-shadow 150ms ease;
 }
 
 .accordion-trigger:hover {
-  border-color: var(--gold-deep);
+  border-color: var(--accent);
+  box-shadow: var(--shadow-lift);
 }
 
 .accordion-chevron {
   flex: none;
   color: var(--muted);
+  display: flex;
   transition: transform 0.15s;
 }
 
@@ -687,13 +699,13 @@
 }
 
 .accordion-lead {
-  background: #eef3ff;
-  border: 1px solid #c9d8ff;
+  background: rgba(3, 105, 161, 0.08);
+  border: 1px solid rgba(3, 105, 161, 0.22);
   border-radius: var(--radius-sm);
   padding: 12px 14px;
   font-size: 13.5px;
   line-height: 1.55;
-  color: #2c4a9e;
+  color: var(--accent-deep);
   margin: 0 0 16px;
 }
 
@@ -738,20 +750,21 @@
 .resource-item {
   display: block;
   text-decoration: none;
-  background: var(--surface);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  border: 1px solid var(--line);
+  background: var(--card);
+  border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   padding: 11px 14px;
+  transition: border-color 150ms ease;
 }
 
 .resource-item:hover {
-  border-color: var(--gold-deep);
+  border-color: var(--accent);
 }
 
 .resource-item__label {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 4px;
   font-size: 13.5px;
   font-weight: 600;
   color: var(--navy);
@@ -784,7 +797,7 @@
   top: 26px;
   bottom: 0;
   width: 1px;
-  background: var(--line);
+  background: var(--border);
 }
 
 .roadmap__num {
@@ -821,8 +834,8 @@
 
 .tag {
   font-size: 12px;
-  background: var(--tint);
-  border: 1px solid var(--line);
+  background: var(--card);
+  border: 1px solid var(--border);
   border-radius: 12px;
   padding: 4px 11px;
 }
@@ -856,19 +869,19 @@
   display: flex;
   align-items: flex-start;
   gap: 14px;
-  background: var(--surface);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  border: 1px solid var(--line);
+  background: var(--card);
+  border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 14px 16px;
   box-shadow: var(--shadow);
   cursor: pointer;
+  transition: transform 150ms ease, box-shadow 150ms ease, border-color 150ms ease;
 }
 
 .prac-card:hover {
-  border-color: var(--gold-deep);
+  border-color: var(--accent);
   box-shadow: var(--shadow-lift);
+  transform: scale(1.02);
 }
 
 .prac-card__avatar,
@@ -922,7 +935,7 @@
   display: inline-flex;
   align-items: center;
   gap: 3px;
-  color: var(--gold-deep);
+  color: var(--accent);
   font-weight: 600;
 }
 
@@ -964,18 +977,18 @@
 
 .session-card {
   text-align: left;
-  background: var(--surface);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  border: 1px solid var(--line);
+  background: var(--card);
+  border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   padding: 13px 15px;
   cursor: pointer;
   box-shadow: var(--shadow);
+  transition: border-color 150ms ease, box-shadow 150ms ease;
 }
 
 .session-card:hover {
-  border-color: var(--gold-deep);
+  border-color: var(--accent);
+  box-shadow: var(--shadow-lift);
 }
 
 .session-card__top {
@@ -1006,7 +1019,7 @@
 .session-card__duration {
   font-size: 11px;
   color: var(--muted);
-  background: var(--tint);
+  background: var(--line);
   padding: 2px 8px;
   border-radius: 8px;
 }
@@ -1021,9 +1034,8 @@
 }
 
 .testimonial {
-  background: var(--tint);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
+  background: var(--card);
+  border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   padding: 12px 14px;
 }
@@ -1049,7 +1061,7 @@
   aspect-ratio: 16 / 9;
   border-radius: var(--radius);
   overflow: hidden;
-  border: 1px solid var(--line);
+  border: 1px solid var(--border);
   background: #0a1420;
   box-shadow: var(--shadow);
 }
@@ -1072,6 +1084,9 @@
 }
 
 .link-quiet {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   background: none;
   border: none;
   padding: 4px;
@@ -1085,7 +1100,7 @@
 }
 
 .link-quiet:hover {
-  color: var(--gold-deep);
+  color: var(--accent);
 }
 
 .about-head {
@@ -1112,10 +1127,8 @@
   margin: 0 auto 18px;
   width: 100%;
   overflow-x: auto;
-  background: var(--surface);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  border: 1px solid var(--line);
+  background: var(--card);
+  border: 1px solid var(--border);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
 }
@@ -1132,7 +1145,7 @@
   padding: 10px 12px;
   text-align: left;
   vertical-align: top;
-  border-bottom: 1px solid var(--line);
+  border-bottom: 1px solid var(--border);
   min-width: 120px;
 }
 
@@ -1148,7 +1161,7 @@
   letter-spacing: 0.04em;
   position: sticky;
   left: 0;
-  background: var(--bg);
+  background: var(--card);
   min-width: 92px;
 }
 
@@ -1159,7 +1172,7 @@
   font-family: var(--font-body);
   font-size: 13px;
   font-weight: 700;
-  color: var(--gold-deep);
+  color: var(--accent);
   text-align: left;
   cursor: pointer;
   text-decoration: underline;
@@ -1171,10 +1184,8 @@
   display: flex;
   flex-direction: column;
   gap: 3px;
-  background: var(--surface);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  border: 1px solid var(--line);
+  background: var(--card);
+  border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 14px 16px;
   box-shadow: var(--shadow);
@@ -1216,7 +1227,7 @@
 }
 
 .prac-card__next {
-  color: var(--gold-deep);
+  color: var(--accent);
   font-weight: 600;
 }
 
@@ -1242,7 +1253,7 @@
   top: 24px;
   bottom: 0;
   width: 1px;
-  background: var(--line);
+  background: var(--border);
 }
 
 .journey__when {
@@ -1250,7 +1261,7 @@
   width: 54px;
   font-size: 11px;
   font-weight: 700;
-  color: var(--gold-deep);
+  color: var(--accent);
   text-align: left;
   padding-top: 2px;
 }
@@ -1275,17 +1286,16 @@
   align-items: center;
   gap: 2px;
   font-family: var(--font-body);
-  background: var(--surface);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  border: 1px solid var(--line);
+  background: var(--card);
+  border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   padding: 9px 14px;
   cursor: pointer;
+  transition: border-color 150ms ease;
 }
 
 .day-pill--on {
-  border-color: var(--gold-deep);
+  border-color: var(--accent);
   background: var(--navy);
 }
 
@@ -1317,10 +1327,8 @@
   font-size: 13px;
   font-weight: 600;
   color: var(--ink);
-  background: var(--surface);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  border: 1px solid var(--line);
+  background: var(--card);
+  border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   padding: 11px 8px;
   cursor: pointer;
@@ -1361,10 +1369,8 @@
 .booking-summary {
   width: 100%;
   max-width: 360px;
-  background: var(--surface);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  border: 1px solid var(--line);
+  background: var(--card);
+  border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 14px 16px;
   display: flex;
@@ -1401,10 +1407,8 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  background: var(--surface);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  border: 1px solid var(--line);
+  background: var(--card);
+  border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   padding: 11px 13px;
 }
@@ -1441,18 +1445,19 @@
   font-weight: 600;
   color: var(--navy);
   background: none;
-  border: 1px solid var(--line);
+  border: 1px solid var(--border);
   border-radius: 999px;
   padding: 6px 10px;
   cursor: pointer;
+  transition: border-color 150ms ease;
 }
 
 .booking-card__btn:hover {
-  border-color: var(--gold-deep);
+  border-color: var(--accent);
 }
 
 .booking-card__btn--cancel {
-  color: #b3455c;
+  color: var(--destructive);
 }
 
 .prac-confirm-check {
@@ -1486,14 +1491,9 @@
   right: 0;
   z-index: 30;
   display: flex;
-  /* Higher-opacity than the card --surface: this floats over whatever the
-     screen is scrolling underneath it, so it needs to stay legible on its
-     own rather than blending into that content. */
-  background: var(--dock-surface);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  border-top: 1px solid var(--line);
-  box-shadow: 0 -4px 16px rgba(16, 24, 40, 0.08);
+  background: var(--card);
+  border-top: 1px solid var(--border);
+  box-shadow: 0 -4px 16px rgba(15, 23, 42, 0.06);
   padding: 8px 4px calc(8px + env(safe-area-inset-bottom));
 }
 
@@ -1514,8 +1514,8 @@
   color: var(--navy);
 }
 
-/* Icon sits in a small chip; on the active tab the chip frosts over
-   (same glass language as the cards) and the stroke turns accent-blue. */
+/* Icon sits in a small chip; on the active tab the chip tints with the
+   accent colour instead of the old frosted-glass treatment. */
 .bottom-nav__icon {
   width: 34px;
   height: 26px;
@@ -1527,11 +1527,8 @@
 }
 
 .bottom-nav__item--active .bottom-nav__icon {
-  background: var(--tint);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  border-color: var(--glass-border);
-  color: var(--gold-deep);
+  background: rgba(3, 105, 161, 0.1);
+  color: var(--accent);
 }
 
 .bottom-nav__label {
@@ -1580,7 +1577,7 @@
     left: 0;
     right: 0;
     border-radius: 20px 20px 0 0;
-    box-shadow: 0 -4px 20px rgba(16, 24, 40, 0.08);
+    box-shadow: 0 -4px 20px rgba(15, 23, 42, 0.06);
   }
 }
 
@@ -1613,9 +1610,8 @@
 }
 
 /* ============================================================
-   Support widget — floating help button + panel. First real use
-   of the "glass" effect: a blurred, translucent surface instead
-   of flat white, plus proper SVG icons instead of emoji.
+   Support widget — floating help button + panel. Solid Bento
+   surface (no blur) with proper SVG icons instead of emoji.
    ============================================================ */
 .support-fab {
   position: fixed;
@@ -1631,7 +1627,7 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  box-shadow: 0 10px 24px rgba(27, 42, 74, 0.35);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.3);
   z-index: 40;
 }
 
@@ -1642,27 +1638,23 @@
 .support-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(16, 24, 40, 0.32);
+  background: rgba(15, 23, 42, 0.32);
   z-index: 50;
   display: flex;
   align-items: flex-end;
   justify-content: center;
 }
 
-/* The glass panel: translucent background + backdrop blur + a hairline
-   border to catch light — the actual "glassmorphism" recipe. */
 .support-panel {
   width: 100%;
   max-width: 480px;
   max-height: 72vh;
   overflow-y: auto;
-  background: rgba(255, 255, 255, 0.72);
-  backdrop-filter: blur(20px) saturate(160%);
-  -webkit-backdrop-filter: blur(20px) saturate(160%);
-  border: 1px solid rgba(255, 255, 255, 0.5);
+  background: var(--card);
+  border: 1px solid var(--border);
   border-radius: 22px 22px 0 0;
   padding: 18px 18px calc(20px + env(safe-area-inset-bottom));
-  box-shadow: 0 -10px 40px rgba(16, 24, 40, 0.18);
+  box-shadow: 0 -10px 40px rgba(15, 23, 42, 0.16);
 }
 
 @media (min-width: 640px) {
@@ -1690,7 +1682,7 @@
   justify-content: space-between;
   font-family: var(--font-head);
   font-size: 17px;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--ink);
   margin-bottom: 12px;
 }
@@ -1700,7 +1692,7 @@
   height: 30px;
   border-radius: 50%;
   border: none;
-  background: rgba(0, 0, 0, 0.06);
+  background: rgba(15, 23, 42, 0.06);
   color: var(--muted);
   display: flex;
   align-items: center;
@@ -1712,16 +1704,17 @@
   width: 100%;
   font-family: var(--font-body);
   font-size: 14.5px;
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid var(--border);
+  background: var(--card);
   border-radius: var(--radius-sm);
   padding: 11px 14px;
   margin-bottom: 10px;
+  transition: border-color 150ms ease;
 }
 
 .support-search:focus {
   outline: none;
-  border-color: var(--gold-deep);
+  border-color: var(--accent);
 }
 
 .support-chat-log {
@@ -1737,8 +1730,12 @@
 .support-ticket-btn {
   width: 100%;
   margin-top: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
   background: none;
-  border: 1px dashed rgba(0, 0, 0, 0.18);
+  border: 1px dashed var(--border);
   border-radius: var(--radius-sm);
   padding: 11px;
   font-size: 13px;
@@ -1757,11 +1754,17 @@
   width: 100%;
   font-family: var(--font-body);
   font-size: 14px;
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid var(--border);
+  background: var(--card);
   border-radius: var(--radius-sm);
   padding: 11px 14px;
   resize: vertical;
+  transition: border-color 150ms ease;
+}
+
+.support-textarea:focus {
+  outline: none;
+  border-color: var(--accent);
 }
 
 .support-confirm {
@@ -1775,7 +1778,6 @@
   border-radius: 50%;
   background: var(--success-bg);
   color: var(--success-ink);
-  font-size: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1791,10 +1793,8 @@
   top: max(14px, env(safe-area-inset-top));
   right: 18px;
   z-index: 40;
-  background: var(--dock-surface);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  border: 1px solid var(--glass-border);
+  background: var(--card);
+  border: 1px solid var(--border);
   border-radius: 999px;
   padding: 8px 16px;
   font-family: var(--font-body);
@@ -1802,7 +1802,7 @@
   font-weight: 600;
   color: var(--navy);
   cursor: pointer;
-  box-shadow: var(--glass-shadow);
+  box-shadow: var(--shadow);
 }
 
 .account-chip-wrap {
@@ -1816,7 +1816,7 @@
   width: 38px;
   height: 38px;
   border-radius: 50%;
-  border: 1px solid var(--glass-border);
+  border: 1px solid var(--border);
   background: var(--navy);
   color: #fff;
   font-family: var(--font-body);
@@ -1827,7 +1827,7 @@
   justify-content: center;
   cursor: pointer;
   overflow: hidden;
-  box-shadow: var(--glass-shadow);
+  box-shadow: var(--shadow);
 }
 
 .account-dropdown {
@@ -1835,13 +1835,11 @@
   top: 46px;
   right: 0;
   min-width: 180px;
-  background: var(--dock-surface);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  border: 1px solid var(--glass-border);
+  background: var(--card);
+  border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   padding: 10px;
-  box-shadow: var(--glass-shadow);
+  box-shadow: var(--shadow-lift);
 }
 
 .account-dropdown__name {
@@ -1856,7 +1854,7 @@
 .account-dropdown__signout {
   width: 100%;
   background: none;
-  border: 1px solid var(--line);
+  border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   padding: 7px;
   font-size: 13px;
@@ -1868,7 +1866,7 @@
 .auth-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(16, 24, 40, 0.32);
+  background: rgba(15, 23, 42, 0.32);
   z-index: 60;
   display: flex;
   align-items: center;
@@ -1880,13 +1878,11 @@
   position: relative;
   width: 100%;
   max-width: 340px;
-  background: rgba(255, 255, 255, 0.94);
-  backdrop-filter: blur(20px) saturate(160%);
-  -webkit-backdrop-filter: blur(20px) saturate(160%);
-  border: 1px solid rgba(255, 255, 255, 0.5);
+  background: var(--card);
+  border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 22px;
-  box-shadow: 0 20px 50px rgba(16, 24, 40, 0.22);
+  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.18);
   text-align: center;
 }
 
