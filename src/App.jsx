@@ -16,12 +16,12 @@ import CareerDetail from './screens/CareerDetail.jsx'
 import Shortlist from './screens/Shortlist.jsx'
 import PractitionerDirectory from './screens/PractitionerDirectory.jsx'
 import PractitionerProfile from './screens/PractitionerProfile.jsx'
-import BottomNav from './components/BottomNav.jsx'
+import TopNav from './components/TopNav.jsx'
 import SupportWidget from './components/SupportWidget.jsx'
 import AccountButton from './components/AccountButton.jsx'
 import SignInModal from './components/SignInModal.jsx'
 
-// Screens that show the persistent bottom nav — everything past onboarding.
+// Screens that show the persistent top nav — everything past onboarding.
 const MAIN_TABS = ['explore', 'atlas', 'shortlist', 'practitioners']
 
 // Shared links (see src/lib/share.js) carry ?career=<id> — someone opening
@@ -230,7 +230,16 @@ function App() {
           <PractitionerDirectory onOpenProfile={setSelectedPractitionerId} />
         )}
 
-        {MAIN_TABS.includes(screen) && <BottomNav active={screen} onNavigate={setScreen} />}
+        {MAIN_TABS.includes(screen) && (
+          <TopNav
+            active={screen}
+            onNavigate={setScreen}
+            onAbout={openAbout}
+            user={auth.user}
+            onSignIn={() => setSignInReason('account')}
+            onSignOut={auth.signOut}
+          />
+        )}
         <SupportWidget onOpenAbout={openAbout} />
       </div>
     )
@@ -239,11 +248,17 @@ function App() {
   return (
     <>
       {renderScreen()}
-      {/* Global on every screen except the landing splash, which has its
-          own top-right "Skip" button during the intro video — showing
-          both there would overlap. Everywhere past that, the whole point
-          is that "am I signed in?" should never be ambiguous. */}
-      {screen !== 'landing' && (
+      {/* Standalone floating account chip — every screen except the landing
+          splash (own top-right "Skip" button during the intro video would
+          overlap) and the main-tab shell with no takeover active (TopNav
+          carries the account slot there instead, so this would
+          double-render). `screen` doesn't change while CareerDetail/
+          PractitionerProfile are open (only selectedCareerId/
+          selectedPractitionerId do), so those takeovers must be checked
+          explicitly here too, or this chip would wrongly disappear right
+          when sign-in gating on shortlist/booking matters most. */}
+      {screen !== 'landing' &&
+        (!MAIN_TABS.includes(screen) || selectedCareerId || selectedPractitionerId) && (
         <AccountButton
           user={auth.user}
           onSignIn={() => setSignInReason('account')}

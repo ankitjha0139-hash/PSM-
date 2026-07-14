@@ -94,20 +94,23 @@
 }
 
 /* Content-heavy screens (Explore, Detail, Chat) scroll normally instead of
-   being vertically centered, and leave room at the bottom for BottomNav. */
+   being vertically centered. Nav moved to a fixed top bar (see .app-shell),
+   so this is just generic breathing room at the end of the scroll now,
+   not nav clearance. */
 .screen--scroll {
-  padding-bottom: 96px;
+  padding-bottom: 40px;
 }
 
 .screen__title {
-  font-size: clamp(26px, 6vw, 34px);
-  line-height: 1.15;
+  font-size: clamp(34px, 9vw, 52px);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
   color: var(--ink);
   max-width: 15ch;
 }
 
 .screen__title--md {
-  font-size: clamp(22px, 5vw, 26px);
+  font-size: clamp(26px, 6vw, 34px);
   text-align: center;
 }
 
@@ -174,16 +177,17 @@
   flex: none;
 }
 
-/* Share CTA — filled accent so it pops next to the ghost buttons; the
-   share loop is how new people discover the product. */
+/* Share CTA — every CTA fills black; blue is reserved for tiny text/link
+   moments only (career links, ratings, the science badge), never a button
+   fill, so it stays a whisper instead of competing with the black CTAs. */
 .btn--share {
-  background: var(--accent);
+  background: var(--navy);
   color: #fff;
-  box-shadow: 0 6px 16px -6px rgba(3, 105, 161, 0.5);
+  box-shadow: 0 6px 16px -6px rgba(10, 10, 10, 0.5);
 }
 
 .btn--share:hover {
-  background: var(--accent-deep);
+  background: var(--navy-deep);
 }
 
 /* ===== Back button — a real tap target, not bare text ===== */
@@ -244,7 +248,7 @@
 .choice-card:hover {
   border-color: var(--accent);
   box-shadow: var(--shadow-lift);
-  transform: scale(1.02);
+  transform: scale(1.015);
 }
 
 .choice-card__emoji {
@@ -336,7 +340,7 @@
 
 .career-card:hover {
   box-shadow: var(--shadow-lift);
-  transform: scale(1.02);
+  transform: scale(1.015);
 }
 
 .career-card__title {
@@ -591,7 +595,8 @@
 }
 
 .detail-title {
-  font-size: clamp(22px, 5vw, 28px);
+  font-size: clamp(28px, 6vw, 38px);
+  letter-spacing: -0.015em;
   margin: 8px 0 6px;
 }
 
@@ -881,7 +886,7 @@
 .prac-card:hover {
   border-color: var(--accent);
   box-shadow: var(--shadow-lift);
-  transform: scale(1.02);
+  transform: scale(1.015);
 }
 
 .prac-card__avatar,
@@ -1478,62 +1483,128 @@
   margin-top: 10px;
 }
 
-/* ===== App shell + bottom nav ===== */
+/* ===== App shell + top nav ===== */
 .app-shell {
   position: relative;
   min-height: 100vh;
+  /* Clears the fixed top-nav bar (~60px) plus its safe-area inset. */
+  padding-top: calc(64px + env(safe-area-inset-top));
 }
 
-.bottom-nav {
+/* Full-width dark bar (sui.io-style) — edge to edge, not a floating pill.
+   Text links only; below 768px they move into .top-nav__menu instead. */
+.top-nav {
   position: fixed;
-  bottom: 0;
+  top: 0;
   left: 0;
   right: 0;
-  z-index: 30;
-  display: flex;
-  background: var(--card);
-  border-top: 1px solid var(--border);
-  box-shadow: 0 -4px 16px rgba(15, 23, 42, 0.06);
-  padding: 8px 4px calc(8px + env(safe-area-inset-bottom));
+  z-index: 40;
+  background: var(--navy);
 }
 
-.bottom-nav__item {
-  flex: 1;
+.top-nav__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: max(12px, env(safe-area-inset-top)) 20px 12px;
+}
+
+.top-nav__brand {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex: none;
+}
+
+.top-nav__wordmark {
+  font-family: var(--font-head);
+  font-weight: 700;
+  font-size: 15px;
+  color: #fff;
+  white-space: nowrap;
+}
+
+.top-nav__links {
+  display: none;
+  align-items: center;
+  gap: 28px;
+}
+
+.top-nav__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   background: none;
   border: none;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-  padding: 6px 0;
+  border-bottom: 2px solid transparent;
+  padding: 4px 2px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.68);
   cursor: pointer;
-  color: var(--muted);
+  transition: color 120ms ease, border-color 120ms ease;
 }
 
-.bottom-nav__item--active {
-  color: var(--navy);
+.top-nav__link svg {
+  opacity: 0.7;
 }
 
-/* Icon sits in a small chip; on the active tab the chip tints with the
-   accent colour instead of the old frosted-glass treatment. */
-.bottom-nav__icon {
-  width: 34px;
-  height: 26px;
-  border-radius: 9px;
+.top-nav__link:hover {
+  color: #fff;
+}
+
+.top-nav__link--active {
+  color: #fff;
+  border-bottom-color: var(--accent);
+}
+
+.top-nav__right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: none;
+}
+
+.top-nav__toggle {
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid transparent;
+  width: 34px;
+  height: 34px;
+  background: none;
+  border: none;
+  color: #fff;
+  cursor: pointer;
 }
 
-.bottom-nav__item--active .bottom-nav__icon {
-  background: rgba(3, 105, 161, 0.1);
-  color: var(--accent);
+.top-nav__menu {
+  display: flex;
+  flex-direction: column;
+  padding: 4px 20px 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.bottom-nav__label {
-  font-size: 10.5px;
+.top-nav__menu-link {
+  background: none;
+  border: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  text-align: left;
+  padding: 13px 0;
+  font-family: var(--font-body);
+  font-size: 15px;
   font-weight: 600;
+  color: rgba(255, 255, 255, 0.75);
+  cursor: pointer;
+}
+
+.top-nav__menu-link:last-child {
+  border-bottom: none;
+}
+
+.top-nav__menu-link--active {
+  color: var(--accent);
 }
 
 /* ============================================================
@@ -1571,13 +1642,14 @@
     max-width: 480px;
   }
 
-  .bottom-nav {
-    max-width: 720px;
-    margin: 0 auto;
-    left: 0;
-    right: 0;
-    border-radius: 20px 20px 0 0;
-    box-shadow: 0 -4px 20px rgba(15, 23, 42, 0.06);
+  /* Full row of text links replaces the mobile toggle+dropdown once
+     there's room for all four words plus the wordmark and account slot. */
+  .top-nav__links {
+    display: flex;
+  }
+
+  .top-nav__toggle {
+    display: none;
   }
 }
 
@@ -1603,42 +1675,56 @@
   .screen {
     padding: 48px 40px;
   }
-
-  .bottom-nav {
-    max-width: 960px;
-  }
 }
 
 /* ============================================================
    Support widget — floating help button + panel. Solid Bento
    surface (no blur) with proper SVG icons instead of emoji.
    ============================================================ */
-.support-fab {
+/* Compass ribbon — the page's one signature element: a fixed vertical tab
+   on the right edge instead of a generic floating chat bubble. Vertically
+   centered so it can never collide with the top nav bar (top) or anything
+   else at any screen size. Same click-to-open behavior as before — only
+   the trigger's form changed. */
+.compass-ribbon {
   position: fixed;
-  right: 18px;
-  bottom: 96px; /* clears the bottom nav */
-  width: 52px;
-  height: 52px;
-  border-radius: 50%;
-  border: none;
-  background: var(--navy);
-  color: #fff;
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%) rotate(180deg);
+  writing-mode: vertical-rl;
+  z-index: 40;
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 6px;
+  padding: 22px 11px;
+  background: var(--navy);
+  color: #fff;
+  border: none;
+  border-radius: 0 14px 14px 0; /* rounds the visual-left edge once rotated */
   cursor: pointer;
-  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.3);
-  z-index: 40;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  box-shadow: 0 8px 24px rgba(10, 10, 10, 0.25);
+  transition: right 150ms ease, background-color 150ms ease;
 }
 
-.support-fab:hover {
+/* Peeks a few px further into the page on hover/focus — a small "it's
+   alive" cue, animating `right` (not `transform`) so it never fights the
+   base rotation. */
+.compass-ribbon:hover,
+.compass-ribbon:focus-visible {
+  right: 4px;
   background: var(--navy-deep);
 }
 
 .support-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(15, 23, 42, 0.32);
+  background: rgba(10, 10, 10, 0.32);
   z-index: 50;
   display: flex;
   align-items: flex-end;
@@ -1654,14 +1740,16 @@
   border: 1px solid var(--border);
   border-radius: 22px 22px 0 0;
   padding: 18px 18px calc(20px + env(safe-area-inset-bottom));
-  box-shadow: 0 -10px 40px rgba(15, 23, 42, 0.16);
+  box-shadow: 0 -10px 40px rgba(10, 10, 10, 0.16);
 }
 
 @media (min-width: 640px) {
   /* Desktop: dock like a real chat widget (Intercom/Crisp/Drift-style) —
-     anchored bottom-right near the button that opened it, page stays
-     visible behind it. Not a centred modal, which was the bug: a modal
-     interrupts the whole screen; a docked widget doesn't. */
+     bottom-right, page stays visible behind it. Not a centred modal,
+     which was the bug: a modal interrupts the whole screen; a docked
+     widget doesn't. Deliberately not anchored to the Compass ribbon's own
+     position (mid-right edge) — a bottom-right dock reads as a normal
+     chat widget regardless of where the trigger that opened it sits. */
   .support-overlay {
     background: transparent;
     align-items: flex-end;
@@ -1692,7 +1780,7 @@
   height: 30px;
   border-radius: 50%;
   border: none;
-  background: rgba(15, 23, 42, 0.06);
+  background: rgba(10, 10, 10, 0.06);
   color: var(--muted);
   display: flex;
   align-items: center;
@@ -1812,6 +1900,20 @@
   z-index: 40;
 }
 
+/* Embedded variants — used inside TopNav's own flex row instead of
+   floating standalone; the white pill/avatar already read fine against
+   the dark bar, so only positioning needs to change. */
+.account-btn--inline {
+  position: static;
+  box-shadow: none;
+}
+
+.account-chip-wrap--inline {
+  position: relative; /* still a positioning context for the dropdown */
+  top: auto;
+  right: auto;
+}
+
 .account-avatar {
   width: 38px;
   height: 38px;
@@ -1866,7 +1968,7 @@
 .auth-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(15, 23, 42, 0.32);
+  background: rgba(10, 10, 10, 0.32);
   z-index: 60;
   display: flex;
   align-items: center;
@@ -1882,7 +1984,7 @@
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 22px;
-  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.18);
+  box-shadow: 0 20px 50px rgba(10, 10, 10, 0.18);
   text-align: center;
 }
 

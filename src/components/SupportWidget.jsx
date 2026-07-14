@@ -100,23 +100,12 @@ export default function SupportWidget({ onOpenAbout }) {
 
   return (
     <>
-      <button className="support-fab" onClick={() => setOpen(true)} aria-label="Get help">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-          <path
-            d="M12 21C16.9706 21 21 16.9706 21 12C21 7.02944 16.9706 3 12 3C7.02944 3 3 7.02944 3 12C3 13.5997 3.41827 15.1054 4.15224 16.4114L3 21L7.58862 19.8478C8.89464 20.5817 10.4003 21 12 21Z"
-            stroke="currentColor"
-            strokeWidth="1.6"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-          <path
-            d="M9.5 9.5C9.5 8.4 10.4 7.5 11.7 7.5C12.9 7.5 13.9 8.3 13.9 9.3C13.9 10.9 12 10.7 12 12.5"
-            stroke="currentColor"
-            strokeWidth="1.6"
-            strokeLinecap="round"
-          />
-          <circle cx="12" cy="15.3" r="0.9" fill="currentColor" />
-        </svg>
+      <button
+        className="compass-ribbon"
+        onClick={() => setOpen(true)}
+        aria-label="Open Compass, the help assistant"
+      >
+        Compass
       </button>
 
       {open && (

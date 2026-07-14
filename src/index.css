@@ -1,19 +1,23 @@
 :root {
-  /* brand */
-  --navy: #0f172a;
-  --navy-deep: #0b1220;
-  /* Bento theme — electric-blue accent replaces the old glass-theme gold,
-     used everywhere for focus/hover/active states and links. */
-  --accent: #0369a1;
-  --accent-deep: #075985;
+  /* brand — name is legacy from the Bento pass ("navy"); the value is now
+     near-black ink, not navy blue. Kept as --navy so every existing
+     consumer (buttons, badges, Mark.jsx) repaints without a rename. */
+  --navy: #0a0a0a;
+  --navy-deep: #000000;
+  /* Sparing blue whisper — a status dot, link text, a focus ring. Never a
+     button fill. Matches the exact blue already used by the science
+     stream-badge, so the one recurring accent and that badge read as the
+     same color on purpose. */
+  --accent: #2563eb;
+  --accent-deep: #1d4ed8;
 
   /* neutrals */
-  --ink: #0f172a;
-  --muted: #64748b;
-  --line: #e2e8f0;
-  --border: #e2e8f0;
-  --bg: #f8fafc;
-  /* Solid Bento cards — no translucency/blur, so content stays crisp over
+  --ink: #0a0a0a;
+  --muted: #6b6b6e;
+  --line: #e3e1dc;
+  --border: #e3e1dc;
+  --bg: #f0f0ec;
+  /* Solid cards — no translucency/blur, so content stays crisp over
      a flat neutral canvas instead of over a gradient. */
   --card: #ffffff;
 
@@ -22,15 +26,16 @@
   --success-ink: #1a7a44;
   --destructive: #b3455c;
 
-  /* type */
-  --font-head: 'Inter', system-ui, sans-serif;
+  /* type — a bold rounded-geometric display face for headlines only,
+     restrained everywhere else; body copy stays on the Inter workhorse. */
+  --font-head: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
   --font-body: 'Inter', system-ui, sans-serif;
 
   /* shape */
   --radius: 20px;
   --radius-sm: 14px;
-  --shadow: 0 4px 6px rgba(15, 23, 42, 0.05);
-  --shadow-lift: 0 10px 24px rgba(15, 23, 42, 0.08);
+  --shadow: 0 4px 6px rgba(10, 10, 10, 0.05);
+  --shadow-lift: 0 10px 24px rgba(10, 10, 10, 0.08);
 
   color-scheme: light;
 }
@@ -53,7 +58,7 @@ h1,
 h2,
 h3 {
   font-family: var(--font-head);
-  font-weight: 700;
+  font-weight: 800;
   margin: 0;
 }
 
