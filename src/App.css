@@ -1484,11 +1484,16 @@
   bottom: 0;
   left: 0;
   right: 0;
+  z-index: 30;
   display: flex;
-  background: var(--surface);
+  /* Higher-opacity than the card --surface: this floats over whatever the
+     screen is scrolling underneath it, so it needs to stay legible on its
+     own rather than blending into that content. */
+  background: var(--dock-surface);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
   border-top: 1px solid var(--line);
+  box-shadow: 0 -4px 16px rgba(16, 24, 40, 0.08);
   padding: 8px 4px calc(8px + env(safe-area-inset-bottom));
 }
 
