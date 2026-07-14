@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useCareerPaths } from '../hooks/useCareerPaths.js'
 import CareerCard from '../components/CareerCard.jsx'
+import { CompareIcon } from '../components/icons.jsx'
 
 // Comparing is the whole point of shortlisting — with 2+ saved careers a
 // side-by-side table shows the decision-driving facts in one glance
@@ -37,7 +38,13 @@ export default function Shortlist({ shortlist, onOpenDetail }) {
             className={`chip ${comparing ? 'chip--on' : ''}`}
             onClick={() => setComparing((v) => !v)}
           >
-            {comparing ? 'Hide comparison' : `Compare all ${saved.length} ⇆`}
+            {comparing ? (
+              'Hide comparison'
+            ) : (
+              <>
+                Compare all {saved.length} <CompareIcon />
+              </>
+            )}
           </button>
         </div>
       )}

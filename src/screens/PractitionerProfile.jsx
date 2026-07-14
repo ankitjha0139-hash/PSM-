@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { StarIcon, CheckIcon, VerifiedIcon, CalendarIcon } from '../components/icons.jsx'
+import { StarIcon, CheckIcon, VerifiedIcon, CalendarIcon, BackIcon, ArrowRightIcon } from '../components/icons.jsx'
 import { getSlotDays, makeBookingId, downloadIcs } from '../lib/bookingUtils.js'
 import { useBookings } from '../hooks/useBookings.js'
 import { submitNetlifyForm } from '../lib/netlifyForms.js'
@@ -118,7 +118,7 @@ export default function PractitionerProfile({ practitioner, onBack, onRequireAut
     return (
       <main className="screen screen--scroll">
         <button className="link-back" onClick={() => setStep('slot')} aria-label="Back">
-          ←
+          <BackIcon />
         </button>
         <div className="screen__body">
           <h2 className="screen__title screen__title--md">Almost there</h2>
@@ -149,7 +149,7 @@ export default function PractitionerProfile({ practitioner, onBack, onRequireAut
             disabled={!contactName.trim() || !contact.trim() || saving}
             onClick={confirmBooking}
           >
-            {saving ? 'Booking…' : 'Confirm booking →'}
+            {saving ? 'Booking…' : <>Confirm booking <ArrowRightIcon /></>}
           </button>
         </div>
       </main>
@@ -160,7 +160,7 @@ export default function PractitionerProfile({ practitioner, onBack, onRequireAut
     return (
       <main className="screen screen--scroll">
         <button className="link-back" onClick={() => setStep('profile')} aria-label="Back">
-          ←
+          <BackIcon />
         </button>
         <div className="screen__body">
           <h2 className="screen__title screen__title--md">
@@ -209,7 +209,7 @@ export default function PractitionerProfile({ practitioner, onBack, onRequireAut
             disabled={!time}
             onClick={() => setStep('contact')}
           >
-            Continue →
+            Continue <ArrowRightIcon />
           </button>
         </div>
       </main>
@@ -219,7 +219,7 @@ export default function PractitionerProfile({ practitioner, onBack, onRequireAut
   return (
     <main className="screen screen--scroll">
       <button className="link-back" onClick={onBack} aria-label="Back">
-        ←
+        <BackIcon />
       </button>
 
       <div className="prac-profile-head">

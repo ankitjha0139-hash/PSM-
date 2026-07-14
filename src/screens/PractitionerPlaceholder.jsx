@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { CheckIcon } from '../components/icons.jsx'
+import { CheckIcon, BackIcon, ArrowRightIcon } from '../components/icons.jsx'
 import { submitNetlifyForm } from '../lib/netlifyForms.js'
 
 // The practitioner-side entry — a real application flow now, not a
@@ -66,7 +66,7 @@ export default function PractitionerPlaceholder({ onBack }) {
     return (
       <main className="screen screen--scroll">
         <button className="link-back" onClick={() => setStep('pitch')} aria-label="Back">
-          ←
+          <BackIcon />
         </button>
         <div className="screen__body">
           <h2 className="screen__title screen__title--md">Tell us about you</h2>
@@ -100,10 +100,10 @@ export default function PractitionerPlaceholder({ onBack }) {
             onChange={(e) => setContact(e.target.value)}
           />
           <button className="btn btn--primary" disabled={!canSubmit} onClick={submit}>
-            {sending ? 'Sending…' : 'Apply →'}
+            {sending ? 'Sending…' : <>Apply <ArrowRightIcon /></>}
           </button>
           {sendError && (
-            <p className="booking-note" style={{ color: '#b3455c' }}>
+            <p className="booking-note" style={{ color: 'var(--destructive)' }}>
               Couldn't send just now — check your connection and try again.
             </p>
           )}
@@ -115,7 +115,7 @@ export default function PractitionerPlaceholder({ onBack }) {
   return (
     <main className="screen">
       <button className="link-back" onClick={onBack} aria-label="Back">
-        ←
+        <BackIcon />
       </button>
       <div className="screen__body">
         <h2 className="screen__title screen__title--md">
@@ -134,7 +134,7 @@ export default function PractitionerPlaceholder({ onBack }) {
           ))}
         </div>
         <button className="btn btn--primary" onClick={() => setStep('form')}>
-          Apply to join →
+          Apply to join <ArrowRightIcon />
         </button>
       </div>
     </main>

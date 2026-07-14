@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { shareCareer } from '../lib/share.js'
+import { BackIcon, ChevronDownIcon, ExternalLinkIcon, HeartIcon, ArrowRightIcon } from '../components/icons.jsx'
 
 // Turns the schema fields into a step-by-step "how to get there" — this is
 // what serves the "I know exactly what I want" case, folded into the detail
@@ -56,7 +57,7 @@ export default function CareerDetail({
   return (
     <main className="screen screen--scroll">
       <button className="link-back" onClick={onBack} aria-label="Back">
-        ←
+        <BackIcon />
       </button>
 
       <div className="detail-head">
@@ -95,8 +96,10 @@ export default function CareerDetail({
           disproportionate next to the compact sections below it. */}
       <div className="section">
         <button className="accordion-trigger" onClick={() => setHowOpen((v) => !v)}>
-          <span>👉 What do I do to become {/^[aeiou]/i.test(primaryRole) ? 'an' : 'a'} {primaryRole}?</span>
-          <span className={`accordion-chevron ${howOpen ? 'accordion-chevron--open' : ''}`}>▾</span>
+          <span>What do I do to become {/^[aeiou]/i.test(primaryRole) ? 'an' : 'a'} {primaryRole}?</span>
+          <span className={`accordion-chevron ${howOpen ? 'accordion-chevron--open' : ''}`}>
+            <ChevronDownIcon />
+          </span>
         </button>
         {howOpen && (
           <div className="accordion-body">
@@ -142,7 +145,7 @@ export default function CareerDetail({
 
       {career.honest_note && (
         <div className="callout callout--honest">
-          <span className="callout__label">🎯 The honest bit</span>
+          <span className="callout__label">The honest bit</span>
           <p className="callout__body">{career.honest_note}</p>
         </div>
       )}
@@ -160,7 +163,9 @@ export default function CareerDetail({
           <div className="resource-list">
             {career.resources.map((r) => (
               <a key={r.url} className="resource-item" href={r.url} target="_blank" rel="noreferrer">
-                <span className="resource-item__label">{r.label} ↗</span>
+                <span className="resource-item__label">
+                  {r.label} <ExternalLinkIcon />
+                </span>
                 <span className="resource-item__note">{r.note}</span>
               </a>
             ))}
@@ -170,19 +175,23 @@ export default function CareerDetail({
 
       <div className="detail-actions">
         <button className="btn btn--primary" onClick={onTalkToPractitioner}>
-          Talk to a real {primaryRole} →
+          Talk to a real {primaryRole} <ArrowRightIcon />
         </button>
         <button
           className={`btn btn--ghost ${shortlisted ? 'btn--ghost-on' : ''}`}
           onClick={() => onToggleShortlist(career.id)}
         >
-          {shortlisted ? '♥ Shortlisted' : '♡ Add to shortlist'}
+          <HeartIcon filled={shortlisted} size={15} /> {shortlisted ? 'Shortlisted' : 'Add to shortlist'}
         </button>
         {/* Second-opinion share — parents, seniors, anyone whose take
             matters. Filled accent, not ghost: sharing is a loop we WANT
             people to notice. */}
         <button className="btn btn--share" onClick={handleShare}>
-          {shareResult || '↗ Share for a second opinion'}
+          {shareResult || (
+            <>
+              <ExternalLinkIcon size={15} /> Share for a second opinion
+            </>
+          )}
         </button>
       </div>
     </main>

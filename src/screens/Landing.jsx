@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import Mark from '../components/Mark.jsx'
+import { ArrowRightIcon } from '../components/icons.jsx'
 
 // Shown once per browser tab session (sessionStorage), not on every mount —
 // otherwise tapping "back" from the Role gate would replay the whole intro
@@ -29,7 +30,7 @@ export default function Landing({ onStart, onStory }) {
             onEnded={goCta}
           />
           <button className="landing-skip" onClick={goCta}>
-            Skip →
+            Skip <ArrowRightIcon size={12} />
           </button>
         </div>
       )}
@@ -45,10 +46,10 @@ export default function Landing({ onStart, onStory }) {
             figures this out alone.
           </p>
           <button className="btn btn--primary" onClick={onStart}>
-            Get started →
+            Get started <ArrowRightIcon />
           </button>
           <button className="link-quiet" onClick={onStory}>
-            Our story →
+            Our story <ArrowRightIcon size={11} />
           </button>
         </div>
       )}

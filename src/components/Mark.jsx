@@ -7,7 +7,7 @@ export default function Mark({ size = 34 }) {
       <rect width="32" height="32" rx="8" fill="var(--navy)" />
       <path
         d="M9 21 L16 9 L23 21"
-        stroke="var(--gold)"
+        stroke="var(--accent)"
         strokeWidth="2.5"
         fill="none"
         strokeLinecap="round"

@@ -1,3 +1,5 @@
+import { HeartIcon } from './icons.jsx'
+
 // The one card design used everywhere a career appears — Explore grid,
 // Atlas's suggestions, Shortlist. Change it once here, it updates everywhere.
 export default function CareerCard({ career, shortlisted, onToggleShortlist, onOpen }) {
@@ -11,7 +13,7 @@ export default function CareerCard({ career, shortlisted, onToggleShortlist, onO
         }}
         aria-label="Toggle shortlist"
       >
-        ♥
+        <HeartIcon filled={shortlisted} />
       </button>
       <span className={`stream-badge stream-badge--${career.stream.toLowerCase()}`}>
         {career.stream}
