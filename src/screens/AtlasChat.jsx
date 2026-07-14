@@ -88,9 +88,9 @@ export default function AtlasChat({ careers = [], onOpenCareer, profile }) {
   // same sessionStorage pattern as the intro video.
   const [messages, setMessages] = useState(() => {
     try {
-      return JSON.parse(sessionStorage.getItem(STORAGE_KEY)) || [GREETING]
+      return JSON.parse(sessionStorage.getItem(STORAGE_KEY)) || [greetingFor(profile)]
     } catch {
-      return [GREETING]
+      return [greetingFor(profile)]
     }
   })
   const [input, setInput] = useState('')
