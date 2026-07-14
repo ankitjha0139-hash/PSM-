@@ -25,3 +25,6 @@ yarn-debug.log*
 yarn-error.log*
 vite-log.txt
 preview-log.txt
+
+# Local Netlify folder
+.netlify
