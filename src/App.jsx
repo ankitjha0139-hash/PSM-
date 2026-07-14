@@ -110,125 +110,146 @@ function App() {
     setScreen('about')
   }
 
-  if (screen === 'about') {
-    return <AboutStory onBack={() => setScreen(aboutFrom || 'landing')} />
-  }
+  // Everything below picks the current screen's JSX; the sign-in modal is
+  // rendered once at the very end regardless of which branch fires, since
+  // requireAuth can be triggered from full-screen takeovers (CareerDetail,
+  // PractitionerProfile) that live outside the main tab-shell below — it
+  // used to live inside that shell only, so triggering it from those
+  // takeovers set the state but never rendered anything until you
+  // navigated back into a tab screen.
+  function renderScreen() {
+    if (screen === 'about') {
+      return <AboutStory onBack={() => setScreen(aboutFrom || 'landing')} />
+    }
 
-  // --- Onboarding sequence ---
-  if (screen === 'landing') {
-    return <Landing onStart={() => setScreen('roleGate')} onStory={openAbout} />
-  }
+    // --- Onboarding sequence ---
+    if (screen === 'landing') {
+      return <Landing onStart={() => setScreen('roleGate')} onStory={openAbout} />
+    }
 
-  if (screen === 'roleGate') {
-    return (
-      <RoleGate
-        onBack={() => setScreen('landing')}
-        onSelect={(picked) => {
-          setRole(picked)
-          setScreen(picked === 'practitioner' ? 'practitionerPlaceholder' : 'routingQuestion')
-        }}
-      />
-    )
-  }
-
-  if (screen === 'practitionerPlaceholder') {
-    return <PractitionerPlaceholder onBack={() => setScreen('roleGate')} />
-  }
-
-  if (screen === 'routingQuestion') {
-    return (
-      <RoutingQuestion
-        role={role}
-        onBack={() => setScreen('roleGate')}
-        onAnswer={(answer) => {
-          setRoutingAnswer(answer)
-          // "goal" and "direction" both land on Explore — same filter
-          // engine, just search-focused vs chip-focused. "none" goes to
-          // Atlas. See FilterExplore for how initialFocus is used.
-          setScreen(answer === 'none' ? 'atlas' : 'explore')
-        }}
-      />
-    )
-  }
-
-  // --- Detail is a full-screen takeover, reachable from any main tab ---
-  if (selectedCareerId) {
-    return (
-      <CareerDetail
-        career={selectedCareer}
-        shortlisted={shortlist.has(selectedCareerId)}
-        onToggleShortlist={handleToggleShortlist}
-        onBack={() => setSelectedCareerId(null)}
-        onTalkToPractitioner={() => {
-          // If a practitioner matches this career's primary role, jump
-          // straight to their profile instead of a generic list — the
-          // whole point of the CTA is "talk to a real X", so land them
-          // on that specific person.
-          const primaryRole = selectedCareer?.roles?.[0]
-          const match = practitioners.find((p) => p.matchesRole === primaryRole)
-          setSelectedCareerId(null)
-          if (match) {
-            setSelectedPractitionerId(match.id)
-          }
-          setScreen('practitioners')
-        }}
-      />
-    )
-  }
-
-  // --- Practitioner profile is also a full-screen takeover ---
-  if (selectedPractitionerId) {
-    return (
-      <PractitionerProfile
-        practitioner={selectedPractitioner}
-        onBack={() => setSelectedPractitionerId(null)}
-        onRequireAuth={(action) => requireAuth('booking', action)}
-      />
-    )
-  }
-
-  // Same shortlist state, but with an auth-gated toggle — screens keep
-  // calling shortlist.toggle exactly like before, they just get the
-  // gated version instead of the raw one.
-  const gatedShortlist = { ...shortlist, toggle: handleToggleShortlist }
-
-  // --- Main app, with persistent bottom nav ---
-  return (
-    <div className="app-shell">
-      {screen === 'explore' && (
-        <FilterExplore
-          shortlist={gatedShortlist}
-          onOpenDetail={setSelectedCareerId}
-          initialFocus={routingAnswer === 'goal' ? 'search' : 'filter'}
-        />
-      )}
-      {screen === 'atlas' && (
-        <AtlasChat
-          careers={careerPaths || []}
-          onOpenCareer={setSelectedCareerId}
-          profile={{
-            role,
-            journeyStage: routingAnswer,
-            shortlisted: (careerPaths || [])
-              .filter((c) => shortlist.has(c.id))
-              .map((c) => c.title),
+    if (screen === 'roleGate') {
+      return (
+        <RoleGate
+          onBack={() => setScreen('landing')}
+          onSelect={(picked) => {
+            setRole(picked)
+            setScreen(picked === 'practitioner' ? 'practitionerPlaceholder' : 'routingQuestion')
           }}
         />
-      )}
-      {screen === 'shortlist' && (
-        <Shortlist shortlist={gatedShortlist} onOpenDetail={setSelectedCareerId} />
-      )}
-      {screen === 'practitioners' && (
-        <PractitionerDirectory onOpenProfile={setSelectedPractitionerId} />
-      )}
+      )
+    }
 
-      {MAIN_TABS.includes(screen) && <BottomNav active={screen} onNavigate={setScreen} />}
-      <AccountButton
-        user={auth.user}
-        onSignIn={() => setSignInReason('account')}
-        onSignOut={auth.signOut}
-      />
-      <SupportWidget onOpenAbout={openAbout} />
+    if (screen === 'practitionerPlaceholder') {
+      return <PractitionerPlaceholder onBack={() => setScreen('roleGate')} />
+    }
+
+    if (screen === 'routingQuestion') {
+      return (
+        <RoutingQuestion
+          role={role}
+          onBack={() => setScreen('roleGate')}
+          onAnswer={(answer) => {
+            setRoutingAnswer(answer)
+            // "goal" and "direction" both land on Explore — same filter
+            // engine, just search-focused vs chip-focused. "none" goes to
+            // Atlas. See FilterExplore for how initialFocus is used.
+            setScreen(answer === 'none' ? 'atlas' : 'explore')
+          }}
+        />
+      )
+    }
+
+    // --- Detail is a full-screen takeover, reachable from any main tab ---
+    if (selectedCareerId) {
+      return (
+        <CareerDetail
+          career={selectedCareer}
+          shortlisted={shortlist.has(selectedCareerId)}
+          onToggleShortlist={handleToggleShortlist}
+          onBack={() => setSelectedCareerId(null)}
+          onTalkToPractitioner={() => {
+            // If a practitioner matches this career's primary role, jump
+            // straight to their profile instead of a generic list — the
+            // whole point of the CTA is "talk to a real X", so land them
+            // on that specific person.
+            const primaryRole = selectedCareer?.roles?.[0]
+            const match = practitioners.find((p) => p.matchesRole === primaryRole)
+            setSelectedCareerId(null)
+            if (match) {
+              setSelectedPractitionerId(match.id)
+            }
+            setScreen('practitioners')
+          }}
+        />
+      )
+    }
+
+    // --- Practitioner profile is also a full-screen takeover ---
+    if (selectedPractitionerId) {
+      return (
+        <PractitionerProfile
+          practitioner={selectedPractitioner}
+          onBack={() => setSelectedPractitionerId(null)}
+          onRequireAuth={(action) => requireAuth('booking', action)}
+        />
+      )
+    }
+
+    // Same shortlist state, but with an auth-gated toggle — screens keep
+    // calling shortlist.toggle exactly like before, they just get the
+    // gated version instead of the raw one.
+    const gatedShortlist = { ...shortlist, toggle: handleToggleShortlist }
+
+    // --- Main app, with persistent bottom nav ---
+    return (
+      <div className="app-shell">
+        {screen === 'explore' && (
+          <FilterExplore
+            shortlist={gatedShortlist}
+            onOpenDetail={setSelectedCareerId}
+            initialFocus={routingAnswer === 'goal' ? 'search' : 'filter'}
+          />
+        )}
+        {screen === 'atlas' && (
+          <AtlasChat
+            careers={careerPaths || []}
+            onOpenCareer={setSelectedCareerId}
+            profile={{
+              role,
+              journeyStage: routingAnswer,
+              shortlisted: (careerPaths || [])
+                .filter((c) => shortlist.has(c.id))
+                .map((c) => c.title),
+            }}
+          />
+        )}
+        {screen === 'shortlist' && (
+          <Shortlist shortlist={gatedShortlist} onOpenDetail={setSelectedCareerId} />
+        )}
+        {screen === 'practitioners' && (
+          <PractitionerDirectory onOpenProfile={setSelectedPractitionerId} />
+        )}
+
+        {MAIN_TABS.includes(screen) && <BottomNav active={screen} onNavigate={setScreen} />}
+        <SupportWidget onOpenAbout={openAbout} />
+      </div>
+    )
+  }
+
+  return (
+    <>
+      {renderScreen()}
+      {/* Global on every screen except the landing splash, which has its
+          own top-right "Skip" button during the intro video — showing
+          both there would overlap. Everywhere past that, the whole point
+          is that "am I signed in?" should never be ambiguous. */}
+      {screen !== 'landing' && (
+        <AccountButton
+          user={auth.user}
+          onSignIn={() => setSignInReason('account')}
+          onSignOut={auth.signOut}
+        />
+      )}
       {signInReason && (
         <SignInModal
           reason={signInReason}
@@ -236,7 +257,7 @@ function App() {
           onClose={() => setSignInReason(null)}
         />
       )}
-    </div>
+    </>
   )
 }
 
