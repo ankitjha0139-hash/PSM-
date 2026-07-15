@@ -1088,6 +1088,13 @@
   display: block;
 }
 
+.chat-signin-hint {
+  display: block;
+  max-width: 560px;
+  margin: 0 auto 10px;
+  text-align: right;
+}
+
 .link-quiet {
   display: inline-flex;
   align-items: center;
