@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import posthog from 'posthog-js'
 import { supabase } from '../lib/supabaseClient.js'
 
 // Session state shared by anything that needs to know "is someone signed
@@ -17,6 +18,7 @@ export function useAuth() {
     })
 
     const { data: listener } = supabase.auth.onAuthStateChange((_event, newSession) => {
+      if (_event === 'SIGNED_IN') posthog.capture('signed_in')
       setSession(newSession)
     })
 

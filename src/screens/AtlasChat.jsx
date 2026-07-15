@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import ReactMarkdown from 'react-markdown'
+import posthog from 'posthog-js'
 import { streamChat } from '../lib/streamChat.js'
 import { loadChatHistory, saveChatMessage } from '../lib/chatHistory.js'
 import { SendIcon } from '../components/icons.jsx'
@@ -193,6 +194,7 @@ export default function AtlasChat({
         },
         { profile }
       )
+      posthog.capture('atlas_message_sent', { journey_stage: profile?.journeyStage })
       // Stream done — split the hidden FOLLOWUPS line into chips.
       const { visible, chips } = splitFollowups(acc)
       const modelMessage = { role: 'model', text: visible, followups: chips }

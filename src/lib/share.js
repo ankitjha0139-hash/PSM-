@@ -1,3 +1,5 @@
+import posthog from 'posthog-js'
+
 // Share a career for a second opinion — parents, seniors, that one uncle
 // who's an engineer. The formatted text IS the product here: the recipient
 // reads the gist inside WhatsApp without clicking anything; the link opens
@@ -23,17 +25,25 @@ export async function shareCareer(career) {
   if (navigator.share) {
     try {
       await navigator.share({ title: career.title, text, url })
+      posthog.capture('career_shared', { careerId: career.id, method: 'shared' })
       return 'shared'
     } catch (err) {
       // user closed the sheet — not an error, and don't fall through
-      if (err.name === 'AbortError') return 'cancelled'
+      if (err.name === 'AbortError') {
+        posthog.capture('career_shared', { careerId: career.id, method: 'cancelled' })
+        return 'cancelled'
+      }
     }
   }
 
   const wa = `https://wa.me/?text=${encodeURIComponent(`${text}\n${url}`)}`
   const win = window.open(wa, '_blank', 'noopener')
-  if (win) return 'whatsapp'
+  if (win) {
+    posthog.capture('career_shared', { careerId: career.id, method: 'whatsapp' })
+    return 'whatsapp'
+  }
 
   await navigator.clipboard.writeText(`${text}\n${url}`)
+  posthog.capture('career_shared', { careerId: career.id, method: 'copied' })
   return 'copied'
 }
