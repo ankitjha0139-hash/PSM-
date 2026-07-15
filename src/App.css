@@ -335,6 +335,86 @@
   padding: 24px 0;
 }
 
+/* Genuinely-empty lists/grids (as opposed to a transient loading/error
+   line above) get an icon + message instead of plain text. */
+.empty-state-block {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+  padding: 36px 20px;
+}
+
+.empty-state-block__icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.empty-state-block__text {
+  margin: 0;
+  max-width: 320px;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* Skeleton placeholder — same silhouette as .career-card, shown while
+   career data is still loading instead of a blank text line. */
+.skeleton-card {
+  cursor: default;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.skeleton-line {
+  display: block;
+  border-radius: 5px;
+  background: linear-gradient(90deg, var(--border) 25%, var(--bg) 50%, var(--border) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+
+.skeleton-line--badge {
+  width: 44px;
+  height: 16px;
+  border-radius: 20px;
+}
+
+.skeleton-line--title {
+  width: 70%;
+  height: 15px;
+  margin-top: 6px;
+}
+
+.skeleton-line--meta {
+  width: 55%;
+  height: 12px;
+}
+
+.skeleton-line--meta-short {
+  width: 40%;
+  height: 12px;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
 /* ===== Stream badges ===== */
 .stream-badge {
   display: inline-block;
@@ -1418,6 +1498,50 @@
   border-color: var(--accent);
 }
 
+/* 3-step indicator (Time -> Details -> Confirmed) shown on the linear
+   part of the booking flow, right under each screen's back button. */
+.booking-steps {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 4px 0 4px;
+}
+
+.booking-steps__step {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.booking-steps__step:not(:last-child)::after {
+  content: '';
+  width: 16px;
+  height: 1px;
+  background: var(--border);
+  margin-left: 8px;
+}
+
+.booking-steps__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--border);
+  flex: none;
+}
+
+.booking-steps__step--done .booking-steps__dot,
+.booking-steps__step--active .booking-steps__dot {
+  background: var(--accent);
+}
+
+.booking-steps__step--active {
+  color: var(--ink);
+}
+
 .booking-card__btn--cancel {
   color: var(--destructive);
 }
@@ -1444,19 +1568,58 @@
 .app-shell {
   position: relative;
   min-height: 100vh;
-  /* Clears the fixed top-nav bar (~60px) plus its safe-area inset. */
-  padding-top: calc(64px + env(safe-area-inset-top));
+  /* Mobile-first: the dark top bar is hidden below 768px (see .top-nav),
+     replaced by the fixed .bottom-tab-bar, so clearance goes on the
+     bottom instead of the top; the 768px block below flips this back. */
+  padding-bottom: calc(64px + env(safe-area-inset-bottom));
 }
 
 /* Full-width dark bar (sui.io-style) — edge to edge, not a floating pill.
-   Text links only; below 768px they move into .top-nav__menu instead. */
+   Desktop only (see 768px block); below that, .bottom-tab-bar takes over
+   nav duties entirely, including "About". */
 .top-nav {
+  display: none;
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   z-index: 40;
   background: var(--navy);
+}
+
+/* WhatsApp-style bottom tab bar — mobile only (see 768px block). */
+.bottom-tab-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 40;
+  display: flex;
+  background: var(--card);
+  border-top: 1px solid var(--border);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.bottom-tab-bar__item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  min-height: 56px;
+  background: none;
+  border: none;
+  padding: 8px 4px;
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.bottom-tab-bar__item--active {
+  color: var(--accent);
 }
 
 .top-nav__bar {
@@ -1524,46 +1687,6 @@
   flex: none;
 }
 
-.top-nav__toggle {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 34px;
-  height: 34px;
-  background: none;
-  border: none;
-  color: #fff;
-  cursor: pointer;
-}
-
-.top-nav__menu {
-  display: flex;
-  flex-direction: column;
-  padding: 4px 20px 14px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.top-nav__menu-link {
-  background: none;
-  border: none;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  text-align: left;
-  padding: 13px 0;
-  font-family: var(--font-body);
-  font-size: 15px;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.75);
-  cursor: pointer;
-}
-
-.top-nav__menu-link:last-child {
-  border-bottom: none;
-}
-
-.top-nav__menu-link--active {
-  color: var(--accent);
-}
-
 /* ============================================================
    Desktop / laptop — everything above is mobile-first (the
    primary target). These widen containers and grids once there's
@@ -1599,13 +1722,29 @@
     max-width: 480px;
   }
 
-  /* Full row of text links replaces the mobile toggle+dropdown once
-     there's room for all four words plus the wordmark and account slot. */
+  /* Desktop: the dark top bar (with the full row of text links) replaces
+     the mobile bottom tab bar entirely. */
+  .app-shell {
+    padding-top: calc(64px + env(safe-area-inset-top));
+    padding-bottom: 0;
+  }
+
+  .top-nav {
+    display: block;
+  }
+
   .top-nav__links {
     display: flex;
   }
 
-  .top-nav__toggle {
+  .bottom-tab-bar {
+    display: none;
+  }
+
+  /* The desktop top bar carries its own embedded account slot; the
+     mobile-only floating chip would otherwise double up on tab screens. */
+  .account-btn--mobile-only,
+  .account-chip-wrap--mobile-only {
     display: none;
   }
 }
