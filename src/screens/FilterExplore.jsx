@@ -1,6 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useCareerPaths } from '../hooks/useCareerPaths.js'
 import CareerCard from '../components/CareerCard.jsx'
+import SkeletonCareerCard from '../components/SkeletonCareerCard.jsx'
+import EmptyState from '../components/EmptyState.jsx'
+import { TargetIcon } from '../components/icons.jsx'
 
 // Raw interest_tags in the sheet have grown into the dozens as more careers
 // get added — too many to show flat. This groups them into a small set of
@@ -121,7 +124,11 @@ export default function FilterExplore({ shortlist, onOpenDetail, initialFocus })
     return (
       <main className="screen screen--scroll">
         <h2 className="screen__title screen__title--md">Explore paths</h2>
-        <p className="empty-state">Loading career paths…</p>
+        <div className="career-grid">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <SkeletonCareerCard key={i} />
+          ))}
+        </div>
       </main>
     )
   }
@@ -205,7 +212,7 @@ export default function FilterExplore({ shortlist, onOpenDetail, initialFocus })
           />
         ))}
         {results.length === 0 && (
-          <p className="empty-state">No paths match — try loosening a filter.</p>
+          <EmptyState icon={TargetIcon} message="No paths match — try loosening a filter." />
         )}
       </div>
     </main>

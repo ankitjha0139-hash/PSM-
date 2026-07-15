@@ -53,14 +53,6 @@ export function CalendarIcon({ size = 15 }) {
 // unicode glyphs (←, →, ♥, ✕, ▾, ↗, ✓) that used to be scattered as plain
 // text across every screen. One definition each, reused everywhere.
 
-export function MenuIcon({ size = 18 }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
-      <path d="M4 7h16M4 12h16M4 17h16" />
-    </svg>
-  )
-}
-
 export function BackIcon({ size = 16 }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
