@@ -50,6 +50,11 @@ function App() {
     nav.selectedPractitionerId || null
   )
   const [aboutFrom, setAboutFrom] = useState(null)
+  // Career to offer a real way back to from the Practitioners tab, when
+  // arriving there via "Talk to a real X" rather than a deliberate tab
+  // tap. Cleared on any manual tab navigation so a stale breadcrumb
+  // doesn't reappear if the visitor comes back to Practitioners later.
+  const [practitionersBackTo, setPractitionersBackTo] = useState(null)
 
   useEffect(() => {
     sessionStorage.setItem(
@@ -174,6 +179,11 @@ function App() {
             // on that specific person.
             const primaryRole = selectedCareer?.roles?.[0]
             const match = practitioners.find((p) => p.matchesRole === primaryRole)
+            // Remember the career so there's a real way back — this used
+            // to be a dead end: no match (or backing out of a matched
+            // profile) landed on the plain directory with nothing to do
+            // but manually re-find the career from Explore.
+            setPractitionersBackTo(selectedCareerId)
             setSelectedCareerId(null)
             if (match) {
               setSelectedPractitionerId(match.id)
@@ -230,13 +240,25 @@ function App() {
           <Shortlist shortlist={gatedShortlist} onOpenDetail={setSelectedCareerId} />
         )}
         {screen === 'practitioners' && (
-          <PractitionerDirectory onOpenProfile={setSelectedPractitionerId} />
+          <PractitionerDirectory
+            onOpenProfile={setSelectedPractitionerId}
+            backToCareerId={practitionersBackTo}
+            onBackToCareer={() => {
+              setSelectedCareerId(practitionersBackTo)
+              setPractitionersBackTo(null)
+            }}
+          />
         )}
 
         {MAIN_TABS.includes(screen) && (
           <TopNav
             active={screen}
-            onNavigate={setScreen}
+            onNavigate={(id) => {
+              // A deliberate tab tap means the "back to career" breadcrumb
+              // is no longer relevant — don't let it linger.
+              setPractitionersBackTo(null)
+              setScreen(id)
+            }}
             onAbout={openAbout}
             user={auth.user}
             onSignIn={() => setSignInReason('account')}
