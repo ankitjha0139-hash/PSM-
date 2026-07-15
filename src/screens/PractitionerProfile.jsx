@@ -3,6 +3,7 @@ import { StarIcon, CheckIcon, VerifiedIcon, CalendarIcon, BackIcon, ArrowRightIc
 import { getSlotDays, makeBookingId, downloadIcs } from '../lib/bookingUtils.js'
 import { useBookings } from '../hooks/useBookings.js'
 import { submitNetlifyForm } from '../lib/netlifyForms.js'
+import BookingSteps from '../components/BookingSteps.jsx'
 
 // Full profile + the booking flow: pick a session type, pick a real
 // day/time slot, leave contact details, get a confirmation with a booking
@@ -71,6 +72,7 @@ export default function PractitionerProfile({ practitioner, onBack, onRequireAut
   if (step === 'confirmed') {
     return (
       <main className="screen screen--center">
+        <BookingSteps current="confirmed" />
         <div className="prac-confirm-check">
           <CheckIcon size={26} />
         </div>
@@ -120,6 +122,7 @@ export default function PractitionerProfile({ practitioner, onBack, onRequireAut
         <button className="link-back" onClick={() => setStep('slot')} aria-label="Back">
           <BackIcon />
         </button>
+        <BookingSteps current="contact" />
         <div className="screen__body">
           <h2 className="screen__title screen__title--md">Almost there</h2>
           <p className="screen__sub">
@@ -162,6 +165,7 @@ export default function PractitionerProfile({ practitioner, onBack, onRequireAut
         <button className="link-back" onClick={() => setStep('profile')} aria-label="Back">
           <BackIcon />
         </button>
+        <BookingSteps current="slot" />
         <div className="screen__body">
           <h2 className="screen__title screen__title--md">
             Pick a time with {practitioner.name}

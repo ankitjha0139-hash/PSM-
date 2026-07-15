@@ -250,19 +250,20 @@ function App() {
       {renderScreen()}
       {/* Standalone floating account chip — every screen except the landing
           splash (own top-right "Skip" button during the intro video would
-          overlap) and the main-tab shell with no takeover active (TopNav
-          carries the account slot there instead, so this would
-          double-render). `screen` doesn't change while CareerDetail/
-          PractitionerProfile are open (only selectedCareerId/
-          selectedPractitionerId do), so those takeovers must be checked
-          explicitly here too, or this chip would wrongly disappear right
-          when sign-in gating on shortlist/booking matters most. */}
-      {screen !== 'landing' &&
-        (!MAIN_TABS.includes(screen) || selectedCareerId || selectedPractitionerId) && (
+          overlap). On a plain tab screen (no takeover active) it's mobile-
+          only: the desktop top bar has its own embedded copy, but the
+          mobile bottom tab bar doesn't carry one, so this chip is what
+          gives mobile tab screens account access. `screen` doesn't change
+          while CareerDetail/PractitionerProfile are open (only
+          selectedCareerId/selectedPractitionerId do), so those takeovers
+          are checked explicitly to keep this chip visible at every width
+          right when sign-in gating on shortlist/booking matters most. */}
+      {screen !== 'landing' && (
         <AccountButton
           user={auth.user}
           onSignIn={() => setSignInReason('account')}
           onSignOut={auth.signOut}
+          mobileOnly={MAIN_TABS.includes(screen) && !selectedCareerId && !selectedPractitionerId}
         />
       )}
       {signInReason && (

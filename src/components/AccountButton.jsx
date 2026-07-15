@@ -6,14 +6,21 @@ import { useState } from 'react'
 // collapses to an avatar chip with a "who am I / sign out" dropdown.
 // variant="embedded": same behavior, flow-positioned to sit inside TopNav's
 // own layout instead of self-positioning with `fixed`.
-export default function AccountButton({ user, onSignIn, onSignOut, variant = 'floating' }) {
+// mobileOnly: also floating, but hidden at desktop widths — used on tab
+// screens where the desktop top bar already has its own embedded copy, but
+// the mobile bottom tab bar doesn't (see TopNav.jsx).
+export default function AccountButton({ user, onSignIn, onSignOut, variant = 'floating', mobileOnly = false }) {
   const [open, setOpen] = useState(false)
   const embedded = variant === 'embedded'
 
   if (!user) {
     return (
       <button
-        className={embedded ? 'account-btn account-btn--inline' : 'account-btn'}
+        className={[
+          'account-btn',
+          embedded && 'account-btn--inline',
+          mobileOnly && 'account-btn--mobile-only',
+        ].filter(Boolean).join(' ')}
         onClick={onSignIn}
       >
         Sign in
@@ -25,7 +32,11 @@ export default function AccountButton({ user, onSignIn, onSignOut, variant = 'fl
   const avatarUrl = user.user_metadata?.avatar_url
 
   return (
-    <div className={embedded ? 'account-chip-wrap account-chip-wrap--inline' : 'account-chip-wrap'}>
+    <div className={[
+      'account-chip-wrap',
+      embedded && 'account-chip-wrap--inline',
+      mobileOnly && 'account-chip-wrap--mobile-only',
+    ].filter(Boolean).join(' ')}>
       <button className="account-avatar" onClick={() => setOpen((v) => !v)} aria-label="Account">
         {avatarUrl ? (
           <img className="avatar-img" src={avatarUrl} alt={name} />
