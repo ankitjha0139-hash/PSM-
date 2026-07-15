@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import posthog from 'posthog-js'
 import { StarIcon, CheckIcon, VerifiedIcon, CalendarIcon, BackIcon, ArrowRightIcon } from '../components/icons.jsx'
 import { getSlotDays, makeBookingId, downloadIcs } from '../lib/bookingUtils.js'
 import { useBookings } from '../hooks/useBookings.js'
@@ -62,6 +63,10 @@ export default function PractitionerProfile({ practitioner, onBack, onRequireAut
       sent = false
     }
     add(b)
+    posthog.capture('booking_confirmed', {
+      practitionerId: practitioner.id,
+      sessionLabel: sessionType.label,
+    })
     setBooking(b)
     setNotified(sent)
     setSaving(false)
