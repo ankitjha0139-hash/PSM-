@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import { streamChat } from '../lib/streamChat.js'
+import { loadChatHistory, saveChatMessage } from '../lib/chatHistory.js'
 import { SendIcon } from '../components/icons.jsx'
 
 // Real, streamed conversation — calls netlify/functions/atlas-chat.mjs,
@@ -71,23 +72,62 @@ function linkifyCareers(text, careers) {
   return out
 }
 
-export default function AtlasChat({ careers = [], onOpenCareer, profile }) {
-  // Survives tab switches (component unmounts) but not a new visit —
-  // same sessionStorage pattern as the intro video.
-  const [messages, setMessages] = useState(() => {
-    try {
-      return JSON.parse(sessionStorage.getItem(STORAGE_KEY)) || [greetingFor(profile)]
-    } catch {
-      return [greetingFor(profile)]
-    }
-  })
+export default function AtlasChat({
+  careers = [],
+  onOpenCareer,
+  profile,
+  user,
+  authLoading,
+  onSignIn,
+}) {
+  // Anonymous: sessionStorage, survives tab switches but not a new visit
+  // (unchanged behavior). Signed in: real history from Supabase, survives
+  // everything. Which one applies depends on auth, which resolves async —
+  // start empty and let the identity-resolution effect below fill it in,
+  // rather than guessing and risking a flash of the wrong content.
+  const [messages, setMessages] = useState([])
+  const [historyLoading, setHistoryLoading] = useState(true)
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const logRef = useRef(null)
+  // profile is a fresh object every App.jsx render (shortlist changes,
+  // etc.) — read via ref in the identity effect below so those renders
+  // don't re-trigger a history reload or reset an in-progress greeting.
+  const profileRef = useRef(profile)
+  profileRef.current = profile
+  const initedForRef = useRef(undefined)
 
   useEffect(() => {
+    if (authLoading) return
+    const identityKey = user ? user.id : 'anon'
+    if (initedForRef.current === identityKey) return
+    initedForRef.current = identityKey
+
+    if (!user) {
+      let initial
+      try {
+        initial = JSON.parse(sessionStorage.getItem(STORAGE_KEY)) || [greetingFor(profileRef.current)]
+      } catch {
+        initial = [greetingFor(profileRef.current)]
+      }
+      setMessages(initial)
+      setHistoryLoading(false)
+      return
+    }
+
+    setHistoryLoading(true)
+    loadChatHistory(user.id).then((history) => {
+      setMessages(history.length ? history : [greetingFor(profileRef.current)])
+      setHistoryLoading(false)
+    })
+  }, [user, authLoading])
+
+  useEffect(() => {
+    // Signed-in history lives in Supabase, not sessionStorage — don't
+    // shadow-write it locally too.
+    if (user) return
     sessionStorage.setItem(STORAGE_KEY, JSON.stringify(messages))
-  }, [messages])
+  }, [messages, user])
 
   useEffect(() => {
     logRef.current?.scrollTo({ top: logRef.current.scrollHeight, behavior: 'smooth' })
@@ -113,14 +153,19 @@ export default function AtlasChat({ careers = [], onOpenCareer, profile }) {
 
   const send = async (text) => {
     const trimmed = text.trim()
-    if (!trimmed || loading) return
+    if (!trimmed || loading || historyLoading) return
 
-    const nextMessages = [...messages, { role: 'user', text: trimmed }]
+    const userMessage = { role: 'user', text: trimmed }
+    const nextMessages = [...messages, userMessage]
     // Empty placeholder bubble — shows as typing dots until the first
     // streamed chunk arrives, then fills in progressively.
     setMessages([...nextMessages, { role: 'model', text: '' }])
     setInput('')
     setLoading(true)
+    // Fire-and-forget: the message is already in local state, so a slow or
+    // failed write doesn't block the conversation — it just won't have
+    // persisted if the user is signed in and this particular save failed.
+    if (user) saveChatMessage(user.id, userMessage)
 
     let acc = ''
     const showPartial = () => {
@@ -150,11 +195,13 @@ export default function AtlasChat({ careers = [], onOpenCareer, profile }) {
       )
       // Stream done — split the hidden FOLLOWUPS line into chips.
       const { visible, chips } = splitFollowups(acc)
+      const modelMessage = { role: 'model', text: visible, followups: chips }
       setMessages((prev) => {
         const copy = [...prev]
-        copy[copy.length - 1] = { role: 'model', text: visible, followups: chips }
+        copy[copy.length - 1] = modelMessage
         return copy
       })
+      if (user) saveChatMessage(user.id, modelMessage)
     } catch {
       setMessages((prev) => {
         const copy = [...prev]
@@ -175,8 +222,25 @@ export default function AtlasChat({ careers = [], onOpenCareer, profile }) {
     <main className="screen screen--scroll">
       <h2 className="screen__title screen__title--md">Atlas</h2>
 
+      {!user && !authLoading && (
+        <button className="link-quiet chat-signin-hint" onClick={onSignIn}>
+          Sign in to keep this conversation across visits →
+        </button>
+      )}
+
       <div className="chat-log" ref={logRef}>
-        {messages.map((m, i) => {
+        {historyLoading && (
+          <div className="chat-entry">
+            <div className="bubble bubble--atlas">
+              <span className="typing-dots-inline">
+                <span className="typing-dot" />
+                <span className="typing-dot" />
+                <span className="typing-dot" />
+              </span>
+            </div>
+          </div>
+        )}
+        {!historyLoading && messages.map((m, i) => {
           const isStreamingEmpty =
             loading && i === lastIndex && m.role === 'model' && m.text === ''
           return (
@@ -224,12 +288,12 @@ export default function AtlasChat({ careers = [], onOpenCareer, profile }) {
           placeholder="Ask Atlas anything…"
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          disabled={loading}
+          disabled={loading || historyLoading}
         />
         <button
           className="chat-send"
           type="submit"
-          disabled={loading || !input.trim()}
+          disabled={loading || historyLoading || !input.trim()}
           aria-label="Send"
         >
           <SendIcon />

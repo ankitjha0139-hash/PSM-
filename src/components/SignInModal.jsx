@@ -7,6 +7,7 @@ import { CloseIcon } from './icons.jsx'
 const REASON_COPY = {
   shortlist: "Sign in to save your shortlist so it's there next time you visit.",
   booking: 'Sign in to book a call with a practitioner.',
+  'chat-history': "Sign in to keep this conversation with Atlas across visits and devices.",
   account: 'Sign in with your Google account.',
 }
 

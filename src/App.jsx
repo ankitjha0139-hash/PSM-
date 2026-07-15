@@ -214,6 +214,9 @@ function App() {
           <AtlasChat
             careers={careerPaths || []}
             onOpenCareer={setSelectedCareerId}
+            user={auth.user}
+            authLoading={auth.loading}
+            onSignIn={() => setSignInReason('chat-history')}
             profile={{
               role,
               journeyStage: routingAnswer,
