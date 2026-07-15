@@ -21,12 +21,12 @@ function greetingFor(profile) {
   if (profile?.journeyStage === 'none') {
     return {
       role: 'model',
-      text: "Hi, I'm Atlas 👋 Starting with no idea is the most common way to start — that's exactly what I'm for. First question: which school subjects feel easiest to you, the ones you don't have to force yourself to study?",
+      text: "Hi, I'm Atlas.ai 👋 Starting with no idea is the most common way to start — that's exactly what I'm for. First question: which school subjects feel easiest to you, the ones you don't have to force yourself to study?",
     }
   }
   return {
     role: 'model',
-    text: "Hi, I'm Atlas 👋 I'll be your guide on this journey — ask me anything, and let's find some clarity on the path ahead.",
+    text: "Hi, I'm Atlas.ai 👋 I'll be your guide on this journey — ask me anything, and let's find some clarity on the path ahead.",
   }
 }
 
@@ -222,7 +222,7 @@ export default function AtlasChat({
 
   return (
     <main className="screen screen--scroll">
-      <h2 className="screen__title screen__title--md">Atlas</h2>
+      <h2 className="screen__title screen__title--md">Atlas.ai</h2>
 
       {!user && !authLoading && (
         <button className="link-quiet chat-signin-hint" onClick={onSignIn}>
@@ -287,7 +287,7 @@ export default function AtlasChat({
       >
         <input
           className="chat-input"
-          placeholder="Ask Atlas anything…"
+          placeholder="Ask Atlas.ai anything…"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           disabled={loading || historyLoading}

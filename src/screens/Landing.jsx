@@ -1,58 +1,31 @@
-import { useState } from 'react'
 import Mark from '../components/Mark.jsx'
 import { ArrowRightIcon } from '../components/icons.jsx'
 
-// Shown once per browser tab session (sessionStorage), not on every mount —
-// otherwise tapping "back" from the Role gate would replay the whole intro
-// video every single time, which is wasteful and gets old fast.
-const INTRO_KEY = 'introShown'
-
+// The lighthouse intro video is gone for now — it fought the current
+// aesthetic and behaved inconsistently across desktop fullscreen and
+// mobile. Welcome content shows immediately instead. A proper animated
+// welcome (text transitions, "Welcome to Lighthouse.guide" -> the
+// question) is the planned replacement, not this — this is the interim
+// simple state.
 export default function Landing({ onStart, onStory }) {
-  const [phase, setPhase] = useState(() =>
-    sessionStorage.getItem(INTRO_KEY) ? 'cta' : 'video'
-  )
-
-  const goCta = () => {
-    sessionStorage.setItem(INTRO_KEY, '1')
-    setPhase('cta')
-  }
-
   return (
     <main className="screen screen--center">
-      {phase === 'video' && (
-        <div className="landing-video-wrap">
-          <video
-            className="landing-video"
-            src="/video/lighthouse-intro.mp4"
-            autoPlay
-            muted
-            playsInline
-            onEnded={goCta}
-          />
-          <button className="landing-skip" onClick={goCta}>
-            Skip <ArrowRightIcon size={12} />
-          </button>
-        </div>
-      )}
-
-      {phase === 'cta' && (
-        <div className="landing-fade-in">
-          <Mark />
-          <p className="landing-eyebrow">Welcome to Lighthouse.guide</p>
-          <h1 className="screen__title">What could you become?</h1>
-          <p className="screen__sub">
-            We map every career path open to you — clearly and honestly —
-            then connect you with real people who've lived it. Nobody
-            figures this out alone.
-          </p>
-          <button className="btn btn--primary" onClick={onStart}>
-            Get started <ArrowRightIcon />
-          </button>
-          <button className="link-quiet" onClick={onStory}>
-            Our story <ArrowRightIcon size={11} />
-          </button>
-        </div>
-      )}
+      <div className="landing-fade-in">
+        <Mark />
+        <p className="landing-eyebrow">Welcome to Lighthouse.guide</p>
+        <h1 className="screen__title">What could you become?</h1>
+        <p className="screen__sub">
+          We map every career path open to you — clearly and honestly —
+          then connect you with real people who've lived it. Nobody
+          figures this out alone.
+        </p>
+        <button className="btn btn--primary" onClick={onStart}>
+          Get started <ArrowRightIcon />
+        </button>
+        <button className="link-quiet" onClick={onStory}>
+          Our story <ArrowRightIcon size={11} />
+        </button>
+      </div>
     </main>
   )
 }
