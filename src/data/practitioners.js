@@ -36,30 +36,33 @@ export const practitioners = [
     ],
   },
   {
-    id: 'aditya-rao',
-    name: 'Aditya Rao',
+    id: 'lokesh-pakhale',
+    name: 'Lokesh Pakhale',
     photo: null,
     videoId: 'UF8uR6Z6KLc',
     role: 'Architect',
-    credibility: '9 yrs · Architect @ Studio Lotus',
+    credibility: 'Architect & Co-founder · Far Sides of Design, Nagpur',
     matchesRole: 'Architect',
-    rating: 4.8,
-    sessionsCompleted: 29,
-    bio: 'Cleared NATA after two attempts, so knows the exam pressure firsthand. Works on residential and institutional projects now — can talk through what studio life is really like.',
-    languages: ['English', 'Hindi', 'Kannada'],
+    // First real onboarded practitioner (was dummy "Aditya Rao") — no
+    // sessions/reviews yet, so no rating to show. PractitionerCard and
+    // PractitionerProfile fall back to a "New" badge instead of a fake
+    // star rating when sessionsCompleted is 0 — see those components.
+    rating: null,
+    sessionsCompleted: 0,
+    bio: "Had a 'best out of waste' streak as a kid, which turned into an Architecture degree from Priyadarshini Institute of Architecture and Design Studies (PIADS), Nagpur by 22. Now co-runs Far Sides of Design, where low-cost sustainable builds (like a CSEB mud-block house in Nagpur) sit alongside more experimental concept work. Open to talking through whether architecture is right for you, or what it takes to start your own firm.",
+    languages: ['English', 'Hindi', 'Marathi'],
     journey: [
-      { when: 'School', what: 'PCM stream, sketched buildings in the margins' },
-      { when: '2013', what: 'Failed NATA on the first attempt' },
-      { when: '2014', what: 'Cleared it, started the 5-year B.Arch grind' },
-      { when: 'Now', what: 'Architect at Studio Lotus, 9 years in' },
+      { when: 'School', what: 'CBSE through 10th and 12th; always the kid turning scrap into something useful' },
+      { when: 'By 22', what: 'Architecture degree from PIADS, Nagpur' },
+      { when: 'Now', what: 'Co-founder, Far Sides of Design — Nagpur' },
     ],
-    topics: ['NATA prep reality check', 'Studio workload & thesis year', 'Is architecture right for you?'],
-    testimonials: [
-      { name: 'Kabir, Class 11', text: 'Told me things about workload nobody else was honest about.' },
-    ],
+    topics: ['Is architecture right for you?', 'Starting your own architecture firm', 'Sustainable & low-cost construction (CSEB/mud block)'],
+    testimonials: [],
+    // PLACEHOLDER PRICING — carried over from the dummy entry this replaced.
+    // Confirm Lokesh's actual rates and swap these in.
     sessionTypes: [
-      { id: 'quick', label: 'Quick Chat', duration: '15 min', price: '₹349', description: 'A focused question about NATA, JEE, or the field.' },
-      { id: 'deep', label: 'Deep Dive', duration: '45 min', price: '₹899', description: 'What a week in studio actually looks like, plus your specific questions.' },
+      { id: 'quick', label: 'Quick Chat', duration: '15 min', price: '₹349', description: 'A focused question about architecture as a career or starting a firm.' },
+      { id: 'deep', label: 'Deep Dive', duration: '45 min', price: '₹899', description: 'Full picture: studio life, sustainable design practice, and your specific questions.' },
     ],
   },
   {
