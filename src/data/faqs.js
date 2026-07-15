@@ -11,7 +11,7 @@ export const faqs = [
   {
     id: 'is-it-free',
     q: 'Is this free to use?',
-    a: 'Exploring careers, using Atlas, and building your shortlist are all free. Booking a call with a real Career Practitioner has a small fee — that pays for their time, not for us to push you anywhere.',
+    a: 'Exploring careers, using Atlas.ai, and building your shortlist are all free. Booking a call with a real Career Practitioner has a small fee — that pays for their time, not for us to push you anywhere.',
     keywords: ['free', 'cost', 'price', 'pay', 'money', 'charge'],
   },
   {
@@ -22,9 +22,9 @@ export const faqs = [
   },
   {
     id: 'what-is-atlas',
-    q: 'What is Atlas?',
-    a: "Atlas is our AI guide — for when you're not sure what you want yet. Talk it through and it'll help you narrow down some directions.",
-    keywords: ['atlas', 'ai', 'chat', 'guide', 'bot'],
+    q: 'What is Atlas.ai?',
+    a: "Atlas.ai is our AI guide — for when you're not sure what you want yet. Talk it through and it'll help you narrow down some directions.",
+    keywords: ['atlas', 'atlas.ai', 'ai', 'chat', 'guide', 'bot'],
   },
   {
     id: 'accuracy',
@@ -47,7 +47,7 @@ export const faqs = [
   {
     id: 'how-shortlist',
     q: 'How do I save a career to look at later?',
-    a: 'Tap the ♥ on any career card or detail page — it gets added to your Shortlist, which you can find in the bottom navigation.',
+    a: 'Tap the ♥ on any career card or detail page — it gets added to your Shortlist, which you can find in the top navigation.',
     keywords: ['save', 'shortlist', 'heart', 'wishlist', 'bookmark'],
   },
   {

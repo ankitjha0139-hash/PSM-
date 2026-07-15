@@ -15,56 +15,6 @@
   gap: 16px;
 }
 
-/* ===== Landing intro video ===== */
-.landing-video-wrap {
-  position: fixed;
-  inset: 0;
-  z-index: 20;
-  background: #050810;
-}
-
-.landing-video {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: 50% 35%; /* favour the top — keeps more of the lighthouse
-                                in frame and crops the watermark near the
-                                bottom out of view */
-  display: block;
-}
-
-/* Landscape crops far more aggressively (wide, short box vs a tall
-   portrait video), so it needs a bigger upward shift than portrait does. */
-@media (orientation: landscape) {
-  .landing-video {
-    object-position: 50% 12%;
-  }
-}
-
-.landing-skip {
-  position: absolute;
-  top: max(18px, env(safe-area-inset-top));
-  right: 18px;
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  background: rgba(255, 255, 255, 0.12);
-  color: #fff;
-  border: 1px solid rgba(255, 255, 255, 0.35);
-  padding: 8px 16px;
-  border-radius: 20px;
-  font-family: var(--font-body);
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-}
-
-.landing-skip:hover {
-  background: rgba(255, 255, 255, 0.2);
-}
-
 .landing-eyebrow {
   font-size: 12px;
   font-weight: 700;

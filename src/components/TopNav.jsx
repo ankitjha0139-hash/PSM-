@@ -13,7 +13,7 @@ import { MenuIcon, CloseIcon, ChevronDownIcon } from './icons.jsx'
 // phone (the same collapse every full-width text-link nav needs).
 const TABS = [
   { id: 'explore', label: 'Explore' },
-  { id: 'atlas', label: 'Atlas' },
+  { id: 'atlas', label: 'Atlas.ai' },
   { id: 'shortlist', label: 'Shortlist' },
   { id: 'practitioners', label: 'Practitioners' },
 ]
