@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import posthog from 'posthog-js'
 import './App.css'
 import { practitioners } from './data/practitioners.js'
 import { useShortlist } from './hooks/useShortlist.js'
@@ -50,6 +51,11 @@ function App() {
     nav.selectedPractitionerId || null
   )
   const [aboutFrom, setAboutFrom] = useState(null)
+  // Career to offer a real way back to from the Practitioners tab, when
+  // arriving there via "Talk to a real X" rather than a deliberate tab
+  // tap. Cleared on any manual tab navigation so a stale breadcrumb
+  // doesn't reappear if the visitor comes back to Practitioners later.
+  const [practitionersBackTo, setPractitionersBackTo] = useState(null)
 
   useEffect(() => {
     sessionStorage.setItem(
@@ -57,6 +63,18 @@ function App() {
       JSON.stringify({ screen, role, routingAnswer, selectedCareerId, selectedPractitionerId })
     )
   }, [screen, role, routingAnswer, selectedCareerId, selectedPractitionerId])
+
+  // No router — screen is state, not a URL — so this is the only signal
+  // PostHog gets for "what page is this". Covers the whole funnel in one
+  // generic event instead of hand-instrumenting every screen transition.
+  useEffect(() => {
+    posthog.capture('screen_viewed', {
+      screen,
+      has_career_open: !!selectedCareerId,
+      has_practitioner_open: !!selectedPractitionerId,
+    })
+  }, [screen, selectedCareerId, selectedPractitionerId])
+
   const shortlist = useShortlist()
   const { data: careerPaths } = useCareerPaths()
   const auth = useAuth()
@@ -77,7 +95,12 @@ function App() {
     }
   }
 
-  const handleToggleShortlist = (id) => requireAuth('shortlist', () => shortlist.toggle(id))
+  const handleToggleShortlist = (id) =>
+    requireAuth('shortlist', () => {
+      // Only the add direction is a conversion signal — removing isn't.
+      if (!shortlist.has(id)) posthog.capture('shortlisted', { careerId: id })
+      shortlist.toggle(id)
+    })
 
   const selectedCareer = (careerPaths || []).find((c) => c.id === selectedCareerId)
   const selectedPractitioner = practitioners.find((p) => p.id === selectedPractitionerId)
@@ -132,6 +155,7 @@ function App() {
         <RoleGate
           onBack={() => setScreen('landing')}
           onSelect={(picked) => {
+            posthog.capture('role_selected', { role: picked })
             setRole(picked)
             setScreen(picked === 'practitioner' ? 'practitionerPlaceholder' : 'routingQuestion')
           }}
@@ -149,6 +173,7 @@ function App() {
           role={role}
           onBack={() => setScreen('roleGate')}
           onAnswer={(answer) => {
+            posthog.capture('journey_selected', { answer })
             setRoutingAnswer(answer)
             // "goal" and "direction" both land on Explore — same filter
             // engine, just search-focused vs chip-focused. "none" goes to
@@ -174,6 +199,11 @@ function App() {
             // on that specific person.
             const primaryRole = selectedCareer?.roles?.[0]
             const match = practitioners.find((p) => p.matchesRole === primaryRole)
+            // Remember the career so there's a real way back — this used
+            // to be a dead end: no match (or backing out of a matched
+            // profile) landed on the plain directory with nothing to do
+            // but manually re-find the career from Explore.
+            setPractitionersBackTo(selectedCareerId)
             setSelectedCareerId(null)
             if (match) {
               setSelectedPractitionerId(match.id)
@@ -214,6 +244,9 @@ function App() {
           <AtlasChat
             careers={careerPaths || []}
             onOpenCareer={setSelectedCareerId}
+            user={auth.user}
+            authLoading={auth.loading}
+            onSignIn={() => setSignInReason('chat-history')}
             profile={{
               role,
               journeyStage: routingAnswer,
@@ -227,13 +260,25 @@ function App() {
           <Shortlist shortlist={gatedShortlist} onOpenDetail={setSelectedCareerId} />
         )}
         {screen === 'practitioners' && (
-          <PractitionerDirectory onOpenProfile={setSelectedPractitionerId} />
+          <PractitionerDirectory
+            onOpenProfile={setSelectedPractitionerId}
+            backToCareerId={practitionersBackTo}
+            onBackToCareer={() => {
+              setSelectedCareerId(practitionersBackTo)
+              setPractitionersBackTo(null)
+            }}
+          />
         )}
 
         {MAIN_TABS.includes(screen) && (
           <TopNav
             active={screen}
-            onNavigate={setScreen}
+            onNavigate={(id) => {
+              // A deliberate tab tap means the "back to career" breadcrumb
+              // is no longer relevant — don't let it linger.
+              setPractitionersBackTo(null)
+              setScreen(id)
+            }}
             onAbout={openAbout}
             user={auth.user}
             onSignIn={() => setSignInReason('account')}

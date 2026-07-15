@@ -30,7 +30,7 @@ export default async (req) => {
 <meta property="og:site_name" content="Lighthouse.guide">
 <meta property="og:title" content="${esc(title)}">
 <meta property="og:description" content="${esc(desc)}">
-<meta property="og:url" content="https://psm-b.netlify.app/s/${esc(id)}">
+<meta property="og:url" content="https://lighthouseguide.netlify.app/s/${esc(id)}">
 <meta name="twitter:card" content="summary">
 <meta name="description" content="${esc(desc)}">
 <meta http-equiv="refresh" content="0;url=${esc(target)}">

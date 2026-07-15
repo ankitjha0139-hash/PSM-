@@ -182,6 +182,17 @@ export default function SupportWidget({ onOpenAbout }) {
 
             {ticketMode && !submitted && (
               <div className="support-ticket-form">
+                {/* Changing your mind here used to mean closing the whole
+                    widget (the only "back" was the X) — a real cancel path
+                    that returns to the chat instead. */}
+                <button
+                  type="button"
+                  className="link-quiet"
+                  style={{ alignSelf: 'flex-start' }}
+                  onClick={() => setTicketMode(false)}
+                >
+                  ← Back to chat
+                </button>
                 <textarea
                   className="support-textarea"
                   placeholder="What do you need help with?"

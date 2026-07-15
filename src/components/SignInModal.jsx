@@ -5,8 +5,13 @@ import { CloseIcon } from './icons.jsx'
 // directly. Google OAuth takes over the whole tab and comes back — this
 // modal's job ends the moment that redirect starts.
 const REASON_COPY = {
-  shortlist: "Sign in to save your shortlist so it's there next time you visit.",
+  // Shortlist itself is still localStorage-only under the hood (no
+  // shortlists table yet), so promising "your shortlist is saved" would be
+  // a claim we can't back up. Chat history actually works end-to-end today
+  // — lead with the real thing until shortlist syncing catches up.
+  shortlist: 'Sign in to keep your Atlas.ai conversations saved across visits and devices.',
   booking: 'Sign in to book a call with a practitioner.',
+  'chat-history': 'Sign in to keep this conversation with Atlas.ai across visits and devices.',
   account: 'Sign in with your Google account.',
 }
 

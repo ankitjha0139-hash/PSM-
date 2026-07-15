@@ -5,7 +5,7 @@
 A career-clarity platform that helps Indian students discover *every* path open to them — and reach credible people who've actually walked it — before they make choices they can't undo.
 
 > PSM Project Part B · a product built to learn the product-development process.
-> **Live:** https://psm-b.netlify.app
+> **Live:** https://lighthouseguide.netlify.app
 
 ---
 

@@ -11,7 +11,7 @@ import { ChevronDownIcon, DirectionIcon, ChatIcon, HeartIcon, BriefcaseIcon } fr
 // submenu), a deliberate look-alike choice over strict semantic accuracy.
 const TABS = [
   { id: 'explore', label: 'Explore', icon: DirectionIcon },
-  { id: 'atlas', label: 'Atlas', icon: ChatIcon },
+  { id: 'atlas', label: 'Atlas.ai', icon: ChatIcon },
   { id: 'shortlist', label: 'Shortlist', icon: HeartIcon },
   { id: 'practitioners', label: 'Practitioners', icon: BriefcaseIcon },
 ]
