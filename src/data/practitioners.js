@@ -66,6 +66,35 @@ export const practitioners = [
     ],
   },
   {
+    id: 'sakshi-bishnoi',
+    name: 'Sakshi Bishnoi',
+    photo: null,
+    videoId: null,
+    role: 'Market Research',
+    credibility: 'Associate Project Lead, Market Research · Escalent',
+    // Primary role of the Philosophy (BA) career — her actual degree path,
+    // and the page whose visitors most need her "arts degree → corporate
+    // career" proof. (History (BA) shares that primary role, so its CTA
+    // also lands on her — acceptable overlap for now.)
+    matchesRole: 'Research Assistant',
+    rating: null,
+    sessionsCompleted: 0,
+    bio: 'Took the commerce stream in school, then a BA and MA in Philosophy — and turned that into a corporate research career. Now an Associate Project Lead in market research at Escalent, supporting the corporate development team of a leading global technology company: tracking emerging high-growth domains and screening prospective acquisition targets that feed the client’s M&A strategy. Living proof that an arts degree can land squarely in the business world.',
+    languages: ['English', 'Hindi'],
+    journey: [
+      { when: '2015', what: 'Finished school — commerce stream' },
+      { when: '2018', what: 'BA in Philosophy' },
+      { when: '2020', what: 'MA in Philosophy' },
+      { when: '2022–23', what: 'Research Associate at Modulus' },
+      { when: 'Now', what: 'Associate Project Lead at Escalent, since 2023' },
+    ],
+    topics: ['Commerce stream choices', 'Philosophy degree → corporate career', 'Breaking into market research'],
+    testimonials: [],
+    sessionTypes: [
+      { id: 'quick', label: 'Quick Chat', duration: '30 min', price: '₹499', description: 'Your questions about commerce, an arts degree, or market research — answered directly.' },
+    ],
+  },
+  {
     id: 'vikram-shah',
     name: 'CA Vikram Shah',
     photo: null,
