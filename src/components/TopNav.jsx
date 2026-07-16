@@ -21,10 +21,10 @@ export default function TopNav({ active, onNavigate, onAbout, user, onSignIn, on
     <>
       <nav className="top-nav">
         <div className="top-nav__bar">
-          <div className="top-nav__brand">
+          <button className="top-nav__brand" onClick={() => onNavigate('explore')}>
             <Mark inverted size={26} />
             <span className="top-nav__wordmark">Lighthouse.guide</span>
-          </div>
+          </button>
 
           <div className="top-nav__links">
             {TABS.map((tab) => (
