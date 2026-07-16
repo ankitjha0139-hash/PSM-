@@ -839,6 +839,11 @@
   margin: 0;
 }
 
+.section__text a {
+  color: var(--accent-deep);
+  text-decoration: underline;
+}
+
 /* Accordion — "What do I do to become X?" collapsed by default, keeps
    this section proportional to the compact ones around it. */
 .accordion-trigger {
@@ -1817,10 +1822,6 @@
   color: rgba(255, 255, 255, 0.68);
   cursor: pointer;
   transition: color 120ms ease, border-color 120ms ease;
-}
-
-.top-nav__link svg {
-  opacity: 0.7;
 }
 
 .top-nav__link:hover {
