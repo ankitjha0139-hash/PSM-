@@ -247,11 +247,17 @@ export default function PractitionerProfile({ practitioner, onBack, onRequireAut
         </h2>
         <p className="detail-tagline">{practitioner.credibility}</p>
         <div className="prac-card__stats" style={{ justifyContent: 'center', marginTop: 6 }}>
-          <span className="prac-rating">
-            <StarIcon /> {practitioner.rating}
-          </span>
-          <span className="prac-card__dot">·</span>
-          <span>{practitioner.sessionsCompleted} sessions</span>
+          {practitioner.sessionsCompleted > 0 ? (
+            <>
+              <span className="prac-rating">
+                <StarIcon /> {practitioner.rating}
+              </span>
+              <span className="prac-card__dot">·</span>
+              <span>{practitioner.sessionsCompleted} sessions</span>
+            </>
+          ) : (
+            <span className="prac-rating">New to Lighthouse</span>
+          )}
           {practitioner.languages?.length > 0 && (
             <>
               <span className="prac-card__dot">·</span>

@@ -24,11 +24,17 @@ export default function PractitionerCard({ practitioner, onOpen }) {
         </div>
         <div className="prac-card__credibility">{practitioner.credibility}</div>
         <div className="prac-card__stats">
-          <span className="prac-rating">
-            <StarIcon /> {practitioner.rating}
-          </span>
-          <span className="prac-card__dot">·</span>
-          <span>{practitioner.sessionsCompleted} sessions</span>
+          {practitioner.sessionsCompleted > 0 ? (
+            <>
+              <span className="prac-rating">
+                <StarIcon /> {practitioner.rating}
+              </span>
+              <span className="prac-card__dot">·</span>
+              <span>{practitioner.sessionsCompleted} sessions</span>
+            </>
+          ) : (
+            <span className="prac-rating">New</span>
+          )}
           {nextSlot && (
             <>
               <span className="prac-card__dot">·</span>
