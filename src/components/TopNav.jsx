@@ -1,14 +1,11 @@
 import Mark from './Mark.jsx'
 import AccountButton from './AccountButton.jsx'
-import { ChevronDownIcon, DirectionIcon, ChatIcon, HeartIcon, BriefcaseIcon } from './icons.jsx'
+import { DirectionIcon, ChatIcon, HeartIcon, BriefcaseIcon } from './icons.jsx'
 
 // Full-width dark bar (sui.io-style), shown at desktop widths only —
 // below 768px it's hidden entirely (including "About") in favor of a
 // WhatsApp-style bottom tab bar, since four text links plus the wordmark
-// and account slot never fit in one row on a phone. Each desktop link
-// carries a small chevron, matching sui.io's dropdown-style nav items —
-// purely visual here (these links go straight to a screen, not a
-// submenu), a deliberate look-alike choice over strict semantic accuracy.
+// and account slot never fit in one row on a phone.
 const TABS = [
   { id: 'explore', label: 'Explore', icon: DirectionIcon },
   { id: 'atlas', label: 'Atlas.ai', icon: ChatIcon },
@@ -21,10 +18,10 @@ export default function TopNav({ active, onNavigate, onAbout, user, onSignIn, on
     <>
       <nav className="top-nav">
         <div className="top-nav__bar">
-          <div className="top-nav__brand">
+          <button className="top-nav__brand" onClick={() => onNavigate('explore')}>
             <Mark inverted size={26} />
             <span className="top-nav__wordmark">Lighthouse.guide</span>
-          </div>
+          </button>
 
           <div className="top-nav__links">
             {TABS.map((tab) => (
@@ -34,7 +31,6 @@ export default function TopNav({ active, onNavigate, onAbout, user, onSignIn, on
                 onClick={() => onNavigate(tab.id)}
               >
                 {tab.label}
-                <ChevronDownIcon size={11} />
               </button>
             ))}
             <button className="top-nav__link" onClick={onAbout}>

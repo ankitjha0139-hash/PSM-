@@ -147,7 +147,7 @@ function App() {
 
     // --- Onboarding sequence ---
     if (screen === 'landing') {
-      return <Landing onStart={() => setScreen('roleGate')} onStory={openAbout} />
+      return <Landing onStart={() => setScreen('roleGate')} />
     }
 
     if (screen === 'roleGate') {

@@ -24,22 +24,101 @@
   margin: 0;
 }
 
-.landing-fade-in {
+/* Landing intro: the lighthouse draws in stroke-by-stroke, "Welcome to
+   Lighthouse.guide" types in letter-by-letter beside it (the lockup),
+   the lockup rises together from center screen to its resting spot,
+   then title/subtitle/button fade in as one group. See Landing.jsx for
+   the once-per-session / reduced-motion / tap-to-skip gating — the
+   .landing--static override below covers all three cases at once. */
+.landing-lockup {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  animation: landing-lockup-rise 2.3s ease-out forwards;
+}
+
+@keyframes landing-lockup-rise {
+  0% {
+    opacity: 0;
+    transform: translateY(68px);
+  }
+  6% {
+    opacity: 1;
+    transform: translateY(68px);
+  }
+  83% {
+    opacity: 1;
+    transform: translateY(68px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.landing-icon-draw {
+  stroke-dasharray: 60;
+  stroke-dashoffset: 60;
+  animation: landing-draw-on 0.5s ease-out forwards;
+}
+
+@keyframes landing-draw-on {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.landing-letter {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(3px);
+  animation: landing-letter-pop 0.28s ease-out forwards;
+}
+
+@keyframes landing-letter-pop {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.landing-rest {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 16px;
-  animation: landing-fade-in 0.5s ease;
+  opacity: 0;
+  transform: translateY(8px);
+  animation: landing-rest-fade 0.4s ease-out forwards;
+  animation-delay: 2.3s;
 }
 
-@keyframes landing-fade-in {
-  from {
-    opacity: 0;
-    transform: translateY(6px);
-  }
+@keyframes landing-rest-fade {
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+.landing--static .landing-lockup,
+.landing--static .landing-rest,
+.landing--static .landing-icon-draw,
+.landing--static .landing-letter {
+  animation: none !important;
+  opacity: 1 !important;
+  transform: none !important;
+  stroke-dashoffset: 0 !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-lockup,
+  .landing-rest,
+  .landing-icon-draw,
+  .landing-letter {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+    stroke-dashoffset: 0 !important;
   }
 }
 
@@ -256,6 +335,75 @@
 }
 
 .chip--on {
+  background: var(--navy);
+  border-color: var(--navy);
+  color: #fff;
+}
+
+.filter-label {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--accent-deep);
+  margin: 4px 0 10px;
+}
+
+.chip--category.chip--open {
+  border-color: var(--accent);
+}
+
+.chip__count {
+  display: inline-block;
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 9px;
+  color: #fff;
+  background: var(--accent);
+}
+
+.chip--category.chip--on .chip__count {
+  background: #fff;
+  color: var(--navy);
+}
+
+.filter-drawer {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  animation: filter-drawer-reveal 0.18s ease-out;
+}
+
+@keyframes filter-drawer-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.filter-drawer__hint {
+  font-size: 12px;
+  color: var(--muted);
+  margin: 0;
+}
+
+.filter-drawer .chip--sub {
+  font-size: 12px;
+  padding: 6px 12px;
+  background: var(--bg);
+}
+
+.filter-drawer .chip--sub.chip--on {
   background: var(--navy);
   border-color: var(--navy);
   color: #fff;
@@ -689,6 +837,11 @@
   line-height: 1.6;
   color: var(--ink);
   margin: 0;
+}
+
+.section__text a {
+  color: var(--accent-deep);
+  text-decoration: underline;
 }
 
 /* Accordion — "What do I do to become X?" collapsed by default, keeps
@@ -1635,6 +1788,10 @@
   align-items: center;
   gap: 9px;
   flex: none;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
 }
 
 .top-nav__wordmark {
@@ -1665,10 +1822,6 @@
   color: rgba(255, 255, 255, 0.68);
   cursor: pointer;
   transition: color 120ms ease, border-color 120ms ease;
-}
-
-.top-nav__link svg {
-  opacity: 0.7;
 }
 
 .top-nav__link:hover {
