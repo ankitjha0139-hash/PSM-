@@ -1244,24 +1244,6 @@
 }
 
 /* ===== Practitioner intro video + photo avatars + about page ===== */
-.video-wrap {
-  position: relative;
-  aspect-ratio: 16 / 9;
-  border-radius: var(--radius);
-  overflow: hidden;
-  border: 1px solid var(--border);
-  background: #0a1420;
-  box-shadow: var(--shadow);
-}
-
-.video-wrap iframe {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  border: none;
-}
-
 /* Real photo drops into the same circle the initials use */
 .avatar-img {
   width: 100%;

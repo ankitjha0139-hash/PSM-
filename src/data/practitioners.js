@@ -2,10 +2,9 @@
 // "Talk to a real X" from a career detail page can link to someone
 // specific. Swap for real onboarded profiles in Phase 5.
 // photo: paste a URL (or /images/... path) and it replaces the initials
-// avatar everywhere. videoId: the YouTube id of the practitioner's 5-6 min
-// intro — currently a SAMPLE video (Steve Jobs' Stanford address) on all
-// three so the embed is visible end-to-end; swap per practitioner as real
-// intros get recorded.
+// avatar everywhere. videoId: unused — the intro-video feature was
+// removed since we're not recording one per practitioner; left on these
+// records only because deleting the field isn't necessary.
 export const practitioners = [
   {
     id: 'meera-nair',

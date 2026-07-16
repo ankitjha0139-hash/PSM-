@@ -266,26 +266,6 @@ export default function PractitionerProfile({ practitioner, onBack, onRequireAut
         <p className="section__text">{practitioner.bio}</p>
       </div>
 
-      {practitioner.videoId && (
-        <div className="section">
-          <h3 className="section__h">Meet {practitioner.name.split(' ')[0]}</h3>
-          <div className="video-wrap">
-            <iframe
-              src={`https://www.youtube-nocookie.com/embed/${practitioner.videoId}`}
-              title={`Intro video — ${practitioner.name}`}
-              loading="lazy"
-              allow="accelerometer; encrypted-media; picture-in-picture"
-              allowFullScreen
-            />
-          </div>
-          {/* Drop this note once real per-practitioner intros replace the
-              sample videoId in practitioners.js */}
-          <p className="booking-note" style={{ marginTop: 8 }}>
-            Sample video — each practitioner's own 5-minute intro is coming.
-          </p>
-        </div>
-      )}
-
       {practitioner.journey?.length > 0 && (
         <div className="section">
           <h3 className="section__h">How they got here</h3>
