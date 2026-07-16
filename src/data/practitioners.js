@@ -9,7 +9,7 @@ export const practitioners = [
   {
     id: 'lokesh-pakhale',
     name: 'Lokesh Pakhale',
-    photo: null,
+    photo: '/images/practitioners/lokesh-pakhale.jpg',
     videoId: 'UF8uR6Z6KLc',
     role: 'Architect',
     credibility: 'Architect & Co-founder · Far Sides of Design, Nagpur',
