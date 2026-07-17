@@ -312,6 +312,12 @@
   border-color: var(--accent);
 }
 
+.search-input--area {
+  resize: vertical;
+  min-height: 90px;
+  font-family: var(--font-body);
+}
+
 .chip-row {
   display: flex;
   flex-wrap: wrap;
@@ -822,6 +828,210 @@
   max-width: 560px;
   margin: 0 auto 20px;
   width: 100%;
+}
+
+/* ===== Profile screen (view mode) — Clinik-reference card language,
+   this app's own tokens ===== */
+.profile-header {
+  max-width: 560px;
+  margin: 0 auto 20px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow);
+  padding: 16px 18px;
+}
+
+.profile-header .profile-header__avatar {
+  margin: 0;
+  flex: none;
+}
+
+.profile-header__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.profile-header__name {
+  font-size: 18px;
+  margin: 0;
+}
+
+.profile-header__email {
+  margin: 2px 0 0;
+  font-size: 13px;
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.profile-header__edit {
+  flex: none;
+}
+
+.profile-card {
+  max-width: 560px;
+  margin: 0 auto 14px;
+  width: 100%;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow);
+  padding: 16px 18px;
+}
+
+.profile-card__row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 13.5px;
+  color: var(--muted);
+}
+
+.profile-card__row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.profile-card__row b {
+  color: var(--ink);
+  font-weight: 600;
+  text-align: right;
+}
+
+.profile-card__empty {
+  margin: 0 0 4px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.profile-card__goal {
+  margin: 10px 0 0;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--ink);
+}
+
+.profile-card__subhead {
+  margin-top: 16px;
+}
+
+/* Mobile-first: children of .profile-dashboard just stack in DOM order,
+   identical to the plain single-column look above — the 768px block
+   below is what turns this into a 2-column layout (photo/lists left,
+   name+tabs right). */
+.profile-dashboard {
+  display: block;
+}
+
+.profile-col {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.profile-photo {
+  max-width: 560px;
+  margin: 0 auto;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: var(--navy);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.profile-photo__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.profile-photo__initial {
+  font-size: 48px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.profile-list {
+  max-width: 560px;
+  margin: 0 auto;
+  width: 100%;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow);
+  padding: 16px 18px;
+}
+
+.profile-list__row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 0;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.profile-list__row b {
+  color: var(--ink);
+  font-weight: 600;
+  text-align: right;
+}
+
+.profile-list__plain {
+  margin: 0;
+  padding: 5px 0;
+  font-size: 13.5px;
+  color: var(--ink);
+}
+
+.profile-name-row {
+  max-width: 560px;
+  margin: 0 auto;
+  width: 100%;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.profile-tabs {
+  max-width: 560px;
+  margin: 14px auto 16px;
+  width: 100%;
+  display: flex;
+  gap: 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.profile-tab {
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: 0 0 10px;
+  font-family: var(--font-body);
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.profile-tab--active {
+  color: var(--ink);
+  border-bottom-color: var(--accent);
 }
 
 .section__h {
@@ -1900,6 +2110,29 @@
   .account-chip-wrap--mobile-only {
     display: none;
   }
+
+  /* Profile screen becomes a 2-column layout (photo + academic details +
+     interests on the left, name/tabs/contact info on the right) instead
+     of a single stacked column — wider than this app's usual 560-720px
+     content column since a 2-column layout needs the room. */
+  .profile-dashboard {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    gap: 24px;
+    align-items: start;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .profile-dashboard .profile-photo,
+  .profile-dashboard .profile-list,
+  .profile-dashboard .profile-name-row,
+  .profile-dashboard .profile-tabs,
+  .profile-dashboard .profile-card {
+    max-width: none;
+    margin-left: 0;
+    margin-right: 0;
+  }
 }
 
 @media (min-width: 1100px) {
@@ -2200,6 +2433,19 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.account-dropdown__profile {
+  width: 100%;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 7px;
+  margin-bottom: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--navy);
+  cursor: pointer;
 }
 
 .account-dropdown__signout {

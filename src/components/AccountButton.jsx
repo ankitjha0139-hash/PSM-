@@ -9,7 +9,7 @@ import { useState } from 'react'
 // mobileOnly: also floating, but hidden at desktop widths — used on tab
 // screens where the desktop top bar already has its own embedded copy, but
 // the mobile bottom tab bar doesn't (see TopNav.jsx).
-export default function AccountButton({ user, onSignIn, onSignOut, variant = 'floating', mobileOnly = false }) {
+export default function AccountButton({ user, onSignIn, onSignOut, onOpenProfile, variant = 'floating', mobileOnly = false }) {
   const [open, setOpen] = useState(false)
   const embedded = variant === 'embedded'
 
@@ -47,6 +47,15 @@ export default function AccountButton({ user, onSignIn, onSignOut, variant = 'fl
       {open && (
         <div className="account-dropdown">
           <p className="account-dropdown__name">{name}</p>
+          <button
+            className="account-dropdown__profile"
+            onClick={() => {
+              setOpen(false)
+              onOpenProfile()
+            }}
+          >
+            My profile
+          </button>
           <button
             className="account-dropdown__signout"
             onClick={() => {

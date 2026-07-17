@@ -4,6 +4,7 @@ import CareerCard from '../components/CareerCard.jsx'
 import SkeletonCareerCard from '../components/SkeletonCareerCard.jsx'
 import EmptyState from '../components/EmptyState.jsx'
 import { TargetIcon } from '../components/icons.jsx'
+import { INTEREST_CATEGORIES } from '../data/interestCategories.js'
 
 // Raw interest_tags in the sheet have grown into the dozens as more careers
 // get added — too many to show flat. This groups them into a small set of
@@ -47,16 +48,9 @@ const TAG_CATEGORY = {
   food: 'Nature & Lifestyle',
 }
 
-const CATEGORY_ORDER = [
-  'Science & Research',
-  'Tech & Engineering',
-  'Creative & Design',
-  'Business & Numbers',
-  'People & Care',
-  'Leadership & Society',
-  'Nature & Lifestyle',
-  'Other',
-]
+// Explore's own catch-all bucket for tags that don't map to a shared
+// category, appended after the shared list — see interestCategories.js.
+const CATEGORY_ORDER = [...INTEREST_CATEGORIES, 'Other']
 
 const categoryOf = (tag) => TAG_CATEGORY[tag] || 'Other'
 
