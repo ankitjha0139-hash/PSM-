@@ -21,6 +21,7 @@ import TopNav from './components/TopNav.jsx'
 import SupportWidget from './components/SupportWidget.jsx'
 import AccountButton from './components/AccountButton.jsx'
 import SignInModal from './components/SignInModal.jsx'
+import Profile from './screens/Profile.jsx'
 
 // Screens that show the persistent top nav — everything past onboarding.
 const MAIN_TABS = ['explore', 'atlas', 'shortlist', 'practitioners']
@@ -50,7 +51,8 @@ function App() {
   const [selectedPractitionerId, setSelectedPractitionerId] = useState(
     nav.selectedPractitionerId || null
   )
-  const [aboutFrom, setAboutFrom] = useState(null)
+  const [aboutFrom, setAboutFrom] = useState(nav.aboutFrom || null)
+  const [profileFrom, setProfileFrom] = useState(nav.profileFrom || null)
   // Career to offer a real way back to from the Practitioners tab, when
   // arriving there via "Talk to a real X" rather than a deliberate tab
   // tap. Cleared on any manual tab navigation so a stale breadcrumb
@@ -60,9 +62,17 @@ function App() {
   useEffect(() => {
     sessionStorage.setItem(
       NAV_KEY,
-      JSON.stringify({ screen, role, routingAnswer, selectedCareerId, selectedPractitionerId })
+      JSON.stringify({
+        screen,
+        role,
+        routingAnswer,
+        selectedCareerId,
+        selectedPractitionerId,
+        aboutFrom,
+        profileFrom,
+      })
     )
-  }, [screen, role, routingAnswer, selectedCareerId, selectedPractitionerId])
+  }, [screen, role, routingAnswer, selectedCareerId, selectedPractitionerId, aboutFrom, profileFrom])
 
   // No router — screen is state, not a URL — so this is the only signal
   // PostHog gets for "what page is this". Covers the whole funnel in one
@@ -126,11 +136,29 @@ function App() {
     }
   }, [selectedPractitionerId, selectedPractitioner])
 
+  // Same trap again: sessionStorage can restore screen:'profile' on reload
+  // before auth.getSession() resolves (or after a session genuinely ends),
+  // and Profile assumes a signed-in user — recover instead of crashing on
+  // a null user once we know for sure there isn't one.
+  useEffect(() => {
+    if (screen === 'profile' && !auth.loading && !auth.user) {
+      setScreen(profileFrom || 'landing')
+    }
+  }, [screen, auth.loading, auth.user, profileFrom])
+
   // "Our story" is reachable from the landing screen and the help panel;
   // back returns wherever the reader came from.
   const openAbout = () => {
     setAboutFrom(screen)
     setScreen('about')
+  }
+
+  // "My profile" is reachable from the account dropdown on almost every
+  // screen (see AccountButton.jsx); back returns wherever it was opened
+  // from — same pattern as openAbout above.
+  const openProfile = () => {
+    setProfileFrom(screen)
+    setScreen('profile')
   }
 
   // Everything below picks the current screen's JSX; the sign-in modal is
@@ -143,6 +171,21 @@ function App() {
   function renderScreen() {
     if (screen === 'about') {
       return <AboutStory onBack={() => setScreen(aboutFrom || 'landing')} />
+    }
+
+    if (screen === 'profile') {
+      // auth.user is briefly null while getSession() is still resolving —
+      // the recovery effect above sends us back once loading is done and
+      // there's genuinely no session; until then, don't hand Profile a
+      // null user (it assumes one exists).
+      if (!auth.user) {
+        return (
+          <main className="screen screen--center">
+            <p className="empty-state">Loading…</p>
+          </main>
+        )
+      }
+      return <Profile user={auth.user} onBack={() => setScreen(profileFrom || 'landing')} />
     }
 
     // --- Onboarding sequence ---
@@ -283,6 +326,7 @@ function App() {
             user={auth.user}
             onSignIn={() => setSignInReason('account')}
             onSignOut={auth.signOut}
+            onOpenProfile={openProfile}
           />
         )}
         <SupportWidget onOpenAbout={openAbout} />
@@ -308,6 +352,7 @@ function App() {
           user={auth.user}
           onSignIn={() => setSignInReason('account')}
           onSignOut={auth.signOut}
+          onOpenProfile={openProfile}
           mobileOnly={MAIN_TABS.includes(screen) && !selectedCareerId && !selectedPractitionerId}
         />
       )}

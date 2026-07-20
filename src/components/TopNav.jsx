@@ -13,7 +13,7 @@ const TABS = [
   { id: 'practitioners', label: 'Practitioners', icon: BriefcaseIcon },
 ]
 
-export default function TopNav({ active, onNavigate, onAbout, user, onSignIn, onSignOut }) {
+export default function TopNav({ active, onNavigate, onAbout, user, onSignIn, onSignOut, onOpenProfile }) {
   return (
     <>
       <nav className="top-nav">
@@ -39,7 +39,13 @@ export default function TopNav({ active, onNavigate, onAbout, user, onSignIn, on
           </div>
 
           <div className="top-nav__right">
-            <AccountButton variant="embedded" user={user} onSignIn={onSignIn} onSignOut={onSignOut} />
+            <AccountButton
+              variant="embedded"
+              user={user}
+              onSignIn={onSignIn}
+              onSignOut={onSignOut}
+              onOpenProfile={onOpenProfile}
+            />
           </div>
         </div>
       </nav>
