@@ -1,19 +1,42 @@
+import { useState } from 'react'
 import Mark from './Mark.jsx'
 import AccountButton from './AccountButton.jsx'
-import { DirectionIcon, ChatIcon, HeartIcon, BriefcaseIcon } from './icons.jsx'
+import { DirectionIcon, ChatIcon, HeartIcon, ClockIcon, BriefcaseIcon, HelpIcon, MenuIcon } from './icons.jsx'
 
-// Full-width dark bar (sui.io-style), shown at desktop widths only —
-// below 768px it's hidden entirely (including "About") in favor of a
-// WhatsApp-style bottom tab bar, since four text links plus the wordmark
-// and account slot never fit in one row on a phone.
-const TABS = [
-  { id: 'explore', label: 'Explore', icon: DirectionIcon },
-  { id: 'atlas', label: 'Atlas.ai', icon: ChatIcon },
-  { id: 'shortlist', label: 'Shortlist', icon: HeartIcon },
-  { id: 'practitioners', label: 'Practitioners', icon: BriefcaseIcon },
+// Single source of truth for every nav destination. mobileBar: true items
+// get a direct icon in the mobile bottom bar; the rest live behind the
+// "More" sheet (5th bar slot) so the bar doesn't try to cram 7 icons into
+// thumb-width — desktop has no such constraint and just shows all of them
+// as a plain text-link row, unchanged from before.
+const NAV_ITEMS = [
+  { id: 'explore', label: 'Explore', icon: DirectionIcon, mobileBar: true },
+  { id: 'atlas', label: 'Atlas.ai', icon: ChatIcon, mobileBar: true },
+  { id: 'shortlist', label: 'Shortlist', icon: HeartIcon, mobileBar: true },
+  { id: 'sessions', label: 'My Sessions', icon: ClockIcon, mobileBar: true },
+  { id: 'practitioners', label: 'Practitioners', icon: BriefcaseIcon, mobileBar: false },
+  { id: 'faqs', label: 'FAQs', icon: HelpIcon, mobileBar: false },
 ]
 
+const BAR_ITEMS = NAV_ITEMS.filter((t) => t.mobileBar)
+const MORE_ITEMS = NAV_ITEMS.filter((t) => !t.mobileBar)
+
 export default function TopNav({ active, onNavigate, onAbout, user, onSignIn, onSignOut, onOpenProfile }) {
+  const [moreOpen, setMoreOpen] = useState(false)
+  // "About Us" isn't a `screen` value like the rest (see App.jsx's openAbout
+  // special-casing), so it can't be matched via `active` — the caller's
+  // onAbout is only ever invoked, never compared against.
+  const moreActive = MORE_ITEMS.some((t) => t.id === active)
+
+  const go = (id) => {
+    setMoreOpen(false)
+    onNavigate(id)
+  }
+
+  const goAbout = () => {
+    setMoreOpen(false)
+    onAbout()
+  }
+
   return (
     <>
       <nav className="top-nav">
@@ -24,7 +47,7 @@ export default function TopNav({ active, onNavigate, onAbout, user, onSignIn, on
           </button>
 
           <div className="top-nav__links">
-            {TABS.map((tab) => (
+            {NAV_ITEMS.map((tab) => (
               <button
                 key={tab.id}
                 className={`top-nav__link ${active === tab.id ? 'top-nav__link--active' : ''}`}
@@ -34,7 +57,7 @@ export default function TopNav({ active, onNavigate, onAbout, user, onSignIn, on
               </button>
             ))}
             <button className="top-nav__link" onClick={onAbout}>
-              About
+              About Us
             </button>
           </div>
 
@@ -55,7 +78,7 @@ export default function TopNav({ active, onNavigate, onAbout, user, onSignIn, on
           floating AccountButton rendered by App.jsx instead, since it isn't
           tied to this bar's layout. */}
       <nav className="bottom-tab-bar">
-        {TABS.map((tab) => {
+        {BAR_ITEMS.map((tab) => {
           const Icon = tab.icon
           return (
             <button
@@ -68,7 +91,42 @@ export default function TopNav({ active, onNavigate, onAbout, user, onSignIn, on
             </button>
           )
         })}
+        <button
+          className={`bottom-tab-bar__item ${moreOpen || moreActive ? 'bottom-tab-bar__item--active' : ''}`}
+          onClick={() => setMoreOpen(true)}
+        >
+          <MenuIcon size={20} />
+          <span>More</span>
+        </button>
       </nav>
+
+      {moreOpen && (
+        <div className="support-overlay nav-more-overlay" onClick={() => setMoreOpen(false)}>
+          <div className="support-panel nav-more-panel" onClick={(e) => e.stopPropagation()}>
+            <div className="support-panel__head">
+              <span>More</span>
+            </div>
+            <div className="nav-more-list">
+              {MORE_ITEMS.map((tab) => {
+                const Icon = tab.icon
+                return (
+                  <button
+                    key={tab.id}
+                    className={`nav-more-item ${active === tab.id ? 'nav-more-item--active' : ''}`}
+                    onClick={() => go(tab.id)}
+                  >
+                    <Icon size={19} />
+                    {tab.label}
+                  </button>
+                )
+              })}
+              <button className="nav-more-item" onClick={goAbout}>
+                About Us
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   )
 }

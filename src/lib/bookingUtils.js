@@ -74,6 +74,18 @@ function pad(n) {
   return String(n).padStart(2, '0')
 }
 
+// A real Date for a booking's slot — the source of truth for "is this
+// upcoming or completed" (My Sessions) and for the .ics start time below.
+// NOT string-sorting booking.time ('11:00 AM' < '4:00 PM' only sorts
+// correctly by coincidence, since every AM slot happens to start with a
+// lower digit than every PM one in the current TIMES list above).
+export function bookingDateTime(booking) {
+  const [h, m] = parseTime(booking.time)
+  const date = new Date(booking.dateKey + 'T00:00:00')
+  date.setHours(h, m, 0, 0)
+  return date
+}
+
 function toIcsStamp(date) {
   return (
     `${date.getFullYear()}${pad(date.getMonth() + 1)}${pad(date.getDate())}` +
@@ -85,9 +97,7 @@ function toIcsStamp(date) {
 // symbolic for now, but the calendar entry is genuinely useful and makes
 // the confirmation feel like a real product.
 export function downloadIcs(booking) {
-  const [h, m] = parseTime(booking.time)
-  const start = new Date(booking.dateKey + 'T00:00:00')
-  start.setHours(h, m, 0, 0)
+  const start = bookingDateTime(booking)
   const minutes = parseInt(booking.duration, 10) || 30
   const end = new Date(start.getTime() + minutes * 60 * 1000)
 

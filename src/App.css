@@ -2470,3 +2470,207 @@
   top: 12px;
   right: 12px;
 }
+
+/* ============================================================
+   My Sessions
+   ============================================================ */
+.session-list {
+  max-width: 560px;
+  margin: 0 auto;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.session-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  box-shadow: var(--shadow);
+}
+
+.session-card__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.session-card__title {
+  font-size: 14.5px;
+  font-weight: 600;
+  color: var(--ink);
+  margin: 0;
+}
+
+.session-status {
+  flex: none;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  padding: 3px 9px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.session-status--upcoming {
+  background: var(--tint);
+  color: var(--accent-deep);
+}
+
+.session-status--completed {
+  background: var(--border);
+  color: var(--muted);
+}
+
+.session-card__coach {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.session-card__coach-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  margin: 0 0 2px;
+}
+
+.session-card__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+.session-card__detail {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+.session-card__actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.session-card__cancel {
+  color: var(--destructive);
+}
+
+/* ============================================================
+   FAQs
+   ============================================================ */
+.faq-list {
+  max-width: 560px;
+  margin: 0 auto;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.faq-item {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 4px 16px;
+}
+
+.faq-item__q {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  background: none;
+  border: none;
+  padding: 14px 0;
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+}
+
+.faq-item__chevron {
+  flex: none;
+  display: flex;
+  color: var(--muted);
+  transition: transform 150ms ease;
+}
+
+.faq-item__chevron--open {
+  transform: rotate(180deg);
+}
+
+.faq-item__a {
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--muted);
+  margin: 0 0 14px;
+}
+
+/* ============================================================
+   Mobile "More" sheet — the 5th bottom-bar slot (Practitioners,
+   FAQs, About Us). Reuses .support-overlay/.support-panel's bottom-
+   sheet mechanics; these two classes only adjust content, not shape.
+   ============================================================ */
+.nav-more-panel {
+  max-height: 50vh;
+}
+
+.nav-more-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.nav-more-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  background: none;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 13px 10px;
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+}
+
+.nav-more-item--active {
+  color: var(--accent-deep);
+  background: var(--tint);
+}
+
+/* .support-overlay/.support-panel default to desktop's docked
+   bottom-right widget above 640px — the More sheet is mobile-only
+   (the bottom-tab-bar it opens from is hidden past 768px), so pin it
+   back to a centered bottom sheet regardless of viewport width. */
+@media (min-width: 640px) {
+  .nav-more-overlay {
+    background: rgba(10, 10, 10, 0.32) !important;
+    align-items: flex-end !important;
+    justify-content: center !important;
+    padding: 0 !important;
+  }
+  .nav-more-panel {
+    width: 100% !important;
+    max-width: 480px !important;
+  }
+}

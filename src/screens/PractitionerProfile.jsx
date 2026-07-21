@@ -2,15 +2,16 @@ import { useMemo, useState } from 'react'
 import posthog from 'posthog-js'
 import { StarIcon, CheckIcon, VerifiedIcon, CalendarIcon, BackIcon, ArrowRightIcon } from '../components/icons.jsx'
 import { getSlotDays, makeBookingId, downloadIcs } from '../lib/bookingUtils.js'
-import { useBookings } from '../hooks/useBookings.js'
+import { useUserBookings } from '../hooks/useUserBookings.js'
 import { submitNetlifyForm } from '../lib/netlifyForms.js'
 import BookingSteps from '../components/BookingSteps.jsx'
 
 // Full profile + the booking flow: pick a session type, pick a real
 // day/time slot, leave contact details, get a confirmation with a booking
-// ID and a calendar file. Symbolic for now — nothing reaches a server —
-// but the flow is the exact shape Cal.com slots into later.
-export default function PractitionerProfile({ practitioner, onBack, onRequireAuth }) {
+// ID and a calendar file. Booking data itself is real — it's saved to
+// Supabase (see useUserBookings), gated on sign-in same as the session-type
+// tap that starts this flow, so My Sessions can show it back later.
+export default function PractitionerProfile({ practitioner, onBack, onRequireAuth, user }) {
   // step: 'profile' → 'slot' → 'contact' → 'confirmed'
   const [step, setStep] = useState('profile')
   const [sessionType, setSessionType] = useState(null)
@@ -21,7 +22,8 @@ export default function PractitionerProfile({ practitioner, onBack, onRequireAut
   const [booking, setBooking] = useState(null)
   const [notified, setNotified] = useState(false)
   const [saving, setSaving] = useState(false)
-  const { add } = useBookings()
+  const [bookingError, setBookingError] = useState(false)
+  const { add } = useUserBookings(user)
 
   const slotDays = useMemo(() => getSlotDays(practitioner?.id), [practitioner?.id])
   const selectedDay = slotDays.find((d) => d.dateKey === dayKey)
@@ -31,6 +33,7 @@ export default function PractitionerProfile({ practitioner, onBack, onRequireAut
   const confirmBooking = async () => {
     if (!contactName.trim() || !contact.trim() || saving) return
     setSaving(true)
+    setBookingError(false)
     const b = {
       id: makeBookingId(),
       practitionerId: practitioner.id,
@@ -63,7 +66,16 @@ export default function PractitionerProfile({ practitioner, onBack, onRequireAut
     } catch {
       sent = false
     }
-    add(b)
+    // Unlike the Netlify Forms notification above, this write IS the
+    // source of truth for My Sessions — a failure here means the booking
+    // wouldn't exist anywhere, so it blocks moving to the confirmation
+    // screen instead of silently continuing.
+    const { error } = await add(b)
+    if (error) {
+      setSaving(false)
+      setBookingError(true)
+      return
+    }
     posthog.capture('booking_confirmed', {
       practitionerId: practitioner.id,
       sessionLabel: sessionType.label,
@@ -152,6 +164,9 @@ export default function PractitionerProfile({ practitioner, onBack, onRequireAut
           <p className="booking-note">
             This is where we'll confirm the slot and send the call link.
           </p>
+          {bookingError && (
+            <p className="empty-state">Couldn't save your booking — check your connection and try again.</p>
+          )}
           <button
             className="btn btn--primary"
             disabled={!contactName.trim() || !contact.trim() || saving}
