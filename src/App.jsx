@@ -17,6 +17,8 @@ import CareerDetail from './screens/CareerDetail.jsx'
 import Shortlist from './screens/Shortlist.jsx'
 import PractitionerDirectory from './screens/PractitionerDirectory.jsx'
 import PractitionerProfile from './screens/PractitionerProfile.jsx'
+import MySessions from './screens/MySessions.jsx'
+import Faqs from './screens/Faqs.jsx'
 import TopNav from './components/TopNav.jsx'
 import SupportWidget from './components/SupportWidget.jsx'
 import AccountButton from './components/AccountButton.jsx'
@@ -24,7 +26,7 @@ import SignInModal from './components/SignInModal.jsx'
 import Profile from './screens/Profile.jsx'
 
 // Screens that show the persistent top nav — everything past onboarding.
-const MAIN_TABS = ['explore', 'atlas', 'shortlist', 'practitioners']
+const MAIN_TABS = ['explore', 'atlas', 'shortlist', 'sessions', 'practitioners', 'faqs']
 
 // Shared links (see src/lib/share.js) carry ?career=<id> — someone opening
 // one lands straight on that career's page, skipping onboarding.
@@ -146,6 +148,16 @@ function App() {
     }
   }, [screen, auth.loading, auth.user, profileFrom])
 
+  // Same trap, same fix: My Sessions also assumes a signed-in user. Unlike
+  // Profile there's no "from" to return to — a stray restored 'sessions'
+  // screen just bounces to Explore, since the only ways in are the nav tap
+  // (which already gates on sign-in below) or a stale session.
+  useEffect(() => {
+    if (screen === 'sessions' && !auth.loading && !auth.user) {
+      setScreen('explore')
+    }
+  }, [screen, auth.loading, auth.user])
+
   // "Our story" is reachable from the landing screen and the help panel;
   // back returns wherever the reader came from.
   const openAbout = () => {
@@ -264,6 +276,7 @@ function App() {
           practitioner={selectedPractitioner}
           onBack={() => setSelectedPractitionerId(null)}
           onRequireAuth={(action) => requireAuth('booking', action)}
+          user={auth.user}
         />
       )
     }
@@ -302,6 +315,18 @@ function App() {
         {screen === 'shortlist' && (
           <Shortlist shortlist={gatedShortlist} onOpenDetail={setSelectedCareerId} />
         )}
+        {screen === 'sessions' && (
+          // Same brief window as the 'profile' branch above: auth.user can
+          // be momentarily null while getSession() resolves, before the
+          // recovery effect either confirms a session or bounces away.
+          auth.user ? (
+            <MySessions user={auth.user} />
+          ) : (
+            <main className="screen screen--center">
+              <p className="empty-state">Loading…</p>
+            </main>
+          )
+        )}
         {screen === 'practitioners' && (
           <PractitionerDirectory
             onOpenProfile={setSelectedPractitionerId}
@@ -312,6 +337,7 @@ function App() {
             }}
           />
         )}
+        {screen === 'faqs' && <Faqs />}
 
         {MAIN_TABS.includes(screen) && (
           <TopNav
@@ -320,7 +346,11 @@ function App() {
               // A deliberate tab tap means the "back to career" breadcrumb
               // is no longer relevant — don't let it linger.
               setPractitionersBackTo(null)
-              setScreen(id)
+              if (id === 'sessions') {
+                requireAuth('sessions', () => setScreen(id))
+              } else {
+                setScreen(id)
+              }
             }}
             onAbout={openAbout}
             user={auth.user}

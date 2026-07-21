@@ -11,6 +11,7 @@ const REASON_COPY = {
   // — lead with the real thing until shortlist syncing catches up.
   shortlist: 'Sign in to keep your Atlas.ai conversations saved across visits and devices.',
   booking: 'Sign in to book a call with a practitioner.',
+  sessions: 'Sign in to see your booked sessions.',
   'chat-history': 'Sign in to keep this conversation with Atlas.ai across visits and devices.',
   account: 'Sign in with your Google account.',
 }

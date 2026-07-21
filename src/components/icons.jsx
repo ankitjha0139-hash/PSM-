@@ -175,3 +175,34 @@ export function BriefcaseIcon({ size = 20 }) {
     </svg>
   )
 }
+
+// My Sessions nav tab.
+export function ClockIcon({ size = 20 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="8.5" />
+      <path d="M12 7.5V12l3.2 2" />
+    </svg>
+  )
+}
+
+// FAQs nav tab.
+export function HelpIcon({ size = 20 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="8.5" />
+      <path d="M9.3 9.3a2.7 2.7 0 1 1 3.9 2.4c-.8.4-1.2 1-1.2 1.9v.4" />
+      <circle cx="12" cy="16.8" r="0.6" fill="currentColor" stroke="none" />
+    </svg>
+  )
+}
+
+// Mobile "More" — the 5th bottom-bar slot that opens the overflow sheet
+// for Practitioners / FAQs / About Us.
+export function MenuIcon({ size = 20 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round">
+      <path d="M4 7h16M4 12h16M4 17h16" />
+    </svg>
+  )
+}
