@@ -141,6 +141,13 @@
 .screen__title--md {
   font-size: clamp(26px, 6vw, 34px);
   text-align: center;
+  /* .screen__title's own max-width: 15ch caps this box's width, but caps
+     alone don't center a box — text-align only centers the text *inside*
+     it. Screens that don't separately wrap this title in their own
+     max-width + margin:auto header container (most of them) were left
+     with the title flush against the real viewport edge while everything
+     below it (properly wrapped) sat centered in a narrower column. */
+  align-self: center;
 }
 
 .screen__sub {
@@ -560,6 +567,16 @@
   height: 12px;
 }
 
+.skeleton-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  flex: none;
+  background: linear-gradient(90deg, var(--border) 25%, var(--bg) 50%, var(--border) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+
 @keyframes shimmer {
   0% {
     background-position: 200% 0;
@@ -570,35 +587,46 @@
 }
 
 /* ===== Stream badges ===== */
+/* Soft-tint pill (colored text on a light tint of the same hue) — the same
+   badge language as .verified-badge and .session-status elsewhere in the
+   app, instead of the solid-fill-plus-white-text style this used to have.
+   Streams still need distinct hues to stay tellable apart at a glance;
+   only the *treatment* changes here, not the color-coding itself. */
 .stream-badge {
   display: inline-block;
   font-size: 10.5px;
   font-weight: 700;
   padding: 2px 9px;
-  border-radius: 9px;
-  color: #fff;
-  background: var(--muted); /* fallback for any stream value we don't have
-                                a specific colour for yet — stays legible
-                                instead of turning invisible */
+  border-radius: 999px;
+  color: var(--muted); /* fallback for any stream value we don't have a
+                           specific colour for yet — stays legible instead
+                           of turning invisible */
+  background: var(--border);
 }
 
 .stream-badge--science {
-  background: #2563eb;
+  color: #2563eb;
+  background: rgba(37, 99, 235, 0.13);
 }
 .stream-badge--commerce {
-  background: #ea8a1e;
+  color: #b6650a;
+  background: rgba(234, 138, 30, 0.16);
 }
 .stream-badge--arts {
-  background: #9333ea;
+  color: #9333ea;
+  background: rgba(147, 51, 234, 0.12);
 }
 .stream-badge--vocational {
-  background: #16a34a;
+  color: #16a34a;
+  background: rgba(22, 163, 74, 0.13);
 }
 .stream-badge--alternate {
-  background: #64748b;
+  color: #64748b;
+  background: rgba(100, 116, 139, 0.15);
 }
 .stream-badge--govt {
-  background: #d63d5b;
+  color: #d63d5b;
+  background: rgba(214, 61, 91, 0.13);
 }
 
 /* ===== Atlas chat ===== */
@@ -856,8 +884,12 @@
   min-width: 0;
 }
 
+/* Same weight class as .detail-title (AboutStory/CareerDetail/Practitioner
+   Profile's own name headings) — this used to be styled far smaller (18px)
+   than every other "this is a page about a person" heading in the app. */
 .profile-header__name {
-  font-size: 18px;
+  font-size: clamp(20px, 4vw, 26px);
+  letter-spacing: -0.015em;
   margin: 0;
 }
 
@@ -938,17 +970,21 @@
   gap: 14px;
 }
 
+/* Circular, matching every other person-photo in the app (account chip,
+   practitioner cards, practitioner profile head, session coach block) —
+   this used to be its own 4:3 rounded rectangle, the one photo in the app
+   that wasn't a circle. */
 .profile-photo {
-  max-width: 560px;
+  width: 180px;
+  height: 180px;
   margin: 0 auto;
-  width: 100%;
-  aspect-ratio: 4 / 3;
-  border-radius: var(--radius-sm);
+  border-radius: 50%;
   overflow: hidden;
   background: var(--navy);
   display: flex;
   align-items: center;
   justify-content: center;
+  flex: none;
 }
 
 .profile-photo__img {
@@ -1600,7 +1636,7 @@
   font-weight: 700;
   color: var(--success-ink);
   background: var(--success-bg);
-  border-radius: 10px;
+  border-radius: 999px;
   padding: 3px 9px;
   margin-left: 8px;
   vertical-align: 3px;
@@ -2086,6 +2122,11 @@
     display: none;
   }
 
+  /* No mobile tab bar to clear here — just a normal bottom-right dock. */
+  .compass-ribbon {
+    bottom: 24px;
+  }
+
   /* The desktop top bar carries its own embedded account slot; the
      mobile-only floating chip would otherwise double up on tab screens. */
   .account-btn--mobile-only,
@@ -2146,15 +2187,19 @@
    surface (no blur) with proper SVG icons instead of emoji.
    ============================================================ */
 /* Compass ribbon — the page's one signature element: a fixed vertical tab
-   on the right edge instead of a generic floating chat bubble. Vertically
-   centered so it can never collide with the top nav bar (top) or anything
-   else at any screen size. Same click-to-open behavior as before — only
-   the trigger's form changed. */
+   on the right edge instead of a generic floating chat bubble. Anchored to
+   the bottom-right (mobile: above the bottom tab bar) rather than
+   vertically centered, so it reads as a normal docked help trigger and
+   never sits mid-screen over card content. Same click-to-open behavior as
+   before — only the trigger's position changed. */
 .compass-ribbon {
   position: fixed;
-  top: 50%;
+  /* Clears the mobile bottom tab bar (~56px + its own bottom padding) with
+     room to spare; the 768px block below tightens this once that bar is
+     gone and the desktop top nav takes over instead. */
+  bottom: calc(64px + env(safe-area-inset-bottom) + 16px);
   right: 0;
-  transform: translateY(-50%) rotate(180deg);
+  transform: rotate(180deg);
   writing-mode: vertical-rl;
   z-index: 40;
   display: flex;
@@ -2211,9 +2256,7 @@
   /* Desktop: dock like a real chat widget (Intercom/Crisp/Drift-style) —
      bottom-right, page stays visible behind it. Not a centred modal,
      which was the bug: a modal interrupts the whole screen; a docked
-     widget doesn't. Deliberately not anchored to the Compass ribbon's own
-     position (mid-right edge) — a bottom-right dock reads as a normal
-     chat widget regardless of where the trigger that opened it sits. */
+     widget doesn't. */
   .support-overlay {
     background: transparent;
     align-items: flex-end;

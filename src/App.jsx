@@ -181,10 +181,11 @@ function App() {
   // takeovers set the state but never rendered anything until you
   // navigated back into a tab screen.
   function renderScreen() {
-    if (screen === 'about') {
-      return <AboutStory onBack={() => setScreen(aboutFrom || 'landing')} />
-    }
-
+    // 'about' used to early-return here, skipping the app-shell entirely —
+    // the one nav destination with no persistent nav bar at all. It now
+    // falls through to the app-shell block below like every other tab
+    // (see the {screen === 'about' && ...} branch and the TopNav-visibility
+    // condition further down).
     if (screen === 'profile') {
       // auth.user is briefly null while getSession() is still resolving —
       // the recovery effect above sends us back once loading is done and
@@ -338,8 +339,11 @@ function App() {
           />
         )}
         {screen === 'faqs' && <Faqs />}
+        {screen === 'about' && (
+          <AboutStory onBack={() => setScreen(aboutFrom || 'landing')} />
+        )}
 
-        {MAIN_TABS.includes(screen) && (
+        {(MAIN_TABS.includes(screen) || screen === 'about') && (
           <TopNav
             active={screen}
             onNavigate={(id) => {
@@ -383,7 +387,11 @@ function App() {
           onSignIn={() => setSignInReason('account')}
           onSignOut={auth.signOut}
           onOpenProfile={openProfile}
-          mobileOnly={MAIN_TABS.includes(screen) && !selectedCareerId && !selectedPractitionerId}
+          mobileOnly={
+            (MAIN_TABS.includes(screen) || screen === 'about') &&
+            !selectedCareerId &&
+            !selectedPractitionerId
+          }
         />
       )}
       {signInReason && (
