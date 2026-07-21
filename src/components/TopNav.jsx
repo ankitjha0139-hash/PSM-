@@ -22,10 +22,11 @@ const MORE_ITEMS = NAV_ITEMS.filter((t) => !t.mobileBar)
 
 export default function TopNav({ active, onNavigate, onAbout, user, onSignIn, onSignOut, onOpenProfile }) {
   const [moreOpen, setMoreOpen] = useState(false)
-  // "About Us" isn't a `screen` value like the rest (see App.jsx's openAbout
-  // special-casing), so it can't be matched via `active` — the caller's
-  // onAbout is only ever invoked, never compared against.
-  const moreActive = MORE_ITEMS.some((t) => t.id === active)
+  // 'about' is a real `screen` value (App.jsx's openAbout sets it same as
+  // any other tab), so it matches `active` the same way every other nav
+  // item does — About Us just isn't in NAV_ITEMS since it's driven by its
+  // own onAbout callback rather than onNavigate(id).
+  const moreActive = MORE_ITEMS.some((t) => t.id === active) || active === 'about'
 
   const go = (id) => {
     setMoreOpen(false)
@@ -56,7 +57,10 @@ export default function TopNav({ active, onNavigate, onAbout, user, onSignIn, on
                 {tab.label}
               </button>
             ))}
-            <button className="top-nav__link" onClick={onAbout}>
+            <button
+              className={`top-nav__link ${active === 'about' ? 'top-nav__link--active' : ''}`}
+              onClick={onAbout}
+            >
               About Us
             </button>
           </div>
@@ -120,7 +124,10 @@ export default function TopNav({ active, onNavigate, onAbout, user, onSignIn, on
                   </button>
                 )
               })}
-              <button className="nav-more-item" onClick={goAbout}>
+              <button
+                className={`nav-more-item ${active === 'about' ? 'nav-more-item--active' : ''}`}
+                onClick={goAbout}
+              >
                 About Us
               </button>
             </div>

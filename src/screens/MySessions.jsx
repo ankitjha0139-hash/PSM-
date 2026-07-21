@@ -4,6 +4,7 @@ import { useUserBookings } from '../hooks/useUserBookings.js'
 import { bookingDateTime, downloadIcs } from '../lib/bookingUtils.js'
 import { CalendarIcon, ClockIcon } from '../components/icons.jsx'
 import EmptyState from '../components/EmptyState.jsx'
+import SkeletonSessionCard from '../components/SkeletonSessionCard.jsx'
 
 const FILTERS = ['All', 'Upcoming', 'Completed']
 
@@ -50,7 +51,14 @@ export default function MySessions({ user }) {
         ))}
       </div>
 
-      {loading && <p className="empty-state">Loading your sessions…</p>}
+      {loading && (
+        <div className="session-list">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <SkeletonSessionCard key={i} />
+          ))}
+        </div>
+      )}
+
       {loadError && !loading && (
         <p className="empty-state">Couldn't load your sessions — {loadError}</p>
       )}
@@ -59,78 +67,84 @@ export default function MySessions({ user }) {
         <EmptyState icon={ClockIcon} message={EMPTY_COPY[filter]} />
       )}
 
-      <div className="session-list">
-        {filtered.map((b) => {
-          const upcoming = bookingDateTime(b) >= now
-          const practitioner = practitioners.find((p) => p.id === b.practitionerId)
-          const open = openId === b.id
+      {!loading && (
+        <div className="session-list">
+          {filtered.map((b) => {
+            const upcoming = bookingDateTime(b) >= now
+            const practitioner = practitioners.find((p) => p.id === b.practitionerId)
+            const open = openId === b.id
 
-          return (
-            <div key={b.id} className="session-card">
-              <div className="session-card__head">
-                <h3 className="session-card__title">
-                  {b.sessionLabel} with {b.practitionerName}
-                </h3>
-                <span className={`session-status ${upcoming ? 'session-status--upcoming' : 'session-status--completed'}`}>
-                  {upcoming ? 'Upcoming' : 'Completed'}
-                </span>
-              </div>
-
-              <div className="session-card__coach">
-                <div className="prac-card__avatar">
-                  {practitioner?.photo ? (
-                    <img className="avatar-img" src={practitioner.photo} alt={practitioner.name} />
-                  ) : (
-                    (practitioner?.name || b.practitionerName)[0]
-                  )}
+            return (
+              <div key={b.id} className="session-card">
+                <div className="session-card__head">
+                  <h3 className="session-card__title">
+                    {b.sessionLabel} with {b.practitionerName}
+                  </h3>
+                  <span className={`session-status ${upcoming ? 'session-status--upcoming' : 'session-status--completed'}`}>
+                    {upcoming ? 'Upcoming' : 'Completed'}
+                  </span>
                 </div>
-                <div>
-                  <p className="session-card__coach-label">Coach</p>
-                  <p className="prac-card__name">{practitioner?.name || b.practitionerName}</p>
-                  {practitioner?.credibility && (
-                    <p className="prac-card__credibility">{practitioner.credibility}</p>
-                  )}
-                </div>
-              </div>
 
-              <div className="session-card__footer">
-                <span className="booking-card__meta">
-                  {b.dayLabel}, {b.dateLabel} · {b.time}
-                </span>
-                <button className="btn btn--ghost btn--sm" onClick={() => setOpenId(open ? null : b.id)}>
-                  View Session
-                </button>
-              </div>
-
-              {open && (
-                <div className="session-card__detail">
-                  <div className="booking-summary__row">
-                    <span>Price</span>
-                    <b>{b.price}</b>
+                <div className="session-card__coach">
+                  <div className="prac-card__avatar">
+                    {practitioner?.photo ? (
+                      <img className="avatar-img" src={practitioner.photo} alt={practitioner.name} />
+                    ) : (
+                      (practitioner?.name || b.practitionerName)[0]
+                    )}
                   </div>
-                  <div className="booking-summary__row">
-                    <span>Booking ID</span>
-                    <b>{b.id}</b>
-                  </div>
-                  <div className="session-card__actions">
-                    <button className="btn btn--ghost btn--sm" onClick={() => downloadIcs(b)}>
-                      <CalendarIcon /> Add to calendar
-                    </button>
-                    {upcoming && (
-                      <button
-                        className="btn btn--ghost btn--sm session-card__cancel"
-                        onClick={() => cancel(b.id)}
-                      >
-                        Cancel
-                      </button>
+                  <div>
+                    <p className="session-card__coach-label">Coach</p>
+                    <p className="prac-card__name">{practitioner?.name || b.practitionerName}</p>
+                    {practitioner?.credibility && (
+                      <p className="prac-card__credibility">{practitioner.credibility}</p>
                     )}
                   </div>
                 </div>
-              )}
-            </div>
-          )
-        })}
-      </div>
+
+                <div className="session-card__footer">
+                  <span className="booking-card__meta">
+                    {b.dayLabel}, {b.dateLabel} · {b.time}
+                  </span>
+                  <button className="btn btn--ghost btn--sm" onClick={() => setOpenId(open ? null : b.id)}>
+                    View Session
+                  </button>
+                </div>
+
+                {open && (
+                  <div className="session-card__detail">
+                    <div className="booking-summary__row">
+                      <span>Price</span>
+                      <b>{b.price}</b>
+                    </div>
+                    <div className="booking-summary__row">
+                      <span>Booking ID</span>
+                      <b>{b.id}</b>
+                    </div>
+                    <div className="session-card__actions">
+                      {/* --sm here (vs. the full-size version of this same
+                          button on the post-booking confirmation screen):
+                          this one's inline in a dense card footer, not a
+                          standalone stacked action. */}
+                      <button className="btn btn--ghost btn--sm" onClick={() => downloadIcs(b)}>
+                        <CalendarIcon /> Add to calendar
+                      </button>
+                      {upcoming && (
+                        <button
+                          className="btn btn--ghost btn--sm session-card__cancel"
+                          onClick={() => cancel(b.id)}
+                        >
+                          Cancel
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )
+          })}
+        </div>
+      )}
     </main>
   )
 }

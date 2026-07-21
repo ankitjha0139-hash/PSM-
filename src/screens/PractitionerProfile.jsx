@@ -121,6 +121,10 @@ export default function PractitionerProfile({ practitioner, onBack, onRequireAut
             ? `Our team has been notified — we'll confirm your slot and share the call link on ${booking.contact}.`
             : `Saved on this device, but we couldn't notify the team just now — please ping us via the help button with your booking ID.`}
         </p>
+        {/* Full-size, not --sm: this is a standalone stacked action on its
+            own line (screen-level weight). My Sessions' card version of
+            this same button is --sm since it's inline within a dense card
+            footer instead — same action, different density context. */}
         <button className="btn btn--ghost" onClick={() => downloadIcs(booking)}>
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 7 }}>
             <CalendarIcon /> Add to calendar
