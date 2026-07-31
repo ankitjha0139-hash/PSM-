@@ -1,10 +1,13 @@
 import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '../lib/supabaseClient.js'
+import { isMockUser } from '../lib/mockAuth.js'
 
-// Bookings, per signed-in user — replaces the old localStorage-only
-// useBookings (device-scoped, no account link, couldn't answer "what are
-// MY sessions"). Same load/save shape as useProfile.js. Requires the
-// bookings table + RLS in supabase/bookings.sql.
+// Bookings, per signed-in user. Requires the bookings table + RLS in
+// supabase/bookings.sql. Same load/save shape as useProfile.js.
+//
+// The demo account's id ('mock-test-user') isn't a real uuid, so it can't
+// be written to the bookings table's uuid-typed user_id column anyway —
+// add/cancel just operate on local state for it instead of hitting Supabase.
 
 function fromRow(row) {
   return {
@@ -54,6 +57,11 @@ export function useUserBookings(user) {
       setLoadError(null)
       return
     }
+    if (isMockUser(user)) {
+      setLoading(false)
+      setLoadError(null)
+      return
+    }
     let cancelled = false
     setLoading(true)
     supabase
@@ -74,6 +82,10 @@ export function useUserBookings(user) {
 
   const add = useCallback(
     async (booking) => {
+      if (isMockUser(user)) {
+        setBookings((prev) => [...prev, booking])
+        return { error: null }
+      }
       const { error } = await supabase.from('bookings').insert(toRow(booking, user.id))
       if (!error) setBookings((prev) => [...prev, booking])
       return { error }
@@ -83,6 +95,10 @@ export function useUserBookings(user) {
 
   const cancel = useCallback(
     async (id) => {
+      if (isMockUser(user)) {
+        setBookings((prev) => prev.filter((b) => b.id !== id))
+        return { error: null }
+      }
       const { error } = await supabase.from('bookings').delete().eq('id', id).eq('user_id', user.id)
       if (!error) setBookings((prev) => prev.filter((b) => b.id !== id))
       return { error }

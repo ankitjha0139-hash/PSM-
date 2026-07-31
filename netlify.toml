@@ -3,8 +3,6 @@
   publish = "dist"
   functions = "netlify/functions"
 
-# Client-side routing fallback — needed once we add React Router in later phases,
-# harmless for now since this is a single page.
 [[redirects]]
   from = "/*"
   to = "/index.html"

@@ -1,8 +1,5 @@
-// Shared with src/screens/FilterExplore.jsx (which appends its own
-// catch-all 'Other' bucket for uncategorized sheet tags — not a real
-// interest someone would pick, so it stays local to Explore) and
-// src/screens/Profile.jsx (interest chips use this same taxonomy, so a
-// profile's interests line up with Explore's filter categories).
+// Shared taxonomy for Profile's interest chips and (once Explore grows an
+// interest filter) Explore's filter categories, so the two line up.
 export const INTEREST_CATEGORIES = [
   'Science & Research',
   'Tech & Engineering',

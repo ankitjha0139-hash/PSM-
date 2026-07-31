@@ -3,8 +3,8 @@ import { useCallback, useEffect, useState } from 'react'
 const STORAGE_KEY = 'shortlist'
 
 // Shortlist state, persisted to localStorage so it survives a refresh.
-// Any screen calls useShortlist() and shares the same list — Phase 4 will
-// swap the storage layer for Supabase without screens needing to change.
+// One instance lives in App.jsx and gets passed to any screen that needs
+// it, so Explore and CareerDetail always agree on what's saved.
 export function useShortlist() {
   const [ids, setIds] = useState(() => {
     try {

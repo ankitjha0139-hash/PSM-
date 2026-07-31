@@ -1,5 +1,5 @@
 // Submits to Netlify Forms — the zero-setup ticket pipe. Netlify detects
-// the hidden form declarations in index.html at deploy time and collects
+// the hidden form declaration in index.html at deploy time and collects
 // any POST to "/" with a matching form-name; submissions appear in the
 // Netlify dashboard under Forms (email notifications configurable there).
 export async function submitNetlifyForm(formName, fields) {

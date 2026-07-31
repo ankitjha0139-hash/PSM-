@@ -1,13 +1,14 @@
-// Shared "nothing here yet" block — an icon in a soft circle plus a
-// message, used wherever a list/grid has genuinely nothing to show (as
-// opposed to a transient loading/error line, which stays plain text).
-export default function EmptyState({ icon: Icon, message }) {
+export default function EmptyState({ icon: Icon, title, description, action }) {
   return (
-    <div className="empty-state-block">
-      <span className="empty-state-block__icon">
-        <Icon size={22} />
-      </span>
-      <p className="empty-state-block__text">{message}</p>
+    <div className="flex flex-col items-center rounded-3xl border border-dashed border-indigo-900/15 px-6 py-16 text-center">
+      {Icon && (
+        <span className="grid h-12 w-12 place-items-center rounded-full bg-indigo-900/8 text-indigo-900">
+          <Icon size={22} weight="bold" />
+        </span>
+      )}
+      <h3 className="mt-4 font-display text-lg font-semibold text-indigo-900">{title}</h3>
+      {description && <p className="mt-2 max-w-sm text-sm text-ink-soft">{description}</p>}
+      {action && <div className="mt-6">{action}</div>}
     </div>
   )
 }

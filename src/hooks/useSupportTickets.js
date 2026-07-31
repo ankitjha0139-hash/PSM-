@@ -3,9 +3,9 @@ import { submitNetlifyForm } from '../lib/netlifyForms.js'
 
 const STORAGE_KEY = 'supportTickets'
 
-// Tickets now actually reach the team: sent through Netlify Forms
-// (dashboard -> Forms -> support-ticket). A local copy is still kept so
-// the user has a record on their device even if they close the tab.
+// Tickets reach the team via Netlify Forms (dashboard -> Forms ->
+// support-ticket). A local copy is kept so the user has a record on their
+// device even if they close the tab.
 export function useSupportTickets() {
   const [tickets, setTickets] = useState(() => {
     try {

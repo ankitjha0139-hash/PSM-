@@ -1,199 +1,140 @@
-import { useState } from 'react'
-import { shareCareer } from '../lib/share.js'
-import { BackIcon, ChevronDownIcon, ExternalLinkIcon, HeartIcon, ArrowRightIcon } from '../components/icons.jsx'
+import { ArrowLeft, WarningCircle, Link as LinkIcon, Heart } from '@phosphor-icons/react'
+import { useCareerPaths } from '../hooks/useCareerPaths.js'
+import Button from '../components/ui/Button.jsx'
+import EmptyState from '../components/EmptyState.jsx'
+import SkeletonCareerCard from '../components/SkeletonCareerCard.jsx'
 
-// Turns the schema fields into a step-by-step "how to get there" — this is
-// what serves the "I know exactly what I want" case, folded into the detail
-// page instead of a separate roadmap screen (see App.jsx comment). Lives
-// inside a collapsible section (see below) so it doesn't dominate the page.
-function buildSteps(career) {
-  const steps = [
-    {
-      title: 'Right now',
-      body: career.requires_maths
-        ? "Keep Maths — it's required for this path."
-        : career.subjects_required?.length
-          ? `Focus on: ${career.subjects_required.join(', ')}`
-          : 'No specific subjects required — any stream works.',
-    },
-  ]
-  if (career.exams?.length) {
-    steps.push({
-      title: 'Clear the gate',
-      body: `Exam(s): ${career.exams.join(', ')}${
-        career.decision_timeline ? ` — ${career.decision_timeline}` : ''
-      }`,
-    })
-  }
-  steps.push({ title: 'Study / train', body: `${career.duration_years} · ${career.colleges_route}` })
-  steps.push({
-    title: 'First job',
-    body: `${career.roles?.[0] || 'Entry role'} · ${career.entry_pay}`,
-  })
-  return steps
-}
+const FACTS = [
+  ['duration_years', 'Duration'],
+  ['entry_pay', 'Entry pay'],
+  ['fees', 'Typical fees'],
+  ['time_bucket', 'Time to first income'],
+]
 
-export default function CareerDetail({
-  career,
-  shortlisted,
-  onToggleShortlist,
-  onBack,
-  onTalkToPractitioner,
-}) {
-  const [howOpen, setHowOpen] = useState(false)
-  const [shareResult, setShareResult] = useState(null)
-  if (!career) return null
-
-  const handleShare = async () => {
-    const result = await shareCareer(career)
-    if (result === 'copied') {
-      setShareResult('Copied — paste it anywhere')
-      setTimeout(() => setShareResult(null), 2500)
-    }
-  }
-  const steps = buildSteps(career)
-  const primaryRole = career.roles?.[0] || career.title
+export default function CareerDetail({ careerId, onBack, onTalkToPractitioner, shortlist }) {
+  const { data, loading, error } = useCareerPaths()
+  const career = data?.find((c) => c.id === careerId)
 
   return (
-    <main className="screen screen--scroll">
-      <button className="link-back" onClick={onBack} aria-label="Back">
-        <BackIcon />
+    <section className="mx-auto max-w-4xl px-5 py-14 sm:px-8">
+      <button
+        type="button"
+        onClick={onBack}
+        className="inline-flex items-center gap-2 text-sm font-semibold text-indigo-900 hover:opacity-80"
+      >
+        <ArrowLeft size={16} weight="bold" /> Back to Explore
       </button>
 
-      <div className="detail-head">
-        <span className={`stream-badge stream-badge--${career.stream.toLowerCase()}`}>
-          {career.stream}
-        </span>
-        <h2 className="detail-title">{career.title}</h2>
-        <p className="detail-tagline">{career.what_it_is}</p>
-      </div>
+      {error && (
+        <div className="mt-10">
+          <EmptyState icon={WarningCircle} title="Couldn't load this career" description={error.message} />
+        </div>
+      )}
 
-      <div className="metric-grid">
-        <div className="metric">
-          <span className="metric__k">Entry pay</span>
-          <span className="metric__v">{career.entry_pay}</span>
+      {!error && loading && (
+        <div className="mt-10">
+          <SkeletonCareerCard />
         </div>
-        <div className="metric">
-          <span className="metric__k">Fees</span>
-          <span className="metric__v">{career.fees}</span>
-        </div>
-        <div className="metric">
-          <span className="metric__k">Duration</span>
-          <span className="metric__v">{career.duration_years}</span>
-        </div>
-        <div className="metric">
-          {/* Short bucketed value here, not the full years_to_first_income
-              sentence — that long text was overflowing this small tile on
-              mobile. The full sentence still shows inside the "What do I
-              do" accordion below. */}
-          <span className="metric__k">Time to earn</span>
-          <span className="metric__v">{career.time_bucket}</span>
-        </div>
-      </div>
+      )}
 
-      {/* Collapsed by default — this used to be an always-open callout +
-          a full roadmap, which felt "too much in the face" and visually
-          disproportionate next to the compact sections below it. */}
-      <div className="section">
-        <button className="accordion-trigger" onClick={() => setHowOpen((v) => !v)}>
-          <span>What do I do to become {/^[aeiou]/i.test(primaryRole) ? 'an' : 'a'} {primaryRole}?</span>
-          <span className={`accordion-chevron ${howOpen ? 'accordion-chevron--open' : ''}`}>
-            <ChevronDownIcon />
-          </span>
-        </button>
-        {howOpen && (
-          <div className="accordion-body">
-            {career.next_action && <p className="accordion-lead">{career.next_action}</p>}
-            <ol className="roadmap">
-              {steps.map((s, i) => (
-                <li key={i} className="roadmap__step">
-                  <span className="roadmap__num">{i + 1}</span>
-                  <div>
-                    <div className="roadmap__title">{s.title}</div>
-                    <div className="roadmap__body">{s.body}</div>
-                  </div>
-                </li>
-              ))}
-            </ol>
-          </div>
-        )}
-      </div>
+      {!error && !loading && !career && (
+        <div className="mt-10">
+          <EmptyState
+            icon={WarningCircle}
+            title="We couldn't find that career"
+            description="It may have been renamed or removed from the sheet."
+          />
+        </div>
+      )}
 
-      <div className="section">
-        <h3 className="section__h">Roles you could get</h3>
-        <div className="tag-row">
-          {career.roles.map((r) => (
-            <span key={r} className="tag">
-              {r}
+      {career && (
+        <article className="mt-8">
+          <div className="flex items-start justify-between gap-4">
+            <span className="inline-flex items-center rounded-full bg-sage-50 px-3 py-1 text-xs font-semibold text-sage-600">
+              {career.stream}
             </span>
-          ))}
-        </div>
-      </div>
-
-      {career.doors_opened?.length > 0 && (
-        <div className="section">
-          <h3 className="section__h">Doors this opens</h3>
-          <div className="tag-row">
-            {career.doors_opened.map((d) => (
-              <span key={d} className="tag tag--open">
-                {d}
-              </span>
-            ))}
+            <button
+              type="button"
+              onClick={() => shortlist.toggle(career.id)}
+              aria-pressed={shortlist.has(career.id)}
+              className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-sm font-semibold transition-colors ${
+                shortlist.has(career.id)
+                  ? 'border-sage-300 bg-sage-50 text-sage-600'
+                  : 'border-indigo-900/15 bg-white/60 text-ink-soft hover:border-indigo-900/30'
+              }`}
+            >
+              <Heart size={15} weight={shortlist.has(career.id) ? 'fill' : 'regular'} />
+              {shortlist.has(career.id) ? 'Shortlisted' : 'Add to shortlist'}
+            </button>
           </div>
-        </div>
-      )}
-
-      {career.honest_note && (
-        <div className="callout callout--honest">
-          <span className="callout__label">The honest bit</span>
-          <p className="callout__body">{career.honest_note}</p>
-        </div>
-      )}
-
-      {career.govt_job_overlap && (
-        <div className="section">
-          <h3 className="section__h">Government job route</h3>
-          <p className="section__text">{career.govt_job_overlap}</p>
-        </div>
-      )}
-
-      {career.resources?.length > 0 && (
-        <div className="section">
-          <h3 className="section__h">Learn more</h3>
-          <div className="resource-list">
-            {career.resources.map((r) => (
-              <a key={r.url} className="resource-item" href={r.url} target="_blank" rel="noreferrer">
-                <span className="resource-item__label">
-                  {r.label} <ExternalLinkIcon />
-                </span>
-                <span className="resource-item__note">{r.note}</span>
-              </a>
-            ))}
-          </div>
-        </div>
-      )}
-
-      <div className="detail-actions">
-        <button className="btn btn--primary" onClick={onTalkToPractitioner}>
-          Talk to a real {primaryRole} <ArrowRightIcon />
-        </button>
-        <button
-          className={`btn btn--ghost ${shortlisted ? 'btn--ghost-on' : ''}`}
-          onClick={() => onToggleShortlist(career.id)}
-        >
-          <HeartIcon filled={shortlisted} size={15} /> {shortlisted ? 'Shortlisted' : 'Add to shortlist'}
-        </button>
-        {/* Second-opinion share — parents, seniors, anyone whose take
-            matters. Filled accent, not ghost: sharing is a loop we WANT
-            people to notice. */}
-        <button className="btn btn--share" onClick={handleShare}>
-          {shareResult || (
-            <>
-              <ExternalLinkIcon size={15} /> Share for a second opinion
-            </>
+          <h1 className="mt-4 font-display text-3xl font-semibold tracking-tight text-indigo-900 sm:text-4xl">
+            {career.title}
+          </h1>
+          {career.what_it_is && (
+            <p className="mt-4 text-lg leading-relaxed text-ink-soft">{career.what_it_is}</p>
           )}
-        </button>
-      </div>
-    </main>
+
+          <dl className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-4">
+            {FACTS.filter(([key]) => career[key]).map(([key, label]) => (
+              <div key={key} className="rounded-2xl border border-indigo-900/10 bg-white/60 p-4">
+                <dt className="text-xs font-semibold uppercase tracking-wide text-ink-faint">{label}</dt>
+                <dd className="mt-1 text-sm font-semibold text-indigo-900">{career[key]}</dd>
+              </div>
+            ))}
+          </dl>
+
+          {career.honest_note && (
+            <div className="mt-8 rounded-3xl border border-sage-300/40 bg-sage-50 p-6">
+              <h2 className="font-display text-lg font-semibold text-indigo-900">The honest bit</h2>
+              <p className="mt-2 text-[15px] leading-relaxed text-ink">{career.honest_note}</p>
+            </div>
+          )}
+
+          {career.colleges_route && (
+            <div className="mt-8">
+              <h2 className="font-display text-lg font-semibold text-indigo-900">How you'd get there</h2>
+              <p className="mt-2 text-[15px] leading-relaxed text-ink-soft">{career.colleges_route}</p>
+            </div>
+          )}
+
+          {Array.isArray(career.resources) && career.resources.length > 0 && (
+            <div className="mt-8">
+              <h2 className="font-display text-lg font-semibold text-indigo-900">Go deeper</h2>
+              <ul className="mt-3 space-y-2">
+                {career.resources.map((r) => (
+                  <li key={r.url}>
+                    <a
+                      href={r.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-2 text-sm font-medium text-indigo-900 underline decoration-indigo-900/30 underline-offset-4 hover:decoration-indigo-900"
+                    >
+                      <LinkIcon size={14} weight="bold" /> {r.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          <div className="mt-10 rounded-3xl border border-indigo-900/10 bg-white/60 p-6">
+            <h2 className="font-display text-lg font-semibold text-indigo-900">
+              Want the real "day in the life"?
+            </h2>
+            <p className="mt-2 text-[15px] text-ink-soft">
+              Talk to someone who actually does this job — not a generic counsellor.
+            </p>
+            <Button
+              variant="primary"
+              as="button"
+              onClick={() => onTalkToPractitioner(career.roles?.[0])}
+              className="mt-5"
+            >
+              Talk to a real {career.roles?.[0] || career.title}
+            </Button>
+          </div>
+        </article>
+      )}
+    </section>
   )
 }

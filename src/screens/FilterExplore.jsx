@@ -1,214 +1,139 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { MagnifyingGlass, Compass, WarningCircle } from '@phosphor-icons/react'
 import { useCareerPaths } from '../hooks/useCareerPaths.js'
 import CareerCard from '../components/CareerCard.jsx'
 import SkeletonCareerCard from '../components/SkeletonCareerCard.jsx'
 import EmptyState from '../components/EmptyState.jsx'
-import { TargetIcon } from '../components/icons.jsx'
-import { INTEREST_CATEGORIES } from '../data/interestCategories.js'
+import Pagination from '../components/Pagination.jsx'
 
-// Raw interest_tags in the sheet have grown into the dozens as more careers
-// get added — too many to show flat. This groups them into a small set of
-// categories: tap a category to open its tag drawer, tap tags inside to
-// filter. A tag not listed here (a genuinely new one added to the sheet)
-// falls into "Other" automatically instead of disappearing.
-const TAG_CATEGORY = {
-  science: 'Science & Research', biology: 'Science & Research', research: 'Science & Research',
-  nature: 'Science & Research', analytical: 'Science & Research',
-  fieldwork: 'Science & Research', investigation: 'Science & Research', maths: 'Science & Research',
+const STREAMS = ['All', 'Science', 'Commerce', 'Arts', 'Vocational', 'Alternate', 'Govt']
+const PAGE_SIZE = 12
 
-  tech: 'Tech & Engineering', engineering: 'Tech & Engineering', gaming: 'Tech & Engineering',
-  space: 'Tech & Engineering', aviation: 'Tech & Engineering', vehicles: 'Tech & Engineering',
-  material: 'Tech & Engineering', industrial: 'Tech & Engineering', manufacturing: 'Tech & Engineering',
-  processes: 'Tech & Engineering', flight: 'Tech & Engineering', safety: 'Tech & Engineering',
+export default function FilterExplore({ onOpenCareer, shortlist }) {
+  const { data, loading, error } = useCareerPaths()
+  const [query, setQuery] = useState('')
+  const [stream, setStream] = useState('All')
+  const [page, setPage] = useState(1)
+  const resultsRef = useRef(null)
 
-  creative: 'Creative & Design', design: 'Creative & Design', visual: 'Creative & Design',
-  storytelling: 'Creative & Design', media: 'Creative & Design', writing: 'Creative & Design',
-  music: 'Creative & Design', fashion: 'Creative & Design', performance: 'Creative & Design',
-  reading: 'Creative & Design',
-
-  business: 'Business & Numbers', numbers: 'Business & Numbers', markets: 'Business & Numbers',
-  economics: 'Business & Numbers', finance: 'Business & Numbers', trade: 'Business & Numbers',
-  sales: 'Business & Numbers', analysis: 'Business & Numbers', property: 'Business & Numbers',
-  operations: 'Business & Numbers', logistics: 'Business & Numbers', organisation: 'Business & Numbers',
-
-  people: 'People & Care', helping: 'People & Care', healthcare: 'People & Care',
-  teaching: 'People & Care', social: 'People & Care', children: 'People & Care',
-  coaching: 'People & Care', health: 'People & Care', 'traditional medicine': 'People & Care',
-  fitness: 'People & Care', sports: 'People & Care', physical: 'People & Care',
-
-  leadership: 'Leadership & Society', governance: 'Leadership & Society', law: 'Leadership & Society',
-  justice: 'Leadership & Society', 'public service': 'Leadership & Society', society: 'Leadership & Society',
-  history: 'Leadership & Society', humanities: 'Leadership & Society', communication: 'Leadership & Society',
-  culture: 'Leadership & Society', global: 'Leadership & Society', service: 'Leadership & Society',
-  independent: 'Leadership & Society', stability: 'Leadership & Society', generalist: 'Leadership & Society',
-
-  agriculture: 'Nature & Lifestyle', sustainability: 'Nature & Lifestyle', fisheries: 'Nature & Lifestyle',
-  forestry: 'Nature & Lifestyle', rural: 'Nature & Lifestyle', animals: 'Nature & Lifestyle',
-  travel: 'Nature & Lifestyle', hospitality: 'Nature & Lifestyle', events: 'Nature & Lifestyle',
-  food: 'Nature & Lifestyle',
-}
-
-// Explore's own catch-all bucket for tags that don't map to a shared
-// category, appended after the shared list — see interestCategories.js.
-const CATEGORY_ORDER = [...INTEREST_CATEGORIES, 'Other']
-
-const categoryOf = (tag) => TAG_CATEGORY[tag] || 'Other'
-
-// Tags that cut across every category (a trait, not a subject) confuse more
-// than they help as a filter chip — e.g. "logic" surfaces both Chartered
-// Accountancy and Philosophy under whichever bucket it's placed in. Dropped
-// from the drawer; careers carrying only a dropped tag are still findable
-// via their other tags or search.
-const DROPPED_TAGS = new Set(['logic'])
-
-// initialFocus lets the routing question hint at intent: "goal" answers
-// focus the search box, "direction" answers leave the chips as the start —
-// same screen either way, since both are really the same filter engine.
-export default function FilterExplore({ shortlist, onOpenDetail, initialFocus }) {
-  const { data: careerPaths, loading, error } = useCareerPaths()
-  const [search, setSearch] = useState('')
-  const [interests, setInterests] = useState([])
-  const [openCategory, setOpenCategory] = useState(null)
-  const [avoidMaths, setAvoidMaths] = useState(false)
-  const searchRef = useRef(null)
-
-  useEffect(() => {
-    if (initialFocus === 'search') searchRef.current?.focus()
-  }, [initialFocus])
-
-  const toggleInterest = (tag) =>
-    setInterests((prev) => (prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]))
-
-  const toggleCategory = (name) =>
-    setOpenCategory((prev) => (prev === name ? null : name))
-
-  // Pulled from the data, not hardcoded — a new interest_tag in the sheet
-  // shows up here (under "Other" until categorized), no code change needed
-  // for the filter to keep working.
-  const allInterests = useMemo(
-    () => [...new Set((careerPaths || []).flatMap((c) => c.interest_tags))],
-    [careerPaths]
-  )
-
-  const categories = useMemo(() => {
-    const byCategory = new Map()
-    for (const tag of allInterests) {
-      if (DROPPED_TAGS.has(tag)) continue
-      const cat = categoryOf(tag)
-      if (!byCategory.has(cat)) byCategory.set(cat, [])
-      byCategory.get(cat).push(tag)
-    }
-    return CATEGORY_ORDER.filter((name) => byCategory.has(name)).map((name) => ({
-      name,
-      tags: byCategory.get(name).sort(),
-    }))
-  }, [allInterests])
-
-  const results = useMemo(() => {
-    const q = search.trim().toLowerCase()
-    return (careerPaths || []).filter((c) => {
-      if (q && !c.title.toLowerCase().includes(q)) return false
-      if (interests.length && !c.interest_tags.some((t) => interests.includes(t))) return false
-      if (avoidMaths && c.requires_maths) return false
-      return true
+  const filtered = useMemo(() => {
+    if (!data) return []
+    const q = query.trim().toLowerCase()
+    return data.filter((c) => {
+      const matchesStream = stream === 'All' || c.stream === stream
+      const matchesQuery =
+        !q || c.title?.toLowerCase().includes(q) || c.what_it_is?.toLowerCase().includes(q)
+      return matchesStream && matchesQuery
     })
-  }, [careerPaths, search, interests, avoidMaths])
+  }, [data, query, stream])
 
-  if (loading && !careerPaths) {
-    return (
-      <main className="screen screen--scroll">
-        <h2 className="screen__title screen__title--md">Explore paths</h2>
-        <div className="career-grid">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <SkeletonCareerCard key={i} />
-          ))}
-        </div>
-      </main>
-    )
+  // A new search/filter invalidates whatever page you were on — back to
+  // page 1 rather than showing an empty page 4 of a 2-page result.
+  useEffect(() => {
+    setPage(1)
+  }, [query, stream])
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
+  const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
+
+  const goToPage = (next) => {
+    setPage(next)
+    resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
-
-  if (error && !careerPaths) {
-    return (
-      <main className="screen screen--scroll">
-        <h2 className="screen__title screen__title--md">Explore paths</h2>
-        <p className="empty-state">Couldn't load career data — check your connection and try again.</p>
-      </main>
-    )
-  }
-
-  const openTags = categories.find((c) => c.name === openCategory)?.tags || []
 
   return (
-    <main className="screen screen--scroll">
-      <div className="explore-header">
-        <h2 className="screen__title screen__title--md">Explore paths</h2>
-        <input
-          ref={searchRef}
-          className="search-input"
-          placeholder="Search a career (e.g. designer, CA)…"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-
-        <p className="filter-label">What draws you in?</p>
-        <div className="chip-row">
-          {categories.map(({ name, tags }) => {
-            const activeCount = tags.filter((t) => interests.includes(t)).length
-            return (
-              <button
-                key={name}
-                className={`chip chip--category ${openCategory === name ? 'chip--open' : ''} ${activeCount ? 'chip--on' : ''}`}
-                onClick={() => toggleCategory(name)}
-              >
-                {name}
-                {activeCount > 0 && <span className="chip__count">{activeCount}</span>}
-              </button>
-            )
-          })}
-          <button
-            className={`chip ${avoidMaths ? 'chip--on' : ''}`}
-            onClick={() => setAvoidMaths((v) => !v)}
-          >
-            Avoid Maths
-          </button>
-        </div>
-
-        {openCategory && (
-          <div className="filter-drawer">
-            <p className="filter-drawer__hint">Narrow it further within {openCategory.toLowerCase()} — optional</p>
-            <div className="chip-row">
-              {openTags.map((tag) => (
-                <button
-                  key={tag}
-                  className={`chip chip--sub ${interests.includes(tag) ? 'chip--on' : ''}`}
-                  onClick={() => toggleInterest(tag)}
-                >
-                  {tag}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        <p className="result-count">
-          {results.length} path{results.length === 1 ? '' : 's'} fit this
+    <section className="mx-auto max-w-7xl px-5 py-14 sm:px-8">
+      <div className="max-w-2xl">
+        <h1 className="font-display text-3xl font-semibold tracking-tight text-indigo-900 sm:text-4xl">
+          Explore every path
+        </h1>
+        <p className="mt-3 text-lg text-ink-soft">
+          Filter and search — see what each career really means before you narrow down.
         </p>
       </div>
 
-      <div className="career-grid">
-        {results.map((c) => (
-          <CareerCard
-            key={c.id}
-            career={c}
-            shortlisted={shortlist.has(c.id)}
-            onToggleShortlist={shortlist.toggle}
-            onOpen={onOpenDetail}
+      <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center">
+        <label className="relative flex-1">
+          <span className="sr-only">Search careers</span>
+          <MagnifyingGlass
+            size={18}
+            weight="bold"
+            className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-ink-faint"
           />
+          <input
+            type="search"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search by name — e.g. architecture, market research"
+            className="min-h-11 w-full rounded-full border border-indigo-900/15 bg-white/70 py-3 pl-11 pr-4 text-[15px] text-ink placeholder:text-ink-faint focus-visible:border-indigo-500"
+          />
+        </label>
+      </div>
+
+      <div className="mt-4 flex flex-wrap gap-2" role="group" aria-label="Filter by stream">
+        {STREAMS.map((s) => (
+          <button
+            key={s}
+            type="button"
+            onClick={() => setStream(s)}
+            aria-pressed={stream === s}
+            className={`min-h-9 rounded-full border px-4 py-1.5 text-sm font-semibold transition-colors ${
+              stream === s
+                ? 'border-indigo-900 bg-indigo-900 text-cream'
+                : 'border-indigo-900/15 bg-white/60 text-ink-soft hover:border-indigo-900/30'
+            }`}
+          >
+            {s}
+          </button>
         ))}
-        {results.length === 0 && (
-          <EmptyState icon={TargetIcon} message="No paths match — try loosening a filter." />
+      </div>
+
+      <div ref={resultsRef} className="mt-10 scroll-mt-24">
+        {error && (
+          <EmptyState
+            icon={WarningCircle}
+            title="Couldn't load careers right now"
+            description={
+              import.meta.env.DEV
+                ? `${error.message} — is \`netlify dev\` running (functions need it, plain \`vite\` won't serve /api)?`
+                : "Something went wrong on our end. Try refreshing in a moment."
+            }
+          />
+        )}
+
+        {!error && loading && (
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <SkeletonCareerCard key={i} />
+            ))}
+          </div>
+        )}
+
+        {!error && !loading && filtered.length === 0 && (
+          <EmptyState
+            icon={Compass}
+            title="No careers match that"
+            description="Try a different search term or switch the stream filter back to All."
+          />
+        )}
+
+        {!error && !loading && filtered.length > 0 && (
+          <>
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {paged.map((career) => (
+                <CareerCard
+                  key={career.id}
+                  career={career}
+                  onOpen={onOpenCareer}
+                  shortlisted={shortlist.has(career.id)}
+                  onToggleShortlist={shortlist.toggle}
+                />
+              ))}
+            </div>
+            <Pagination page={page} totalPages={totalPages} onChange={goToPage} />
+          </>
         )}
       </div>
-    </main>
+    </section>
   )
 }

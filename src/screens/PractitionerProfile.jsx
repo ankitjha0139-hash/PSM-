@@ -1,18 +1,23 @@
 import { useMemo, useState } from 'react'
-import posthog from 'posthog-js'
-import { StarIcon, CheckIcon, VerifiedIcon, CalendarIcon, BackIcon, ArrowRightIcon } from '../components/icons.jsx'
+import { ArrowLeft, ArrowRight, Check, SealCheck, Star, CalendarPlus } from '@phosphor-icons/react'
+import { usePractitioners } from '../hooks/usePractitioners.js'
 import { getSlotDays, makeBookingId, downloadIcs } from '../lib/bookingUtils.js'
 import { useUserBookings } from '../hooks/useUserBookings.js'
 import { submitNetlifyForm } from '../lib/netlifyForms.js'
+import { capture } from '../lib/analytics.js'
 import BookingSteps from '../components/BookingSteps.jsx'
+import Button from '../components/ui/Button.jsx'
+import EmptyState from '../components/EmptyState.jsx'
 
 // Full profile + the booking flow: pick a session type, pick a real
 // day/time slot, leave contact details, get a confirmation with a booking
-// ID and a calendar file. Booking data itself is real — it's saved to
-// Supabase (see useUserBookings), gated on sign-in same as the session-type
-// tap that starts this flow, so My Sessions can show it back later.
-export default function PractitionerProfile({ practitioner, onBack, onRequireAuth, user }) {
-  // step: 'profile' → 'slot' → 'contact' → 'confirmed'
+// ID and a calendar file. Booking data is real — saved to Supabase (see
+// useUserBookings), gated on sign-in at the session-type tap, so My
+// Sessions can show it back later.
+export default function PractitionerProfile({ practitionerId, onBack, user, onSignIn }) {
+  const { data: practitioners, loading: practitionersLoading } = usePractitioners()
+  const practitioner = practitioners?.find((p) => p.id === practitionerId)
+
   const [step, setStep] = useState('profile')
   const [sessionType, setSessionType] = useState(null)
   const [dayKey, setDayKey] = useState(null)
@@ -28,7 +33,30 @@ export default function PractitionerProfile({ practitioner, onBack, onRequireAut
   const slotDays = useMemo(() => getSlotDays(practitioner?.id), [practitioner?.id])
   const selectedDay = slotDays.find((d) => d.dateKey === dayKey)
 
-  if (!practitioner) return null
+  if (practitionersLoading) {
+    return (
+      <section className="mx-auto max-w-3xl px-5 py-24 sm:px-8">
+        <p className="text-sm text-ink-soft">Loading…</p>
+      </section>
+    )
+  }
+
+  if (!practitioner) {
+    return (
+      <section className="mx-auto max-w-3xl px-5 py-24 sm:px-8">
+        <EmptyState title="We couldn't find that practitioner" description="They may have been removed." />
+      </section>
+    )
+  }
+
+  const startBooking = (st) => {
+    if (!user) {
+      onSignIn()
+      return
+    }
+    setSessionType(st)
+    setStep('slot')
+  }
 
   const confirmBooking = async () => {
     if (!contactName.trim() || !contact.trim() || saving) return
@@ -50,7 +78,7 @@ export default function PractitionerProfile({ practitioner, onBack, onRequireAut
       createdAt: new Date().toISOString(),
     }
     // Notify the team through the Netlify Forms pipe. The booking itself
-    // never fails — worst case the local record exists and the
+    // never fails on this — worst case the local record exists and the
     // confirmation copy tells the user to ping support.
     let sent = false
     try {
@@ -66,294 +94,308 @@ export default function PractitionerProfile({ practitioner, onBack, onRequireAut
     } catch {
       sent = false
     }
-    // Unlike the Netlify Forms notification above, this write IS the
-    // source of truth for My Sessions — a failure here means the booking
-    // wouldn't exist anywhere, so it blocks moving to the confirmation
-    // screen instead of silently continuing.
+    // Unlike the notification above, this write IS the source of truth
+    // for My Sessions — a failure here blocks the confirmation screen.
     const { error } = await add(b)
     if (error) {
       setSaving(false)
       setBookingError(true)
       return
     }
-    posthog.capture('booking_confirmed', {
-      practitionerId: practitioner.id,
-      sessionLabel: sessionType.label,
-    })
     setBooking(b)
     setNotified(sent)
     setSaving(false)
     setStep('confirmed')
+    capture('booking_confirmed', { practitionerId: practitioner.id, sessionLabel: sessionType.label })
   }
 
   if (step === 'confirmed') {
     return (
-      <main className="screen screen--center">
+      <section className="mx-auto max-w-lg px-5 py-16 text-center sm:px-8">
         <BookingSteps current="confirmed" />
-        <div className="prac-confirm-check">
-          <CheckIcon size={26} />
+        <span className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-sage-50 text-sage-600">
+          <Check size={26} weight="bold" />
+        </span>
+        <h1 className="mt-5 font-display text-2xl font-semibold text-indigo-900">Booking confirmed!</h1>
+
+        <div className="mt-6 space-y-3 rounded-3xl border border-indigo-900/10 bg-white/60 p-6 text-left text-sm">
+          <div className="flex justify-between gap-4">
+            <span className="text-ink-faint">Session</span>
+            <span className="font-semibold text-ink">{booking.sessionLabel} · {booking.duration}</span>
+          </div>
+          <div className="flex justify-between gap-4">
+            <span className="text-ink-faint">With</span>
+            <span className="font-semibold text-ink">{booking.practitionerName}</span>
+          </div>
+          <div className="flex justify-between gap-4">
+            <span className="text-ink-faint">When</span>
+            <span className="font-semibold text-ink">{booking.dayLabel}, {booking.dateLabel} · {booking.time}</span>
+          </div>
+          <div className="flex justify-between gap-4">
+            <span className="text-ink-faint">Price</span>
+            <span className="font-semibold text-ink">{booking.price} — pay after the call</span>
+          </div>
+          <div className="flex justify-between gap-4">
+            <span className="text-ink-faint">Booking ID</span>
+            <span className="font-semibold text-ink">{booking.id}</span>
+          </div>
         </div>
-        <h2 className="screen__title screen__title--md">Booking confirmed!</h2>
-        <div className="booking-summary">
-          <div className="booking-summary__row">
-            <span>Session</span>
-            <b>{booking.sessionLabel} · {booking.duration}</b>
-          </div>
-          <div className="booking-summary__row">
-            <span>With</span>
-            <b>{booking.practitionerName}</b>
-          </div>
-          <div className="booking-summary__row">
-            <span>When</span>
-            <b>{booking.dayLabel}, {booking.dateLabel} · {booking.time}</b>
-          </div>
-          <div className="booking-summary__row">
-            <span>Price</span>
-            <b>{booking.price} — pay after the call</b>
-          </div>
-          <div className="booking-summary__row">
-            <span>Booking ID</span>
-            <b>{booking.id}</b>
-          </div>
-        </div>
-        <p className="screen__sub">
+
+        <p className="mt-5 text-sm text-ink-soft">
           {notified
             ? `Our team has been notified — we'll confirm your slot and share the call link on ${booking.contact}.`
-            : `Saved on this device, but we couldn't notify the team just now — please ping us via the help button with your booking ID.`}
+            : `Saved on this device, but we couldn't notify the team just now — please ping us via Compass with your booking ID.`}
         </p>
-        {/* Full-size, not --sm: this is a standalone stacked action on its
-            own line (screen-level weight). My Sessions' card version of
-            this same button is --sm since it's inline within a dense card
-            footer instead — same action, different density context. */}
-        <button className="btn btn--ghost" onClick={() => downloadIcs(booking)}>
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 7 }}>
-            <CalendarIcon /> Add to calendar
-          </span>
-        </button>
-        <button className="btn btn--primary" onClick={onBack}>
-          Done
-        </button>
-      </main>
+
+        <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:justify-center">
+          <Button as="button" onClick={() => downloadIcs(booking)} variant="outline">
+            <CalendarPlus size={16} weight="bold" /> Add to calendar
+          </Button>
+          <Button as="button" onClick={onBack} variant="primary">
+            Done
+          </Button>
+        </div>
+      </section>
     )
   }
 
   if (step === 'contact') {
     return (
-      <main className="screen screen--scroll">
-        <button className="link-back" onClick={() => setStep('slot')} aria-label="Back">
-          <BackIcon />
+      <section className="mx-auto max-w-lg px-5 py-14 sm:px-8">
+        <button
+          type="button"
+          onClick={() => setStep('slot')}
+          className="inline-flex items-center gap-2 text-sm font-semibold text-indigo-900 hover:opacity-80"
+        >
+          <ArrowLeft size={16} weight="bold" /> Back
         </button>
-        <BookingSteps current="contact" />
-        <div className="screen__body">
-          <h2 className="screen__title screen__title--md">Almost there</h2>
-          <p className="screen__sub">
-            {sessionType.label} with {practitioner.name} · {selectedDay.dayLabel},{' '}
-            {selectedDay.dateLabel} · {time}
+        <div className="mt-6">
+          <BookingSteps current="contact" />
+          <h1 className="font-display text-2xl font-semibold text-indigo-900">Almost there</h1>
+          <p className="mt-2 text-sm text-ink-soft">
+            {sessionType.label} with {practitioner.name} · {selectedDay.dayLabel}, {selectedDay.dateLabel} · {time}
           </p>
-          <input
-            className="search-input"
-            style={{ margin: 0 }}
-            placeholder="Your name"
-            value={contactName}
-            onChange={(e) => setContactName(e.target.value)}
-            autoFocus
-          />
-          <input
-            className="search-input"
-            style={{ margin: 0 }}
-            placeholder="WhatsApp number or email"
-            value={contact}
-            onChange={(e) => setContact(e.target.value)}
-          />
-          <p className="booking-note">
-            This is where we'll confirm the slot and send the call link.
-          </p>
+
+          <div className="mt-6 space-y-3">
+            <input
+              placeholder="Your name"
+              value={contactName}
+              onChange={(e) => setContactName(e.target.value)}
+              autoFocus
+              className="min-h-12 w-full rounded-2xl border border-indigo-900/15 bg-white/70 px-4 py-3 text-[15px] text-ink placeholder:text-ink-faint focus-visible:border-indigo-500"
+            />
+            <input
+              placeholder="WhatsApp number or email"
+              value={contact}
+              onChange={(e) => setContact(e.target.value)}
+              className="min-h-12 w-full rounded-2xl border border-indigo-900/15 bg-white/70 px-4 py-3 text-[15px] text-ink placeholder:text-ink-faint focus-visible:border-indigo-500"
+            />
+          </div>
+          <p className="mt-3 text-xs text-ink-faint">This is where we'll confirm the slot and send the call link.</p>
+
           {bookingError && (
-            <p className="empty-state">Couldn't save your booking — check your connection and try again.</p>
+            <p className="mt-3 text-sm text-red-600">Couldn't save your booking — check your connection and try again.</p>
           )}
-          <button
-            className="btn btn--primary"
-            disabled={!contactName.trim() || !contact.trim() || saving}
+
+          <Button
+            as="button"
             onClick={confirmBooking}
+            variant="primary"
+            disabled={!contactName.trim() || !contact.trim() || saving}
+            className="mt-6"
           >
-            {saving ? 'Booking…' : <>Confirm booking <ArrowRightIcon /></>}
-          </button>
+            {saving ? 'Booking…' : <>Confirm booking <ArrowRight size={16} weight="bold" /></>}
+          </Button>
         </div>
-      </main>
+      </section>
     )
   }
 
   if (step === 'slot') {
     return (
-      <main className="screen screen--scroll">
-        <button className="link-back" onClick={() => setStep('profile')} aria-label="Back">
-          <BackIcon />
+      <section className="mx-auto max-w-lg px-5 py-14 sm:px-8">
+        <button
+          type="button"
+          onClick={() => setStep('profile')}
+          className="inline-flex items-center gap-2 text-sm font-semibold text-indigo-900 hover:opacity-80"
+        >
+          <ArrowLeft size={16} weight="bold" /> Back
         </button>
-        <BookingSteps current="slot" />
-        <div className="screen__body">
-          <h2 className="screen__title screen__title--md">
+        <div className="mt-6">
+          <BookingSteps current="slot" />
+          <h1 className="font-display text-2xl font-semibold text-indigo-900">
             Pick a time with {practitioner.name}
-          </h2>
-          <p className="screen__sub">
+          </h1>
+          <p className="mt-2 text-sm text-ink-soft">
             {sessionType.label} · {sessionType.duration} · {sessionType.price}
           </p>
 
-          <div className="day-strip">
+          <div className="mt-6 flex gap-2 overflow-x-auto pb-1">
             {slotDays.map((d) => (
               <button
                 key={d.dateKey}
-                className={`day-pill ${dayKey === d.dateKey ? 'day-pill--on' : ''}`}
+                type="button"
                 onClick={() => {
                   setDayKey(d.dateKey)
                   setTime(null)
                 }}
+                className={`flex min-w-[64px] flex-col items-center rounded-2xl border px-3 py-2.5 ${
+                  dayKey === d.dateKey
+                    ? 'border-indigo-900 bg-indigo-900 text-cream'
+                    : 'border-indigo-900/15 bg-white/60 text-ink-soft hover:border-indigo-900/30'
+                }`}
               >
-                <span className="day-pill__day">{d.dayLabel}</span>
-                <span className="day-pill__date">{d.dateLabel}</span>
+                <span className="text-xs font-semibold">{d.dayLabel}</span>
+                <span className="text-sm font-bold">{d.dateLabel}</span>
               </button>
             ))}
           </div>
 
           {selectedDay ? (
-            <div className="slot-grid">
+            <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-4">
               {selectedDay.slots.map((s) => (
                 <button
                   key={s.time}
-                  className={`slot ${time === s.time ? 'slot--on' : ''}`}
+                  type="button"
                   disabled={s.taken}
                   onClick={() => setTime(s.time)}
+                  className={`min-h-11 rounded-xl border px-3 py-2 text-sm font-semibold ${
+                    s.taken
+                      ? 'cursor-not-allowed border-indigo-900/8 bg-indigo-900/5 text-ink-faint'
+                      : time === s.time
+                        ? 'border-indigo-900 bg-indigo-900 text-cream'
+                        : 'border-indigo-900/15 bg-white/60 text-ink hover:border-indigo-900/30'
+                  }`}
                 >
                   {s.time}
-                  {s.taken && <span className="slot__taken">taken</span>}
+                  {s.taken && <span className="ml-1 text-xs">taken</span>}
                 </button>
               ))}
             </div>
           ) : (
-            <p className="booking-note">Pick a day to see available times.</p>
+            <p className="mt-5 text-sm text-ink-faint">Pick a day to see available times.</p>
           )}
 
-          <button
-            className="btn btn--primary"
-            disabled={!time}
-            onClick={() => setStep('contact')}
-          >
-            Continue <ArrowRightIcon />
-          </button>
+          <Button as="button" onClick={() => setStep('contact')} variant="primary" disabled={!time} className="mt-6">
+            Continue <ArrowRight size={16} weight="bold" />
+          </Button>
         </div>
-      </main>
+      </section>
     )
   }
 
   return (
-    <main className="screen screen--scroll">
-      <button className="link-back" onClick={onBack} aria-label="Back">
-        <BackIcon />
+    <section className="mx-auto max-w-3xl px-5 py-14 sm:px-8">
+      <button
+        type="button"
+        onClick={onBack}
+        className="inline-flex items-center gap-2 text-sm font-semibold text-indigo-900 hover:opacity-80"
+      >
+        <ArrowLeft size={16} weight="bold" /> Back
       </button>
 
-      <div className="prac-profile-head">
-        <div className="prac-profile-avatar">
+      <div className="mt-6 flex flex-col items-center text-center">
+        <span className="grid h-24 w-24 place-items-center overflow-hidden rounded-full bg-indigo-900 text-3xl font-semibold text-cream">
           {practitioner.photo ? (
-            <img className="avatar-img" src={practitioner.photo} alt={practitioner.name} />
+            <img src={practitioner.photo} alt="" className="h-full w-full object-cover" />
           ) : (
             practitioner.name[0]
           )}
-        </div>
-        <h2 className="detail-title">
+        </span>
+        <h1 className="mt-4 flex items-center gap-1.5 font-display text-2xl font-semibold text-indigo-900">
           {practitioner.name}
-          <span className="verified-badge" title="Vetted by the Lighthouse team">
-            <VerifiedIcon /> Verified
+          <span title="Vetted by the Lighthouse team" className="text-sage-600">
+            <SealCheck size={18} weight="fill" />
           </span>
-        </h2>
-        <p className="detail-tagline">{practitioner.credibility}</p>
-        <div className="prac-card__stats" style={{ justifyContent: 'center', marginTop: 6 }}>
+        </h1>
+        <p className="mt-1 text-ink-soft">{practitioner.credibility}</p>
+        <div className="mt-3 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-sm text-ink-faint">
           {practitioner.sessionsCompleted > 0 ? (
             <>
-              <span className="prac-rating">
-                <StarIcon /> {practitioner.rating}
+              <span className="inline-flex items-center gap-1 text-indigo-900">
+                <Star size={14} weight="fill" /> {practitioner.rating}
               </span>
-              <span className="prac-card__dot">·</span>
+              <span>·</span>
               <span>{practitioner.sessionsCompleted} sessions</span>
             </>
           ) : (
-            <span className="prac-rating">New to Lighthouse</span>
+            <span className="rounded-full bg-sage-50 px-2.5 py-0.5 font-semibold text-sage-600">New to Lighthouse</span>
           )}
           {practitioner.languages?.length > 0 && (
             <>
-              <span className="prac-card__dot">·</span>
+              <span>·</span>
               <span>{practitioner.languages.join(' / ')}</span>
             </>
           )}
         </div>
       </div>
 
-      <div className="section">
-        <h3 className="section__h">About</h3>
-        <p className="section__text">{practitioner.bio}</p>
+      <div className="mt-10">
+        <h2 className="font-display text-lg font-semibold text-indigo-900">About</h2>
+        <p className="mt-2 text-[15px] leading-relaxed text-ink-soft">{practitioner.bio}</p>
       </div>
 
       {practitioner.journey?.length > 0 && (
-        <div className="section">
-          <h3 className="section__h">How they got here</h3>
-          <ol className="journey">
+        <div className="mt-8">
+          <h2 className="font-display text-lg font-semibold text-indigo-900">How they got here</h2>
+          <ol className="mt-3 space-y-2 border-l-2 border-indigo-900/10 pl-4">
             {practitioner.journey.map((j, i) => (
-              <li key={i} className="journey__step">
-                <span className="journey__when">{j.when}</span>
-                <span className="journey__what">{j.what}</span>
+              <li key={i}>
+                <span className="text-xs font-semibold uppercase tracking-wide text-ink-faint">{j.when}</span>
+                <p className="text-sm text-ink">{j.what}</p>
               </li>
             ))}
           </ol>
         </div>
       )}
 
-      <div className="section">
-        <h3 className="section__h">Can help with</h3>
-        <div className="tag-row">
+      <div className="mt-8">
+        <h2 className="font-display text-lg font-semibold text-indigo-900">Can help with</h2>
+        <div className="mt-3 flex flex-wrap gap-2">
           {practitioner.topics.map((t) => (
-            <span key={t} className="tag">
+            <span key={t} className="rounded-full bg-indigo-900/5 px-3 py-1.5 text-sm font-medium text-indigo-900">
               {t}
             </span>
           ))}
         </div>
       </div>
 
-      <div className="section">
-        <h3 className="section__h">Pick a session</h3>
-        <div className="session-list">
+      <div className="mt-8">
+        <h2 className="font-display text-lg font-semibold text-indigo-900">Pick a session</h2>
+        <div className="mt-3 grid gap-3 sm:grid-cols-2">
           {practitioner.sessionTypes.map((st) => (
             <button
               key={st.id}
-              className="session-card"
-              onClick={() =>
-                onRequireAuth(() => {
-                  setSessionType(st)
-                  setStep('slot')
-                })
-              }
+              type="button"
+              onClick={() => startBooking(st)}
+              className="rounded-2xl border border-indigo-900/10 bg-white/60 p-5 text-left shadow-soft hover:border-indigo-900/25 hover:shadow-lift"
             >
-              <div className="session-card__top">
-                <span className="session-card__label">{st.label}</span>
-                <span className="session-card__price">{st.price}</span>
+              <div className="flex items-center justify-between">
+                <span className="font-semibold text-indigo-900">{st.label}</span>
+                <span className="font-display text-lg font-semibold text-indigo-900">{st.price}</span>
               </div>
-              <p className="session-card__desc">{st.description}</p>
-              <span className="session-card__duration">{st.duration}</span>
+              <p className="mt-1.5 text-sm text-ink-soft">{st.description}</p>
+              <span className="mt-3 inline-block text-xs font-semibold uppercase tracking-wide text-ink-faint">
+                {st.duration}
+              </span>
             </button>
           ))}
         </div>
       </div>
 
       {practitioner.testimonials?.length > 0 && (
-        <div className="section">
-          <h3 className="section__h">What people say</h3>
-          <div className="testimonial-list">
+        <div className="mt-8">
+          <h2 className="font-display text-lg font-semibold text-indigo-900">What people say</h2>
+          <div className="mt-3 space-y-3">
             {practitioner.testimonials.map((t, i) => (
-              <div key={i} className="testimonial">
-                <p className="testimonial__text">"{t.text}"</p>
-                <span className="testimonial__name">— {t.name}</span>
+              <div key={i} className="rounded-2xl bg-sage-50 p-4">
+                <p className="text-sm italic text-ink">"{t.text}"</p>
+                <span className="mt-1 block text-xs font-semibold text-sage-600">— {t.name}</span>
               </div>
             ))}
           </div>
         </div>
       )}
-    </main>
+    </section>
   )
 }

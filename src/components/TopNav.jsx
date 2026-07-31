@@ -1,139 +1,141 @@
-import { useState } from 'react'
-import Mark from './Mark.jsx'
+import { useEffect, useState } from 'react'
+import { AnimatePresence, motion } from 'framer-motion'
+import { List, X } from '@phosphor-icons/react'
+import Logo from './ui/Logo.jsx'
 import AccountButton from './AccountButton.jsx'
-import { DirectionIcon, ChatIcon, HeartIcon, ClockIcon, BriefcaseIcon, HelpIcon, MenuIcon } from './icons.jsx'
 
-// Single source of truth for every nav destination. mobileBar: true items
-// get a direct icon in the mobile bottom bar; the rest live behind the
-// "More" sheet (5th bar slot) so the bar doesn't try to cram 7 icons into
-// thumb-width — desktop has no such constraint and just shows all of them
-// as a plain text-link row, unchanged from before.
-const NAV_ITEMS = [
-  { id: 'explore', label: 'Explore', icon: DirectionIcon, mobileBar: true },
-  { id: 'atlas', label: 'Atlas.ai', icon: ChatIcon, mobileBar: true },
-  { id: 'shortlist', label: 'Shortlist', icon: HeartIcon, mobileBar: true },
-  { id: 'sessions', label: 'My Sessions', icon: ClockIcon, mobileBar: true },
-  { id: 'practitioners', label: 'Practitioners', icon: BriefcaseIcon, mobileBar: false },
-  { id: 'faqs', label: 'FAQs', icon: HelpIcon, mobileBar: false },
+const TABS = [
+  { id: 'explore', label: 'Explore' },
+  { id: 'atlas', label: 'Atlas' },
+  { id: 'practitioners', label: 'Talk to someone' },
 ]
 
-const BAR_ITEMS = NAV_ITEMS.filter((t) => t.mobileBar)
-const MORE_ITEMS = NAV_ITEMS.filter((t) => !t.mobileBar)
+export default function TopNav({ screen, onNavigate, user, onSignIn, onSignOut }) {
+  const [open, setOpen] = useState(false)
+  const activeTab = TABS.find((t) => t.id === screen) ? screen : null
 
-export default function TopNav({ active, onNavigate, onAbout, user, onSignIn, onSignOut, onOpenProfile }) {
-  const [moreOpen, setMoreOpen] = useState(false)
-  // 'about' is a real `screen` value (App.jsx's openAbout sets it same as
-  // any other tab), so it matches `active` the same way every other nav
-  // item does — About Us just isn't in NAV_ITEMS since it's driven by its
-  // own onAbout callback rather than onNavigate(id).
-  const moreActive = MORE_ITEMS.some((t) => t.id === active) || active === 'about'
+  useEffect(() => {
+    document.body.style.overflow = open ? 'hidden' : ''
+    return () => {
+      document.body.style.overflow = ''
+    }
+  }, [open])
 
   const go = (id) => {
-    setMoreOpen(false)
     onNavigate(id)
-  }
-
-  const goAbout = () => {
-    setMoreOpen(false)
-    onAbout()
+    setOpen(false)
   }
 
   return (
-    <>
-      <nav className="top-nav">
-        <div className="top-nav__bar">
-          <button className="top-nav__brand" onClick={() => onNavigate('explore')}>
-            <Mark inverted size={26} />
-            <span className="top-nav__wordmark">Lighthouse.guide</span>
-          </button>
+    <header className="sticky top-0 z-50 border-b border-indigo-900/10 bg-cream/85 backdrop-blur-lg">
+      <nav
+        aria-label="Primary"
+        className="mx-auto flex h-16 max-w-7xl items-center justify-between px-5 sm:px-8"
+      >
+        <button type="button" onClick={() => go('home')} aria-label="Lighthouse.guide home">
+          <Logo />
+        </button>
 
-          <div className="top-nav__links">
-            {NAV_ITEMS.map((tab) => (
-              <button
-                key={tab.id}
-                className={`top-nav__link ${active === tab.id ? 'top-nav__link--active' : ''}`}
-                onClick={() => onNavigate(tab.id)}
-              >
-                {tab.label}
-              </button>
+        <div className="hidden items-center gap-7 lg:flex">
+          <ul className="flex items-center gap-7">
+            {TABS.map((tab) => (
+              <li key={tab.id}>
+                <button
+                  type="button"
+                  onClick={() => go(tab.id)}
+                  aria-current={activeTab === tab.id ? 'page' : undefined}
+                  className={`text-[15px] font-medium transition-colors ${
+                    activeTab === tab.id ? 'text-indigo-900' : 'text-ink-soft hover:text-indigo-900'
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              </li>
             ))}
-            <button
-              className={`top-nav__link ${active === 'about' ? 'top-nav__link--active' : ''}`}
-              onClick={onAbout}
-            >
-              About Us
-            </button>
-          </div>
-
-          <div className="top-nav__right">
-            <AccountButton
-              variant="embedded"
-              user={user}
-              onSignIn={onSignIn}
-              onSignOut={onSignOut}
-              onOpenProfile={onOpenProfile}
-            />
-          </div>
+          </ul>
+          <AccountButton
+            user={user}
+            onSignIn={onSignIn}
+            onSignOut={onSignOut}
+            onOpenProfile={() => go('profile')}
+            onOpenSessions={() => go('mySessions')}
+          />
         </div>
-      </nav>
 
-      {/* WhatsApp-style bottom tab bar — mobile only (see .bottom-tab-bar's
-          768px breakpoint); the account slot on mobile is the standalone
-          floating AccountButton rendered by App.jsx instead, since it isn't
-          tied to this bar's layout. */}
-      <nav className="bottom-tab-bar">
-        {BAR_ITEMS.map((tab) => {
-          const Icon = tab.icon
-          return (
-            <button
-              key={tab.id}
-              className={`bottom-tab-bar__item ${active === tab.id ? 'bottom-tab-bar__item--active' : ''}`}
-              onClick={() => onNavigate(tab.id)}
-            >
-              <Icon size={20} />
-              <span>{tab.label}</span>
-            </button>
-          )
-        })}
         <button
-          className={`bottom-tab-bar__item ${moreOpen || moreActive ? 'bottom-tab-bar__item--active' : ''}`}
-          onClick={() => setMoreOpen(true)}
+          type="button"
+          onClick={() => setOpen(true)}
+          aria-label="Open menu"
+          aria-expanded={open}
+          className="grid h-11 w-11 place-items-center rounded-full text-indigo-900 hover:bg-indigo-900/5 lg:hidden"
         >
-          <MenuIcon size={20} />
-          <span>More</span>
+          <List size={24} weight="bold" />
         </button>
       </nav>
 
-      {moreOpen && (
-        <div className="support-overlay nav-more-overlay" onClick={() => setMoreOpen(false)}>
-          <div className="support-panel nav-more-panel" onClick={(e) => e.stopPropagation()}>
-            <div className="support-panel__head">
-              <span>More</span>
-            </div>
-            <div className="nav-more-list">
-              {MORE_ITEMS.map((tab) => {
-                const Icon = tab.icon
-                return (
-                  <button
-                    key={tab.id}
-                    className={`nav-more-item ${active === tab.id ? 'nav-more-item--active' : ''}`}
-                    onClick={() => go(tab.id)}
-                  >
-                    <Icon size={19} />
-                    {tab.label}
-                  </button>
-                )
-              })}
-              <button
-                className={`nav-more-item ${active === 'about' ? 'nav-more-item--active' : ''}`}
-                onClick={goAbout}
-              >
-                About Us
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </>
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            className="fixed inset-0 z-50 bg-indigo-950/40 backdrop-blur-sm lg:hidden"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            onClick={() => setOpen(false)}
+          >
+            <motion.div
+              role="dialog"
+              aria-modal="true"
+              aria-label="Menu"
+              className="absolute inset-y-0 right-0 flex w-[86%] max-w-sm flex-col gap-8 bg-cream px-6 py-6 shadow-lift"
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between">
+                <Logo />
+                <button
+                  type="button"
+                  onClick={() => setOpen(false)}
+                  aria-label="Close menu"
+                  className="grid h-11 w-11 place-items-center rounded-full text-indigo-900 hover:bg-indigo-900/5"
+                >
+                  <X size={24} weight="bold" />
+                </button>
+              </div>
+
+              <ul className="flex flex-col gap-1">
+                {TABS.map((tab) => (
+                  <li key={tab.id}>
+                    <button
+                      type="button"
+                      onClick={() => go(tab.id)}
+                      className={`block w-full rounded-xl px-3 py-3 text-left text-lg font-medium ${
+                        activeTab === tab.id ? 'bg-indigo-900/5 text-indigo-900' : 'text-ink hover:bg-indigo-900/5'
+                      }`}
+                    >
+                      {tab.label}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+
+              <div className="mt-auto border-t border-indigo-900/10 pt-4">
+                <AccountButton
+                  user={user}
+                  onSignIn={onSignIn}
+                  onSignOut={onSignOut}
+                  onOpenProfile={() => go('profile')}
+                  onOpenSessions={() => go('mySessions')}
+                  compact
+                />
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </header>
   )
 }
