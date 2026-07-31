@@ -3,8 +3,11 @@ import { useCareerPaths } from '../hooks/useCareerPaths.js'
 import CareerCard from '../components/CareerCard.jsx'
 import SkeletonCareerCard from '../components/SkeletonCareerCard.jsx'
 import EmptyState from '../components/EmptyState.jsx'
+import Pagination from '../components/Pagination.jsx'
 import { TargetIcon } from '../components/icons.jsx'
 import { INTEREST_CATEGORIES } from '../data/interestCategories.js'
+
+const PAGE_SIZE = 12
 
 // Raw interest_tags in the sheet have grown into the dozens as more careers
 // get added — too many to show flat. This groups them into a small set of
@@ -70,11 +73,18 @@ export default function FilterExplore({ shortlist, onOpenDetail, initialFocus })
   const [interests, setInterests] = useState([])
   const [openCategory, setOpenCategory] = useState(null)
   const [avoidMaths, setAvoidMaths] = useState(false)
+  const [page, setPage] = useState(1)
   const searchRef = useRef(null)
 
   useEffect(() => {
     if (initialFocus === 'search') searchRef.current?.focus()
   }, [initialFocus])
+
+  // Filters can shrink the result set below whatever page you were on —
+  // land back on page 1 instead of showing an empty page N.
+  useEffect(() => {
+    setPage(1)
+  }, [search, interests, avoidMaths])
 
   const toggleInterest = (tag) =>
     setInterests((prev) => (prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]))
@@ -113,6 +123,9 @@ export default function FilterExplore({ shortlist, onOpenDetail, initialFocus })
       return true
     })
   }, [careerPaths, search, interests, avoidMaths])
+
+  const totalPages = Math.max(1, Math.ceil(results.length / PAGE_SIZE))
+  const paged = results.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
 
   if (loading && !careerPaths) {
     return (
@@ -196,7 +209,7 @@ export default function FilterExplore({ shortlist, onOpenDetail, initialFocus })
       </div>
 
       <div className="career-grid">
-        {results.map((c) => (
+        {paged.map((c) => (
           <CareerCard
             key={c.id}
             career={c}
@@ -209,6 +222,8 @@ export default function FilterExplore({ shortlist, onOpenDetail, initialFocus })
           <EmptyState icon={TargetIcon} message="No paths match — try loosening a filter." />
         )}
       </div>
+
+      <Pagination page={page} totalPages={totalPages} onChange={setPage} />
     </main>
   )
 }

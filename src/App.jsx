@@ -19,14 +19,19 @@ import PractitionerDirectory from './screens/PractitionerDirectory.jsx'
 import PractitionerProfile from './screens/PractitionerProfile.jsx'
 import MySessions from './screens/MySessions.jsx'
 import Faqs from './screens/Faqs.jsx'
+import Financing from './screens/Financing.jsx'
 import TopNav from './components/TopNav.jsx'
 import SupportWidget from './components/SupportWidget.jsx'
 import AccountButton from './components/AccountButton.jsx'
 import SignInModal from './components/SignInModal.jsx'
 import Profile from './screens/Profile.jsx'
+import Footer from './components/Footer.jsx'
 
 // Screens that show the persistent top nav — everything past onboarding.
-const MAIN_TABS = ['explore', 'atlas', 'shortlist', 'sessions', 'practitioners', 'faqs']
+// 'faqs' and 'financing' have no NAV_ITEMS button (see TopNav.jsx) — both
+// are reachable only via the Footer, but still get the same shell/nav
+// treatment as every other tab once you're there.
+const MAIN_TABS = ['explore', 'atlas', 'shortlist', 'sessions', 'practitioners', 'faqs', 'financing']
 
 // Shared links (see src/lib/share.js) carry ?career=<id> — someone opening
 // one lands straight on that career's page, skipping onboarding.
@@ -339,9 +344,12 @@ function App() {
           />
         )}
         {screen === 'faqs' && <Faqs />}
+        {screen === 'financing' && <Financing />}
         {screen === 'about' && (
           <AboutStory onBack={() => setScreen(aboutFrom || 'landing')} />
         )}
+
+        <Footer onNavigate={setScreen} />
 
         {(MAIN_TABS.includes(screen) || screen === 'about') && (
           <TopNav

@@ -1290,23 +1290,29 @@
 }
 
 /* ===== Practitioners — directory cards ===== */
-.prac-list {
-  max-width: 560px;
+/* Grid — same responsive shape as .career-grid, so Practitioners and
+   Explore read consistently. */
+.prac-grid {
+  max-width: 960px;
   margin: 0 auto;
   width: 100%;
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 12px;
 }
 
+/* Grid card — vertical stack (photo/name/credibility/stats/topics/price),
+   centered, same shadow/hover language as .career-card. */
 .prac-card {
   display: flex;
-  align-items: flex-start;
-  gap: 14px;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 4px;
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 14px 16px;
+  padding: 18px 16px;
   box-shadow: var(--shadow);
   cursor: pointer;
   transition: transform 150ms ease, box-shadow 150ms ease, border-color 150ms ease;
@@ -1318,6 +1324,9 @@
   transform: scale(1.015);
 }
 
+/* .prac-card__avatar stays 44px/circular for MySessions' inline coach
+   row (see MySessions.jsx) — the grid card uses this larger, separate
+   treatment instead so that context is unaffected. */
 .prac-card__avatar,
 .prac-profile-avatar {
   flex: none;
@@ -1339,9 +1348,19 @@
   margin: 0 auto 10px;
 }
 
-.prac-card__body {
-  flex: 1;
-  min-width: 0;
+.prac-card__photo {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: var(--navy);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 24px;
+  margin-bottom: 6px;
+  overflow: hidden;
 }
 
 .prac-card__name {
@@ -1353,16 +1372,16 @@
 .prac-card__credibility {
   font-size: 12px;
   color: var(--muted);
-  margin-top: 2px;
 }
 
 .prac-card__stats {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
   font-size: 12px;
   color: var(--muted);
-  margin-top: 6px;
+  margin-top: 4px;
 }
 
 .prac-rating {
@@ -1380,16 +1399,17 @@
 .prac-card__topics {
   display: flex;
   flex-wrap: wrap;
+  justify-content: center;
   gap: 5px;
   margin-top: 8px;
 }
 
 .prac-card__price {
-  flex: none;
   font-size: 12.5px;
   font-weight: 700;
   color: var(--navy);
   white-space: nowrap;
+  margin-top: 8px;
 }
 
 /* ===== Practitioner profile ===== */
@@ -1652,6 +1672,8 @@
 .prac-card__next {
   color: var(--accent);
   font-weight: 600;
+  font-size: 12px;
+  margin-top: 4px;
 }
 
 /* "How they got here" — the practitioner's own journey, the honest_note
@@ -2664,10 +2686,111 @@
   margin: 0 0 14px;
 }
 
+/* ===== Pagination — shared across Explore/Shortlist/My Sessions/
+   Practitioners (see components/Pagination.jsx) ===== */
+.pagination {
+  max-width: 960px;
+  margin: 20px auto 0;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.pagination__btn {
+  min-width: 34px;
+  height: 34px;
+  padding: 0 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: border-color 150ms ease, background-color 150ms ease, color 150ms ease;
+}
+
+.pagination__btn:hover:not(:disabled) {
+  border-color: var(--accent);
+}
+
+.pagination__btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.pagination__btn--active {
+  background: var(--navy);
+  border-color: var(--navy);
+  color: #fff;
+}
+
+.pagination__ellipsis {
+  color: var(--muted);
+  font-size: 13px;
+  padding: 0 2px;
+}
+
+/* ===== Footer — rendered once per app-shell screen (see App.jsx) ===== */
+.footer {
+  max-width: 960px;
+  margin: 32px auto 0;
+  width: 100%;
+  padding: 20px 4px 4px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+}
+
+.footer__brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-head);
+  font-weight: 700;
+  font-size: 13.5px;
+  color: var(--ink);
+}
+
+.footer__links {
+  display: flex;
+  gap: 18px;
+}
+
+.footer__link {
+  background: none;
+  border: none;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.footer__link:hover {
+  color: var(--accent);
+}
+
+.footer__copyright {
+  margin: 0;
+  font-size: 11.5px;
+  color: var(--muted);
+}
+
 /* ============================================================
    Mobile "More" sheet — the 5th bottom-bar slot (Practitioners,
-   FAQs, About Us). Reuses .support-overlay/.support-panel's bottom-
-   sheet mechanics; these two classes only adjust content, not shape.
+   About Us). Reuses .support-overlay/.support-panel's bottom-sheet
+   mechanics; these two classes only adjust content, not shape.
    ============================================================ */
 .nav-more-panel {
   max-height: 50vh;

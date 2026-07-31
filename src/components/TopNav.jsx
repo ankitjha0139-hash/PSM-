@@ -1,20 +1,22 @@
 import { useState } from 'react'
 import Mark from './Mark.jsx'
 import AccountButton from './AccountButton.jsx'
-import { DirectionIcon, ChatIcon, HeartIcon, ClockIcon, BriefcaseIcon, HelpIcon, MenuIcon } from './icons.jsx'
+import { DirectionIcon, ChatIcon, HeartIcon, ClockIcon, BriefcaseIcon, MenuIcon } from './icons.jsx'
 
 // Single source of truth for every nav destination. mobileBar: true items
 // get a direct icon in the mobile bottom bar; the rest live behind the
-// "More" sheet (5th bar slot) so the bar doesn't try to cram 7 icons into
+// "More" sheet (5th bar slot) so the bar doesn't try to cram icons into
 // thumb-width — desktop has no such constraint and just shows all of them
 // as a plain text-link row, unchanged from before.
+// FAQs moved out of here entirely — it's reachable from the new Footer
+// instead (see Footer.jsx), not a primary nav destination anymore. The
+// 'faqs' screen itself is unchanged (still shell-wrapped in App.jsx).
 const NAV_ITEMS = [
   { id: 'explore', label: 'Explore', icon: DirectionIcon, mobileBar: true },
   { id: 'atlas', label: 'Atlas.ai', icon: ChatIcon, mobileBar: true },
   { id: 'shortlist', label: 'Shortlist', icon: HeartIcon, mobileBar: true },
   { id: 'sessions', label: 'My Sessions', icon: ClockIcon, mobileBar: true },
   { id: 'practitioners', label: 'Practitioners', icon: BriefcaseIcon, mobileBar: false },
-  { id: 'faqs', label: 'FAQs', icon: HelpIcon, mobileBar: false },
 ]
 
 const BAR_ITEMS = NAV_ITEMS.filter((t) => t.mobileBar)

@@ -1,12 +1,14 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { practitioners } from '../data/practitioners.js'
 import { useUserBookings } from '../hooks/useUserBookings.js'
 import { bookingDateTime, downloadIcs } from '../lib/bookingUtils.js'
 import { CalendarIcon, ClockIcon } from '../components/icons.jsx'
 import EmptyState from '../components/EmptyState.jsx'
 import SkeletonSessionCard from '../components/SkeletonSessionCard.jsx'
+import Pagination from '../components/Pagination.jsx'
 
 const FILTERS = ['All', 'Upcoming', 'Completed']
+const PAGE_SIZE = 10
 
 const EMPTY_COPY = {
   All: "No sessions yet — browse Practitioners to book one.",
@@ -22,6 +24,7 @@ export default function MySessions({ user }) {
   const { bookings, loading, loadError, cancel } = useUserBookings(user)
   const [filter, setFilter] = useState('All')
   const [openId, setOpenId] = useState(null)
+  const [page, setPage] = useState(1)
 
   const now = new Date()
   const sorted = [...bookings].sort((a, b) => bookingDateTime(a) - bookingDateTime(b))
@@ -31,6 +34,8 @@ export default function MySessions({ user }) {
     if (filter === 'Completed') return !upcoming
     return true
   })
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
+  const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
 
   return (
     <main className="screen screen--scroll">
@@ -44,6 +49,7 @@ export default function MySessions({ user }) {
             onClick={() => {
               setFilter(f)
               setOpenId(null)
+              setPage(1)
             }}
           >
             {f}
@@ -69,7 +75,7 @@ export default function MySessions({ user }) {
 
       {!loading && (
         <div className="session-list">
-          {filtered.map((b) => {
+          {paged.map((b) => {
             const upcoming = bookingDateTime(b) >= now
             const practitioner = practitioners.find((p) => p.id === b.practitionerId)
             const open = openId === b.id
@@ -144,6 +150,10 @@ export default function MySessions({ user }) {
             )
           })}
         </div>
+      )}
+
+      {!loading && !loadError && filtered.length > 0 && (
+        <Pagination page={page} totalPages={totalPages} onChange={setPage} />
       )}
     </main>
   )

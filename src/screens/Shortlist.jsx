@@ -1,9 +1,12 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useCareerPaths } from '../hooks/useCareerPaths.js'
 import CareerCard from '../components/CareerCard.jsx'
 import SkeletonCareerCard from '../components/SkeletonCareerCard.jsx'
 import EmptyState from '../components/EmptyState.jsx'
+import Pagination from '../components/Pagination.jsx'
 import { CompareIcon, HeartIcon } from '../components/icons.jsx'
+
+const PAGE_SIZE = 10
 
 // Comparing is the whole point of shortlisting — with 2+ saved careers a
 // side-by-side table shows the decision-driving facts in one glance
@@ -21,7 +24,16 @@ const COMPARE_ROWS = [
 export default function Shortlist({ shortlist, onOpenDetail }) {
   const { data: careerPaths, loading, error } = useCareerPaths()
   const [comparing, setComparing] = useState(false)
+  const [page, setPage] = useState(1)
   const saved = (careerPaths || []).filter((c) => shortlist.has(c.id))
+  const totalPages = Math.max(1, Math.ceil(saved.length / PAGE_SIZE))
+  const paged = saved.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
+
+  // Removing a card (or the list loading in) can leave `page` past the new
+  // end — same reset-to-a-valid-page shape as Explore's filter reset.
+  useEffect(() => {
+    if (page > totalPages) setPage(totalPages)
+  }, [page, totalPages])
 
   return (
     <main className="screen screen--scroll">
@@ -87,7 +99,7 @@ export default function Shortlist({ shortlist, onOpenDetail }) {
       )}
 
       <div className="career-grid">
-        {saved.map((c) => (
+        {paged.map((c) => (
           <CareerCard
             key={c.id}
             career={c}
@@ -97,6 +109,8 @@ export default function Shortlist({ shortlist, onOpenDetail }) {
           />
         ))}
       </div>
+
+      <Pagination page={page} totalPages={totalPages} onChange={setPage} />
     </main>
   )
 }
