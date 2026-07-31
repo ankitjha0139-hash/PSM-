@@ -1,77 +1,106 @@
-:root {
-  /* brand — name is legacy from the Bento pass ("navy"); the value is now
-     near-black ink, not navy blue. Kept as --navy so every existing
-     consumer (buttons, badges, Mark.jsx) repaints without a rename. */
-  --navy: #0a0a0a;
-  --navy-deep: #000000;
-  /* Sparing blue whisper — a status dot, link text, a focus ring. Never a
-     button fill. Matches the exact blue already used by the science
-     stream-badge, so the one recurring accent and that badge read as the
-     same color on purpose. */
-  --accent: #2563eb;
-  --accent-deep: #1d4ed8;
+@import 'tailwindcss';
 
-  /* neutrals */
-  --ink: #0a0a0a;
-  --muted: #6b6b6e;
-  --line: #e3e1dc;
-  --border: #e3e1dc;
-  --bg: #f0f0ec;
-  /* Solid cards — no translucency/blur, so content stays crisp over
-     a flat neutral canvas instead of over a gradient. */
-  --card: #ffffff;
+/* ---------------------------------------------------------------
+   Design tokens — Tech-Humanism: Deep Indigo (trust) + Soft Sage
+   (growth) on a Warm Cream canvas. Serif display / sans body.
+   --------------------------------------------------------------- */
+@theme {
+  --font-display: 'Playfair Display', ui-serif, Georgia, serif;
+  --font-sans: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
 
-  /* status */
-  --success-bg: #e7f7ee;
-  --success-ink: #1a7a44;
-  --destructive: #b3455c;
+  --color-cream: #fdfbf7;
+  --color-cream-soft: #f6f1e7;
 
-  /* type — a bold rounded-geometric display face for headlines only,
-     restrained everywhere else; body copy stays on the Inter workhorse. */
-  --font-head: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
-  --font-body: 'Inter', system-ui, sans-serif;
+  --color-indigo-950: #100e2b;
+  --color-indigo-900: #1e1b4b;
+  --color-indigo-800: #29255f;
+  --color-indigo-700: #363080;
+  --color-indigo-500: #5b52c4;
+  --color-indigo-300: #a7a0e6;
+  --color-indigo-100: #e6e4fb;
 
-  /* shape */
-  --radius: 20px;
-  --radius-sm: 14px;
-  --shadow: 0 4px 6px rgba(10, 10, 10, 0.05);
-  --shadow-lift: 0 10px 24px rgba(10, 10, 10, 0.08);
+  --color-sage-600: #0e6b52;
+  --color-sage-500: #12866a;
+  --color-sage-300: #7fe0bf;
+  --color-sage-200: #b6f2da;
+  --color-sage-100: #d1fae5;
+  --color-sage-50: #eefdf6;
 
-  color-scheme: light;
+  --color-ink: #1b1830;
+  --color-ink-soft: #524c72;
+  --color-ink-faint: #5f5880;
+
+  --shadow-soft: 0 1px 2px rgba(30, 27, 75, 0.04), 0 12px 32px -12px rgba(30, 27, 75, 0.16);
+  --shadow-lift: 0 4px 10px rgba(30, 27, 75, 0.06), 0 24px 48px -16px rgba(30, 27, 75, 0.22);
+
+  --animate-drift: drift 9s ease-in-out infinite;
+  --animate-breathe: breathe 4.5s ease-in-out infinite;
+  --animate-marquee: marquee 38s linear infinite;
 }
 
-* {
-  box-sizing: border-box;
+@keyframes drift {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+  50% {
+    transform: translate3d(0, -18px, 0) rotate(1.5deg);
+  }
+}
+@keyframes breathe {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.95;
+    transform: scale(1.05);
+  }
+}
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 body {
   margin: 0;
-  min-height: 100vh;
-  background: var(--bg);
-  color: var(--ink);
-  font-family: var(--font-body);
+  background: var(--color-cream);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
-  position: relative;
+  text-rendering: optimizeLegibility;
 }
 
-h1,
-h2,
-h3 {
-  font-family: var(--font-head);
-  font-weight: 800;
-  margin: 0;
+::selection {
+  background: var(--color-sage-200);
+  color: var(--color-indigo-900);
 }
 
-button {
-  font-family: var(--font-body);
-}
-
-/* Bento hover-scale/transition additions throughout App.css are purely
-   decorative motion — respect the user's reduced-motion preference. */
-@media (prefers-reduced-motion: reduce) {
-  * {
-    transition-duration: 0.001ms !important;
-    animation-duration: 0.001ms !important;
-    animation-iteration-count: 1 !important;
-  }
+:focus-visible {
+  outline: 2px solid var(--color-indigo-500);
+  outline-offset: 3px;
+  border-radius: 4px;
 }

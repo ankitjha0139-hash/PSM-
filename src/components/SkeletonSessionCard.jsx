@@ -1,18 +1,18 @@
-// Placeholder matching session-card's own shape (title/coach/footer),
-// shown in .session-list while useUserBookings() is still loading — same
-// pattern as SkeletonCareerCard, so My Sessions doesn't fall back to plain
-// "Loading…" text the way Explore/Shortlist don't either.
 export default function SkeletonSessionCard() {
   return (
-    <div className="session-card skeleton-card" aria-hidden="true">
-      <span className="skeleton-line skeleton-line--title" />
-      <div className="session-card__coach">
-        <span className="skeleton-avatar" />
-        <div className="skeleton-card">
-          <span className="skeleton-line skeleton-line--meta-short" />
-          <span className="skeleton-line skeleton-line--meta" />
+    <div aria-hidden="true" className="animate-pulse rounded-3xl border border-indigo-900/10 bg-white/60 p-6">
+      <div className="flex items-center justify-between">
+        <div className="h-4 w-2/5 rounded bg-indigo-900/10" />
+        <div className="h-5 w-16 rounded-full bg-indigo-900/10" />
+      </div>
+      <div className="mt-4 flex items-center gap-3">
+        <div className="h-11 w-11 rounded-full bg-indigo-900/10" />
+        <div className="space-y-2">
+          <div className="h-3 w-24 rounded bg-indigo-900/10" />
+          <div className="h-3 w-32 rounded bg-indigo-900/10" />
         </div>
       </div>
+      <div className="mt-4 h-3 w-1/3 rounded bg-indigo-900/10" />
     </div>
   )
 }

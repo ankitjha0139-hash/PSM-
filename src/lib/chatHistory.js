@@ -1,9 +1,8 @@
 import { supabase } from './supabaseClient.js'
 
 // Atlas chat history, for signed-in users only — anonymous visitors keep
-// the existing sessionStorage-only behavior in AtlasChat.jsx untouched.
-// Requires the chat_messages table + RLS policies (see repo notes /
-// whoever ran the shortlists table SQL for the matching pattern).
+// sessionStorage-only behavior in AtlasChat.jsx untouched. Requires the
+// chat_messages table + RLS (see supabase/chat_messages.sql).
 
 export async function loadChatHistory(userId) {
   const { data, error } = await supabase
@@ -31,8 +30,8 @@ export async function saveChatMessage(userId, message) {
     followups: message.followups || null,
   })
   if (error) {
-    // Non-fatal: the message still shows in the UI (sessionStorage-backed
-    // state already has it), it just won't persist across visits this time.
+    // Non-fatal: the message still shows in the UI (local state already
+    // has it), it just won't persist across visits this time.
     console.error('saveChatMessage failed:', error)
   }
 }

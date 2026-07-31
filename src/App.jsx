@@ -1,408 +1,150 @@
 import { useEffect, useState } from 'react'
-import posthog from 'posthog-js'
-import './App.css'
-import { practitioners } from './data/practitioners.js'
-import { useShortlist } from './hooks/useShortlist.js'
-import { useCareerPaths } from './hooks/useCareerPaths.js'
-import { useAuth } from './hooks/useAuth.js'
-
-import Landing from './screens/Landing.jsx'
-import AboutStory from './screens/AboutStory.jsx'
-import RoleGate from './screens/RoleGate.jsx'
-import PractitionerPlaceholder from './screens/PractitionerPlaceholder.jsx'
-import RoutingQuestion from './screens/RoutingQuestion.jsx'
+import TopNav from './components/TopNav.jsx'
+import SignInModal from './components/SignInModal.jsx'
+import SupportWidget from './components/SupportWidget.jsx'
+import Home from './screens/Home.jsx'
 import FilterExplore from './screens/FilterExplore.jsx'
-import AtlasChat from './screens/AtlasChat.jsx'
 import CareerDetail from './screens/CareerDetail.jsx'
-import Shortlist from './screens/Shortlist.jsx'
+import AtlasChat from './screens/AtlasChat.jsx'
 import PractitionerDirectory from './screens/PractitionerDirectory.jsx'
 import PractitionerProfile from './screens/PractitionerProfile.jsx'
 import MySessions from './screens/MySessions.jsx'
-import Faqs from './screens/Faqs.jsx'
-import TopNav from './components/TopNav.jsx'
-import SupportWidget from './components/SupportWidget.jsx'
-import AccountButton from './components/AccountButton.jsx'
-import SignInModal from './components/SignInModal.jsx'
 import Profile from './screens/Profile.jsx'
+import Admin from './screens/Admin.jsx'
+import { useAuth } from './hooks/useAuth.js'
+import { usePractitioners } from './hooks/usePractitioners.js'
+import { useShortlist } from './hooks/useShortlist.js'
 
-// Screens that show the persistent top nav — everything past onboarding.
-const MAIN_TABS = ['explore', 'atlas', 'shortlist', 'sessions', 'practitioners', 'faqs']
+const SCREEN_KEY = 'lh:screen'
+const CAREER_KEY = 'lh:careerId'
+const PRACTITIONER_KEY = 'lh:practitionerId'
 
-// Shared links (see src/lib/share.js) carry ?career=<id> — someone opening
-// one lands straight on that career's page, skipping onboarding.
-const sharedCareerId = new URLSearchParams(window.location.search).get('career')
-
-// Where you are survives a refresh (screens are state, not URLs — without
-// this, F5 dumped everyone back on the landing video). A shared link wins
-// over the saved spot; a fresh tab starts clean.
-const NAV_KEY = 'appNav'
-function savedNav() {
+// /admin is a direct-URL-only tool (not a nav item — see Admin.jsx),
+// checked ahead of the usual sessionStorage-restored screen so bookmarking
+// or linking straight to it always works, even mid-session.
+function readInitialScreen() {
   try {
-    return JSON.parse(sessionStorage.getItem(NAV_KEY)) || {}
+    if (window.location.pathname.startsWith('/admin')) return 'admin'
+    return sessionStorage.getItem(SCREEN_KEY) || 'home'
   } catch {
-    return {}
+    return 'home'
   }
 }
 
-function App() {
-  const nav = sharedCareerId ? { screen: 'explore', selectedCareerId: sharedCareerId } : savedNav()
-  const [screen, setScreen] = useState(nav.screen || 'landing')
-  const [role, setRole] = useState(nav.role || null)
-  const [routingAnswer, setRoutingAnswer] = useState(nav.routingAnswer || null)
-  const [selectedCareerId, setSelectedCareerId] = useState(nav.selectedCareerId || null)
-  const [selectedPractitionerId, setSelectedPractitionerId] = useState(
-    nav.selectedPractitionerId || null
-  )
-  const [aboutFrom, setAboutFrom] = useState(nav.aboutFrom || null)
-  const [profileFrom, setProfileFrom] = useState(nav.profileFrom || null)
-  // Career to offer a real way back to from the Practitioners tab, when
-  // arriving there via "Talk to a real X" rather than a deliberate tab
-  // tap. Cleared on any manual tab navigation so a stale breadcrumb
-  // doesn't reappear if the visitor comes back to Practitioners later.
-  const [practitionersBackTo, setPractitionersBackTo] = useState(null)
+function readInitial(key) {
+  try {
+    return sessionStorage.getItem(key) || null
+  } catch {
+    return null
+  }
+}
 
-  useEffect(() => {
-    sessionStorage.setItem(
-      NAV_KEY,
-      JSON.stringify({
-        screen,
-        role,
-        routingAnswer,
-        selectedCareerId,
-        selectedPractitionerId,
-        aboutFrom,
-        profileFrom,
-      })
-    )
-  }, [screen, role, routingAnswer, selectedCareerId, selectedPractitionerId, aboutFrom, profileFrom])
-
-  // No router — screen is state, not a URL — so this is the only signal
-  // PostHog gets for "what page is this". Covers the whole funnel in one
-  // generic event instead of hand-instrumenting every screen transition.
-  useEffect(() => {
-    posthog.capture('screen_viewed', {
-      screen,
-      has_career_open: !!selectedCareerId,
-      has_practitioner_open: !!selectedPractitionerId,
-    })
-  }, [screen, selectedCareerId, selectedPractitionerId])
-
+export default function App() {
+  const [screen, setScreen] = useState(readInitialScreen)
+  const [careerId, setCareerId] = useState(() => readInitial(CAREER_KEY))
+  const [practitionerId, setPractitionerId] = useState(() => readInitial(PRACTITIONER_KEY))
+  const [signInOpen, setSignInOpen] = useState(false)
+  const { user, loading: authLoading, signInWithGoogle, signInWithUsername, signOut } = useAuth()
+  const { data: practitioners } = usePractitioners()
   const shortlist = useShortlist()
-  const { data: careerPaths } = useCareerPaths()
-  const auth = useAuth()
-  // null | 'shortlist' | 'booking' | 'account' — which sign-in prompt (if
-  // any) is open. Sign-in is optional everywhere except the moment someone
-  // tries to shortlist or start a booking; see requireAuth below.
-  const [signInReason, setSignInReason] = useState(null)
 
-  // Gate for anything that needs an identity: run the action if already
-  // signed in, otherwise open the sign-in modal instead. OAuth takes the
-  // whole tab away and back, so there's no "resume the action after
-  // login" here — the visitor just retries once they're signed in.
-  const requireAuth = (reason, action) => {
-    if (auth.user) {
-      action()
-    } else {
-      setSignInReason(reason)
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(SCREEN_KEY, screen)
+      if (careerId) sessionStorage.setItem(CAREER_KEY, careerId)
+      if (practitionerId) sessionStorage.setItem(PRACTITIONER_KEY, practitionerId)
+    } catch {
+      // sessionStorage unavailable (private mode etc.) — navigation still
+      // works within the session, it just won't survive a reload.
     }
+  }, [screen, careerId, practitionerId])
+
+  const navigate = (next) => {
+    setScreen(next)
+    window.scrollTo({ top: 0, behavior: 'instant' })
   }
 
-  const handleToggleShortlist = (id) =>
-    requireAuth('shortlist', () => {
-      // Only the add direction is a conversion signal — removing isn't.
-      if (!shortlist.has(id)) posthog.capture('shortlisted', { careerId: id })
-      shortlist.toggle(id)
-    })
-
-  const selectedCareer = (careerPaths || []).find((c) => c.id === selectedCareerId)
-  const selectedPractitioner = practitioners.find((p) => p.id === selectedPractitionerId)
-
-  // A career id can outlive its data — restored from a refresh/old
-  // session, or a shared link for a career that's since been removed from
-  // the sheet. CareerDetail is a full-screen takeover with no nav of its
-  // own, so if the id doesn't resolve once data HAS loaded, that's a dead
-  // end: no back button, nothing to tap. Recover to Explore instead of
-  // trusting the id forever.
-  useEffect(() => {
-    if (selectedCareerId && careerPaths && !selectedCareer) {
-      setSelectedCareerId(null)
-    }
-  }, [selectedCareerId, careerPaths, selectedCareer])
-
-  // Same trap, same fix: a stale practitioner id (practitioners.js is
-  // static, so this only happens from corrupted/old sessionStorage, but
-  // the dead-end is just as real if it does).
-  useEffect(() => {
-    if (selectedPractitionerId && !selectedPractitioner) {
-      setSelectedPractitionerId(null)
-    }
-  }, [selectedPractitionerId, selectedPractitioner])
-
-  // Same trap again: sessionStorage can restore screen:'profile' on reload
-  // before auth.getSession() resolves (or after a session genuinely ends),
-  // and Profile assumes a signed-in user — recover instead of crashing on
-  // a null user once we know for sure there isn't one.
-  useEffect(() => {
-    if (screen === 'profile' && !auth.loading && !auth.user) {
-      setScreen(profileFrom || 'landing')
-    }
-  }, [screen, auth.loading, auth.user, profileFrom])
-
-  // Same trap, same fix: My Sessions also assumes a signed-in user. Unlike
-  // Profile there's no "from" to return to — a stray restored 'sessions'
-  // screen just bounces to Explore, since the only ways in are the nav tap
-  // (which already gates on sign-in below) or a stale session.
-  useEffect(() => {
-    if (screen === 'sessions' && !auth.loading && !auth.user) {
-      setScreen('explore')
-    }
-  }, [screen, auth.loading, auth.user])
-
-  // "Our story" is reachable from the landing screen and the help panel;
-  // back returns wherever the reader came from.
-  const openAbout = () => {
-    setAboutFrom(screen)
-    setScreen('about')
+  const openCareer = (id) => {
+    setCareerId(id)
+    navigate('careerDetail')
   }
 
-  // "My profile" is reachable from the account dropdown on almost every
-  // screen (see AccountButton.jsx); back returns wherever it was opened
-  // from — same pattern as openAbout above.
-  const openProfile = () => {
-    setProfileFrom(screen)
-    setScreen('profile')
+  const openPractitioner = (id) => {
+    setPractitionerId(id)
+    navigate('practitionerProfile')
   }
 
-  // Everything below picks the current screen's JSX; the sign-in modal is
-  // rendered once at the very end regardless of which branch fires, since
-  // requireAuth can be triggered from full-screen takeovers (CareerDetail,
-  // PractitionerProfile) that live outside the main tab-shell below — it
-  // used to live inside that shell only, so triggering it from those
-  // takeovers set the state but never rendered anything until you
-  // navigated back into a tab screen.
-  function renderScreen() {
-    // 'about' used to early-return here, skipping the app-shell entirely —
-    // the one nav destination with no persistent nav bar at all. It now
-    // falls through to the app-shell block below like every other tab
-    // (see the {screen === 'about' && ...} branch and the TopNav-visibility
-    // condition further down).
-    if (screen === 'profile') {
-      // auth.user is briefly null while getSession() is still resolving —
-      // the recovery effect above sends us back once loading is done and
-      // there's genuinely no session; until then, don't hand Profile a
-      // null user (it assumes one exists).
-      if (!auth.user) {
-        return (
-          <main className="screen screen--center">
-            <p className="empty-state">Loading…</p>
-          </main>
-        )
-      }
-      return <Profile user={auth.user} onBack={() => setScreen(profileFrom || 'landing')} />
-    }
+  // From a career page's "Talk to a real X" — jump straight to a
+  // practitioner whose matchesRole fits, instead of making them find one
+  // themselves in the directory. No match (or no role given): directory.
+  const talkToPractitioner = (role) => {
+    const match = role && practitioners?.find((p) => p.matchesRole === role)
+    if (match) openPractitioner(match.id)
+    else navigate('practitioners')
+  }
 
-    // --- Onboarding sequence ---
-    if (screen === 'landing') {
-      return <Landing onStart={() => setScreen('roleGate')} />
-    }
+  const handleSignIn = () => {
+    setSignInOpen(false)
+    signInWithGoogle()
+  }
 
-    if (screen === 'roleGate') {
-      return (
-        <RoleGate
-          onBack={() => setScreen('landing')}
-          onSelect={(picked) => {
-            posthog.capture('role_selected', { role: picked })
-            setRole(picked)
-            setScreen(picked === 'practitioner' ? 'practitionerPlaceholder' : 'routingQuestion')
-          }}
-        />
-      )
-    }
-
-    if (screen === 'practitionerPlaceholder') {
-      return <PractitionerPlaceholder onBack={() => setScreen('roleGate')} />
-    }
-
-    if (screen === 'routingQuestion') {
-      return (
-        <RoutingQuestion
-          role={role}
-          onBack={() => setScreen('roleGate')}
-          onAnswer={(answer) => {
-            posthog.capture('journey_selected', { answer })
-            setRoutingAnswer(answer)
-            // "goal" and "direction" both land on Explore — same filter
-            // engine, just search-focused vs chip-focused. "none" goes to
-            // Atlas. See FilterExplore for how initialFocus is used.
-            setScreen(answer === 'none' ? 'atlas' : 'explore')
-          }}
-        />
-      )
-    }
-
-    // --- Detail is a full-screen takeover, reachable from any main tab ---
-    if (selectedCareerId) {
-      return (
-        <CareerDetail
-          career={selectedCareer}
-          shortlisted={shortlist.has(selectedCareerId)}
-          onToggleShortlist={handleToggleShortlist}
-          onBack={() => setSelectedCareerId(null)}
-          onTalkToPractitioner={() => {
-            // If a practitioner matches this career's primary role, jump
-            // straight to their profile instead of a generic list — the
-            // whole point of the CTA is "talk to a real X", so land them
-            // on that specific person.
-            const primaryRole = selectedCareer?.roles?.[0]
-            const match = practitioners.find((p) => p.matchesRole === primaryRole)
-            // Remember the career so there's a real way back — this used
-            // to be a dead end: no match (or backing out of a matched
-            // profile) landed on the plain directory with nothing to do
-            // but manually re-find the career from Explore.
-            setPractitionersBackTo(selectedCareerId)
-            setSelectedCareerId(null)
-            if (match) {
-              setSelectedPractitionerId(match.id)
-            }
-            setScreen('practitioners')
-          }}
-        />
-      )
-    }
-
-    // --- Practitioner profile is also a full-screen takeover ---
-    if (selectedPractitionerId) {
-      return (
-        <PractitionerProfile
-          practitioner={selectedPractitioner}
-          onBack={() => setSelectedPractitionerId(null)}
-          onRequireAuth={(action) => requireAuth('booking', action)}
-          user={auth.user}
-        />
-      )
-    }
-
-    // Same shortlist state, but with an auth-gated toggle — screens keep
-    // calling shortlist.toggle exactly like before, they just get the
-    // gated version instead of the raw one.
-    const gatedShortlist = { ...shortlist, toggle: handleToggleShortlist }
-
-    // --- Main app, with persistent bottom nav ---
+  if (screen === 'admin') {
     return (
-      <div className="app-shell">
-        {screen === 'explore' && (
-          <FilterExplore
-            shortlist={gatedShortlist}
-            onOpenDetail={setSelectedCareerId}
-            initialFocus={routingAnswer === 'goal' ? 'search' : 'filter'}
-          />
-        )}
-        {screen === 'atlas' && (
-          <AtlasChat
-            careers={careerPaths || []}
-            onOpenCareer={setSelectedCareerId}
-            user={auth.user}
-            authLoading={auth.loading}
-            onSignIn={() => setSignInReason('chat-history')}
-            profile={{
-              role,
-              journeyStage: routingAnswer,
-              shortlisted: (careerPaths || [])
-                .filter((c) => shortlist.has(c.id))
-                .map((c) => c.title),
-            }}
-          />
-        )}
-        {screen === 'shortlist' && (
-          <Shortlist shortlist={gatedShortlist} onOpenDetail={setSelectedCareerId} />
-        )}
-        {screen === 'sessions' && (
-          // Same brief window as the 'profile' branch above: auth.user can
-          // be momentarily null while getSession() resolves, before the
-          // recovery effect either confirms a session or bounces away.
-          auth.user ? (
-            <MySessions user={auth.user} />
-          ) : (
-            <main className="screen screen--center">
-              <p className="empty-state">Loading…</p>
-            </main>
-          )
-        )}
-        {screen === 'practitioners' && (
-          <PractitionerDirectory
-            onOpenProfile={setSelectedPractitionerId}
-            backToCareerId={practitionersBackTo}
-            onBackToCareer={() => {
-              setSelectedCareerId(practitionersBackTo)
-              setPractitionersBackTo(null)
-            }}
-          />
-        )}
-        {screen === 'faqs' && <Faqs />}
-        {screen === 'about' && (
-          <AboutStory onBack={() => setScreen(aboutFrom || 'landing')} />
-        )}
-
-        {(MAIN_TABS.includes(screen) || screen === 'about') && (
-          <TopNav
-            active={screen}
-            onNavigate={(id) => {
-              // A deliberate tab tap means the "back to career" breadcrumb
-              // is no longer relevant — don't let it linger.
-              setPractitionersBackTo(null)
-              if (id === 'sessions') {
-                requireAuth('sessions', () => setScreen(id))
-              } else {
-                setScreen(id)
-              }
-            }}
-            onAbout={openAbout}
-            user={auth.user}
-            onSignIn={() => setSignInReason('account')}
-            onSignOut={auth.signOut}
-            onOpenProfile={openProfile}
-          />
-        )}
-        <SupportWidget onOpenAbout={openAbout} />
+      <div className="min-h-dvh bg-cream text-ink">
+        <Admin />
       </div>
     )
   }
 
   return (
-    <>
-      {renderScreen()}
-      {/* Standalone floating account chip — every screen except the landing
-          splash (own top-right "Skip" button during the intro video would
-          overlap). On a plain tab screen (no takeover active) it's mobile-
-          only: the desktop top bar has its own embedded copy, but the
-          mobile bottom tab bar doesn't carry one, so this chip is what
-          gives mobile tab screens account access. `screen` doesn't change
-          while CareerDetail/PractitionerProfile are open (only
-          selectedCareerId/selectedPractitionerId do), so those takeovers
-          are checked explicitly to keep this chip visible at every width
-          right when sign-in gating on shortlist/booking matters most. */}
-      {screen !== 'landing' && (
-        <AccountButton
-          user={auth.user}
-          onSignIn={() => setSignInReason('account')}
-          onSignOut={auth.signOut}
-          onOpenProfile={openProfile}
-          mobileOnly={
-            (MAIN_TABS.includes(screen) || screen === 'about') &&
-            !selectedCareerId &&
-            !selectedPractitionerId
-          }
-        />
-      )}
-      {signInReason && (
-        <SignInModal
-          reason={signInReason}
-          onSignIn={auth.signInWithGoogle}
-          onClose={() => setSignInReason(null)}
-        />
-      )}
-    </>
+    <div className="min-h-dvh bg-cream text-ink">
+      <TopNav
+        screen={screen}
+        onNavigate={navigate}
+        user={user}
+        onSignIn={() => setSignInOpen(true)}
+        onSignOut={signOut}
+      />
+      <main>
+        {screen === 'home' && <Home onNavigate={navigate} />}
+        {screen === 'explore' && <FilterExplore onOpenCareer={openCareer} shortlist={shortlist} />}
+        {screen === 'careerDetail' && (
+          <CareerDetail
+            careerId={careerId}
+            onBack={() => navigate('explore')}
+            onTalkToPractitioner={talkToPractitioner}
+            shortlist={shortlist}
+          />
+        )}
+        {screen === 'atlas' && (
+          <AtlasChat
+            user={user}
+            authLoading={authLoading}
+            onOpenCareer={openCareer}
+            onSignIn={() => setSignInOpen(true)}
+          />
+        )}
+        {screen === 'practitioners' && <PractitionerDirectory onOpenProfile={openPractitioner} />}
+        {screen === 'practitionerProfile' && (
+          <PractitionerProfile
+            practitionerId={practitionerId}
+            onBack={() => navigate('practitioners')}
+            user={user}
+            onSignIn={() => setSignInOpen(true)}
+          />
+        )}
+        {screen === 'mySessions' && <MySessions user={user} onSignIn={() => setSignInOpen(true)} />}
+        {screen === 'profile' && <Profile user={user} onSignIn={() => setSignInOpen(true)} />}
+      </main>
+
+      <SignInModal
+        open={signInOpen}
+        onSignIn={handleSignIn}
+        onClose={() => setSignInOpen(false)}
+        onSignInWithUsername={signInWithUsername}
+      />
+
+      <SupportWidget />
+    </div>
   )
 }
-
-export default App

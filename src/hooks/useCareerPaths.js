@@ -2,8 +2,7 @@ import { useEffect, useState } from 'react'
 
 // Module-level cache so every screen that calls useCareerPaths() during the
 // same page session shares one fetch instead of each hitting /api/career-paths
-// independently — resets only on a full page reload (the server-side function
-// already has its own TTL cache, so a hard refresh naturally picks up changes).
+// independently — resets only on a full page reload.
 let cache = null
 let inFlight = null
 

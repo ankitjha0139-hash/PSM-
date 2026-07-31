@@ -1,13 +1,13 @@
 -- Run once in the Supabase SQL editor (Project -> SQL Editor) before the
 -- My Sessions screen (src/screens/MySessions.jsx) can read or write anything.
 --
--- Same RLS pattern as profiles.sql / chat_messages: the browser talks to
--- Supabase with the public anon key, so without these policies either
+-- Same RLS pattern as profiles.sql / chat_messages.sql: the browser talks
+-- to Supabase with the public anon key, so without these policies either
 -- every signed-in user could read every other user's bookings, or (RLS on
 -- with no policy) nobody could write at all.
 --
 -- No status column — cancelling a booking is a hard delete, matching the
--- pre-existing localStorage-backed behavior this replaces.
+-- confirm/cancel behavior in PractitionerProfile.jsx / MySessions.jsx.
 
 create table if not exists bookings (
   id text primary key,

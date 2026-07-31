@@ -1,6 +1,7 @@
-// FAQ content for the support bot — about the PLATFORM itself, not career
-// content (that's Atlas's job). Grounds netlify/functions/support-chat.mjs
-// so it answers from this list rather than inventing policy.
+// FAQ content for the support bot (Compass) — about the PLATFORM itself,
+// not career content (that's Atlas's job). Grounds
+// netlify/functions/support-chat.mjs so it answers from this list rather
+// than inventing policy.
 export const faqs = [
   {
     id: 'what-is-platform',
@@ -11,7 +12,7 @@ export const faqs = [
   {
     id: 'is-it-free',
     q: 'Is this free to use?',
-    a: 'Exploring careers, using Atlas.ai, and building your shortlist are all free. Booking a call with a real Career Practitioner has a small fee — that pays for their time, not for us to push you anywhere.',
+    a: 'Exploring careers and using Atlas, our AI guide, are both free — no sign-in needed. Booking a call with a real Career Practitioner has a small fee — that pays for their time, not for us to push you anywhere.',
     keywords: ['free', 'cost', 'price', 'pay', 'money', 'charge'],
   },
   {
@@ -22,33 +23,33 @@ export const faqs = [
   },
   {
     id: 'what-is-atlas',
-    q: 'What is Atlas.ai?',
-    a: "Atlas.ai is our AI guide — for when you're not sure what you want yet. Talk it through and it'll help you narrow down some directions.",
-    keywords: ['atlas', 'atlas.ai', 'ai', 'chat', 'guide', 'bot'],
+    q: 'What is Atlas?',
+    a: "Atlas is our AI guide — for when you're not sure what you want yet. Talk it through and it'll help you narrow down some directions, grounded in our real career data.",
+    keywords: ['atlas', 'ai', 'chat', 'guide', 'bot'],
   },
   {
     id: 'accuracy',
     q: 'How accurate is the information on this platform?',
-    a: "We aim to be directionally accurate on every path, and clearly mark anything that's an estimate. For the full, personalised picture, that's exactly what a Career Practitioner call is for.",
+    a: "We aim to be directionally accurate on every path, and clearly mark anything that's an estimate or sourced from the web. For the full, personalised picture, that's exactly what a Career Practitioner call is for.",
     keywords: ['accurate', 'trust', 'correct', 'reliable', 'source'],
+  },
+  {
+    id: 'sign-in',
+    q: 'Do I need to sign in?',
+    a: "No — exploring careers and talking to Atlas both work without an account. Signing in with Google just lets you build a profile and keeps your details around across visits.",
+    keywords: ['sign in', 'account', 'login', 'google', 'need to'],
   },
   {
     id: 'how-book-practitioner',
     q: 'How do I book a call with a Career Practitioner?',
-    a: 'Open any career\'s detail page and tap "Talk to a real [role]", or go to the Practitioners tab directly, pick someone, choose a session type and time slot, and confirm.',
+    a: 'Open any career\'s detail page and tap "Talk to a real [role]", or go to the "Talk to someone" tab directly, pick someone, choose a session type, and confirm.',
     keywords: ['book', 'call', 'practitioner', 'talk', 'schedule', 'appointment'],
   },
   {
     id: 'practitioner-cost',
     q: 'How much does a session with a Practitioner cost?',
-    a: 'It varies by person and session length — usually somewhere between ₹300 and ₹900. Each practitioner\'s profile shows their exact pricing before you book anything.',
-    keywords: ['practitioner cost', 'session price', 'how much', 'fee'],
-  },
-  {
-    id: 'how-shortlist',
-    q: 'How do I save a career to look at later?',
-    a: 'Tap the ♥ on any career card or detail page — it gets added to your Shortlist, which you can find in the top navigation.',
-    keywords: ['save', 'shortlist', 'heart', 'wishlist', 'bookmark'],
+    a: 'It varies by person and session length — a Quick Chat is around ₹349 for 15 minutes, a Deep Dive around ₹899 for 45 minutes. Each practitioner\'s profile shows exact pricing before you book.',
+    keywords: ['practitioner cost', 'session price', 'how much', 'fee', 'pricing'],
   },
   {
     id: 'data-usage',

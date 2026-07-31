@@ -1,7 +1,7 @@
 // Support bot's real backend — same pattern as atlas-chat.mjs, but
-// grounded in faqs.js (about the PLATFORM) instead of careerPaths.js
-// (about careers). Both read the same GEMINI_API_KEY env var — it's set
-// once per Netlify site, not per function.
+// grounded in faqs.js (about the PLATFORM) instead of career data. Both
+// read the same GEMINI_API_KEY env var — it's set once per Netlify site,
+// not per function.
 import { faqs } from '../../src/data/faqs.js'
 
 function buildSystemInstruction() {
@@ -51,8 +51,6 @@ export default async (req) => {
   }
 
   const MODEL = 'gemini-2.5-flash'
-  // Same streaming approach as atlas-chat.mjs — relay Gemini's stream
-  // straight through instead of buffering the whole reply.
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:streamGenerateContent?key=${apiKey}&alt=sse`
 
   try {

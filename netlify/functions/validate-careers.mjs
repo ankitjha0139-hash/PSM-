@@ -1,9 +1,7 @@
 // Data quality gate for the career sheet — open /api/validate-careers in a
 // browser right after editing the sheet and it reports every problem row.
-// Exists because bad rows poison Atlas directly (the F1-Mechanic incident:
-// one careless row had Atlas giving architecture-exam advice for a
-// motorsport career). Fetches the sheet FRESH every time — no cache —
-// because "did my edit work?" is the whole point of this page.
+// Fetches the sheet FRESH every time — no cache — because "did my edit
+// work?" is the whole point of this page.
 
 const KNOWN_STREAMS = ['Science', 'Commerce', 'Arts', 'Vocational', 'Alternate', 'Govt']
 
@@ -39,7 +37,6 @@ async function checkLink(url) {
   const timer = setTimeout(() => controller.abort(), 4000)
   try {
     let res = await fetch(url, { method: 'HEAD', redirect: 'follow', signal: controller.signal })
-    // Some sites reject HEAD — a server that answers at all is reachable.
     if (res.status === 405 || res.status === 403) return { ok: true }
     if (!res.ok) {
       res = await fetch(url, { method: 'GET', redirect: 'follow', signal: controller.signal })
@@ -57,7 +54,7 @@ function validate(careers) {
   const rows = []
   const seenIds = new Map()
   const seenTitles = new Map()
-  const seenTexts = new Map() // copy-paste detector: what_it_is / honest_note reuse
+  const seenTexts = new Map()
 
   careers.forEach((c, idx) => {
     const label = c.title || c.id || `row ${idx + 1}`
@@ -111,7 +108,7 @@ function validate(careers) {
       if (v && v.length > 30) {
         const key = `${field}:${v}`
         if (seenTexts.has(key)) {
-          errors.push(`\`${field}\` is copy-pasted from "${seenTexts.get(key)}" — F1-Mechanic alert`)
+          errors.push(`\`${field}\` is copy-pasted from "${seenTexts.get(key)}"`)
         } else {
           seenTexts.set(key, label)
         }
@@ -186,8 +183,6 @@ export default async () => {
     const careers = await fetchFresh()
     const rows = validate(careers)
 
-    // Best-effort link reachability, capped so we stay inside the
-    // function's 10s budget.
     const links = []
     for (const c of careers) {
       for (const r of c.resources || []) {

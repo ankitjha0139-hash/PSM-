@@ -1,29 +1,48 @@
-import { practitioners } from '../data/practitioners.js'
+import { WarningCircle } from '@phosphor-icons/react'
+import { usePractitioners } from '../hooks/usePractitioners.js'
 import PractitionerCard from '../components/PractitionerCard.jsx'
-import { BackIcon } from '../components/icons.jsx'
+import SkeletonCareerCard from '../components/SkeletonCareerCard.jsx'
+import EmptyState from '../components/EmptyState.jsx'
 
-export default function PractitionerDirectory({ onOpenProfile, backToCareerId, onBackToCareer }) {
+export default function PractitionerDirectory({ onOpenProfile }) {
+  const { data: practitioners, loading, error } = usePractitioners()
+
   return (
-    <main className="screen screen--scroll">
-      {/* Only shown when arriving via "Talk to a real X" on a career page
-          (no match, or backing out of a matched profile) — a deliberate
-          tab tap never sets this, so regular visits to this tab don't get
-          a stray back link that goes nowhere useful. */}
-      {backToCareerId && (
-        <button className="link-back" onClick={onBackToCareer} aria-label="Back to career" style={{ marginBottom: 8 }}>
-          <BackIcon />
-        </button>
-      )}
-      <h2 className="screen__title screen__title--md">Career Practitioners</h2>
-      <p className="screen__sub" style={{ margin: '0 auto 16px', textAlign: 'center' }}>
-        Talk to someone who's actually done it.
-      </p>
-
-      <div className="prac-list">
-        {practitioners.map((p) => (
-          <PractitionerCard key={p.id} practitioner={p} onOpen={onOpenProfile} />
-        ))}
+    <section className="mx-auto max-w-7xl px-5 py-14 sm:px-8">
+      <div className="max-w-2xl">
+        <h1 className="font-display text-3xl font-semibold tracking-tight text-indigo-900 sm:text-4xl">
+          Talk to a real person
+        </h1>
+        <p className="mt-3 text-lg text-ink-soft">
+          Not a generic counsellor — someone who's actually done the job.
+        </p>
       </div>
-    </main>
+
+      <div className="mt-10">
+        {error && (
+          <EmptyState
+            icon={WarningCircle}
+            title="Couldn't load practitioners right now"
+            description={import.meta.env.DEV ? error.message : 'Something went wrong on our end. Try refreshing in a moment.'}
+          />
+        )}
+
+        {!error && loading && (
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <SkeletonCareerCard key={i} />
+            ))}
+          </div>
+        )}
+
+        {!error && !loading && (
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {practitioners.map((p) => (
+              <PractitionerCard key={p.id} practitioner={p} onOpen={onOpenProfile} />
+            ))}
+          </div>
+        )}
+      </div>
+    </section>
   )
 }

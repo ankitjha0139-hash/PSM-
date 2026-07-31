@@ -7,57 +7,30 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@700;800&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
-    <title>Lighthouse.guide — what could you become?</title>
-    <meta
-      name="description"
-      content="Every career path open to you — costs, honest odds, and real people who've lived it. For Indian students and their families."
-    />
-
-    <!-- Link previews (WhatsApp, Instagram, X) — matters because sharing a
-         career for a second opinion is a core loop; a bare URL gets ignored,
-         a titled card gets tapped. og:image lands with the final logo. -->
-    <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="Lighthouse.guide" />
-    <meta property="og:title" content="Lighthouse.guide — what could you become?" />
-    <meta
-      property="og:description"
-      content="Every career path open to you — costs, honest odds, and real people who've lived it."
-    />
-    <meta property="og:url" content="https://lighthouseguide.netlify.app/" />
-    <meta name="twitter:card" content="summary" />
+    <title>Lighthouse.guide</title>
   </head>
   <body>
     <div id="root"></div>
-
-    <!-- Hidden form declarations: Netlify's build bot scans deployed HTML
-         for these and provisions the collection endpoints. The real UI is
-         React; it POSTs matching form-names to "/" (see src/lib/netlifyForms.js).
-         Submissions land in Netlify dashboard -> Forms. -->
-    <form name="support-ticket" data-netlify="true" netlify-honeypot="bot-field" hidden>
-      <input name="bot-field" />
-      <input name="message" />
-      <input name="contact" />
-    </form>
-    <form name="booking" data-netlify="true" netlify-honeypot="bot-field" hidden>
-      <input name="bot-field" />
-      <input name="bookingId" />
-      <input name="practitioner" />
-      <input name="session" />
-      <input name="when" />
-      <input name="name" />
-      <input name="contact" />
-    </form>
-    <form name="practitioner-application" data-netlify="true" netlify-honeypot="bot-field" hidden>
-      <input name="bot-field" />
-      <input name="name" />
-      <input name="role" />
-      <input name="topics" />
-      <input name="contact" />
-    </form>
-
     <script type="module" src="/src/main.jsx"></script>
+
+    <!-- Netlify Forms detects these at build/deploy time (static HTML scan)
+         — they must exist here, not just be POSTed to at runtime, for
+         useSupportTickets.js / PractitionerProfile.jsx submissions to land
+         in the Netlify dashboard. -->
+    <form name="support-ticket" data-netlify="true" hidden>
+      <input type="text" name="message" />
+      <input type="text" name="contact" />
+    </form>
+    <form name="booking" data-netlify="true" hidden>
+      <input type="text" name="bookingId" />
+      <input type="text" name="practitioner" />
+      <input type="text" name="session" />
+      <input type="text" name="when" />
+      <input type="text" name="name" />
+      <input type="text" name="contact" />
+    </form>
   </body>
 </html>

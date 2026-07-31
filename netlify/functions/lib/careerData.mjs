@@ -1,8 +1,8 @@
-// Shared by netlify/functions/career-paths.mjs and netlify/functions/atlas-chat.mjs.
-// Each function bundle gets its own copy of this module's state (Netlify
-// Functions don't share memory across separate functions), so the cache
-// below is per-function, not global — acceptable since both independently
-// stay reasonably fresh.
+// Shared by career-paths.mjs and validate-careers.mjs. Each function
+// bundle gets its own copy of this module's state (Netlify Functions
+// don't share memory across separate functions), so the cache below is
+// per-function, not global — acceptable since both independently stay
+// reasonably fresh.
 
 const CACHE_TTL_MS = 20 * 60 * 1000 // 20 minutes
 
