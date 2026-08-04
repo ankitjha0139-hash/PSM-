@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Plus, PencilSimple, Trash, X } from '@phosphor-icons/react'
+import { Plus, PencilSimple, Trash, X, ArrowsClockwise } from '@phosphor-icons/react'
 import { adminFetch } from '../../lib/adminApi.js'
 import Button from '../ui/Button.jsx'
 
@@ -29,6 +29,8 @@ export default function TestimonialAdminPanel({ onAuthError }) {
   const [form, setForm] = useState(emptyForm)
   const [saveError, setSaveError] = useState(null)
   const [saving, setSaving] = useState(false)
+  const [syncing, setSyncing] = useState(false)
+  const [syncResult, setSyncResult] = useState(null)
 
   const load = () => {
     setLoadError(null)
@@ -41,6 +43,21 @@ export default function TestimonialAdminPanel({ onAuthError }) {
   }
 
   useEffect(load, [])
+
+  const syncFromSheet = async () => {
+    setSyncing(true)
+    setSyncResult(null)
+    try {
+      const result = await adminFetch('/api/admin/sync-testimonials', { method: 'POST' })
+      setSyncResult(result)
+      load()
+    } catch (err) {
+      if (err.message.includes('Session expired')) onAuthError()
+      else setSyncResult({ error: err.message })
+    } finally {
+      setSyncing(false)
+    }
+  }
 
   const startCreate = () => {
     setForm(emptyForm)
@@ -177,12 +194,47 @@ export default function TestimonialAdminPanel({ onAuthError }) {
 
   return (
     <div>
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-2">
         <h3 className="font-display text-lg font-semibold text-indigo-900">Testimonials</h3>
-        <Button as="button" onClick={startCreate} variant="primary" className="!min-h-9 !py-2 text-sm">
-          <Plus size={15} weight="bold" /> Add
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            as="button"
+            onClick={syncFromSheet}
+            variant="outline"
+            disabled={syncing}
+            className="!min-h-9 !py-2 text-sm"
+          >
+            <ArrowsClockwise size={15} weight="bold" className={syncing ? 'animate-spin' : ''} />
+            {syncing ? 'Syncing…' : 'Sync from Sheet'}
+          </Button>
+          <Button as="button" onClick={startCreate} variant="primary" className="!min-h-9 !py-2 text-sm">
+            <Plus size={15} weight="bold" /> Add
+          </Button>
+        </div>
       </div>
+
+      {syncResult && (
+        <div className="mt-4 rounded-2xl border border-indigo-900/10 bg-white/60 p-4 text-sm">
+          {syncResult.error ? (
+            <p className="text-red-600">{syncResult.error}</p>
+          ) : (
+            <>
+              <p className="text-ink">
+                Synced {syncResult.synced} of {syncResult.total} row{syncResult.total === 1 ? '' : 's'}.
+              </p>
+              {syncResult.errors.length > 0 && (
+                <ul className="mt-2 list-disc space-y-1 pl-5 text-red-600">
+                  {syncResult.errors.map((e, i) => (
+                    <li key={i}>
+                      Row {e.row}{e.id ? ` (${e.id})` : ''}: {e.error}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </>
+          )}
+        </div>
+      )}
 
       {loadError && <p className="mt-4 text-sm text-red-600">{loadError}</p>}
       {!loadError && !items && <p className="mt-4 text-sm text-ink-soft">Loading…</p>}

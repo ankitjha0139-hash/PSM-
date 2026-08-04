@@ -9,6 +9,41 @@ import BookingSteps from '../components/BookingSteps.jsx'
 import Button from '../components/ui/Button.jsx'
 import EmptyState from '../components/EmptyState.jsx'
 
+// Practitioners paste a normal share URL in the admin panel (youtu.be,
+// youtube.com/watch, vimeo.com/…) — this turns that into the iframe-embed
+// form. Returns null for anything else so we never render a broken embed.
+function toEmbedUrl(url) {
+  if (!url) return null
+  try {
+    const u = new URL(url)
+    const host = u.hostname.replace(/^www\.|^m\./, '')
+    if (host === 'youtube.com') {
+      if (u.pathname === '/watch') {
+        const id = u.searchParams.get('v')
+        return id ? `https://www.youtube.com/embed/${id}` : null
+      }
+      if (u.pathname.startsWith('/embed/')) return url
+      if (u.pathname.startsWith('/shorts/')) {
+        const id = u.pathname.split('/')[2]
+        return id ? `https://www.youtube.com/embed/${id}` : null
+      }
+      return null
+    }
+    if (host === 'youtu.be') {
+      const id = u.pathname.slice(1)
+      return id ? `https://www.youtube.com/embed/${id}` : null
+    }
+    if (host === 'vimeo.com') {
+      const id = u.pathname.split('/').filter(Boolean)[0]
+      return id ? `https://player.vimeo.com/video/${id}` : null
+    }
+    if (host === 'player.vimeo.com') return url
+    return null
+  } catch {
+    return null
+  }
+}
+
 // Full profile + the booking flow: pick a session type, pick a real
 // day/time slot, leave contact details, get a confirmation with a booking
 // ID and a calendar file. Booking data is real — saved to Supabase (see
@@ -284,6 +319,15 @@ export default function PractitionerProfile({ practitionerId, onBack, user, onSi
     )
   }
 
+  const videoEmbedUrl = toEmbedUrl(practitioner.videoUrl)
+  // Guards against malformed entries (e.g. a flat array of strings typed
+  // into the admin's JSON field instead of {when,what}/{name,text}
+  // objects) rendering as blank cards on the live page — the admin form
+  // now rejects that shape at save time, but this protects against
+  // whatever's already saved, or gets in some other way later.
+  const validJourney = (practitioner.journey || []).filter((j) => j?.when && j?.what)
+  const validTestimonials = (practitioner.testimonials || []).filter((t) => t?.name && t?.text)
+
   return (
     <section className="mx-auto max-w-3xl px-5 py-14 sm:px-8">
       <button
@@ -335,11 +379,26 @@ export default function PractitionerProfile({ practitionerId, onBack, user, onSi
         <p className="mt-2 text-[15px] leading-relaxed text-ink-soft">{practitioner.bio}</p>
       </div>
 
-      {practitioner.journey?.length > 0 && (
+      {videoEmbedUrl && (
+        <div className="mt-8">
+          <h2 className="font-display text-lg font-semibold text-indigo-900">Hear from them</h2>
+          <div className="mt-3 aspect-video overflow-hidden rounded-2xl border border-indigo-900/10">
+            <iframe
+              src={videoEmbedUrl}
+              title={`${practitioner.name} introduction video`}
+              className="h-full w-full"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+          </div>
+        </div>
+      )}
+
+      {validJourney.length > 0 && (
         <div className="mt-8">
           <h2 className="font-display text-lg font-semibold text-indigo-900">How they got here</h2>
           <ol className="mt-3 space-y-2 border-l-2 border-indigo-900/10 pl-4">
-            {practitioner.journey.map((j, i) => (
+            {validJourney.map((j, i) => (
               <li key={i}>
                 <span className="text-xs font-semibold uppercase tracking-wide text-ink-faint">{j.when}</span>
                 <p className="text-sm text-ink">{j.what}</p>
@@ -383,11 +442,11 @@ export default function PractitionerProfile({ practitionerId, onBack, user, onSi
         </div>
       </div>
 
-      {practitioner.testimonials?.length > 0 && (
+      {validTestimonials.length > 0 && (
         <div className="mt-8">
           <h2 className="font-display text-lg font-semibold text-indigo-900">What people say</h2>
           <div className="mt-3 space-y-3">
-            {practitioner.testimonials.map((t, i) => (
+            {validTestimonials.map((t, i) => (
               <div key={i} className="rounded-2xl bg-sage-50 p-4">
                 <p className="text-sm italic text-ink">"{t.text}"</p>
                 <span className="mt-1 block text-xs font-semibold text-sage-600">— {t.name}</span>

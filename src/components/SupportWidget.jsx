@@ -34,6 +34,7 @@ export default function SupportWidget() {
   const [submitted, setSubmitted] = useState(false)
   const [sending, setSending] = useState(false)
   const [sendError, setSendError] = useState(false)
+  const [notified, setNotified] = useState(true)
   const logRef = useRef(null)
   const { raise } = useSupportTickets()
   const reduceMotion = useReducedMotion()
@@ -48,6 +49,7 @@ export default function SupportWidget() {
     setSubmitted(false)
     setTicketMsg('')
     setSendError(false)
+    setNotified(true)
   }
 
   const send = async (text) => {
@@ -101,7 +103,8 @@ export default function SupportWidget() {
     setSending(true)
     setSendError(false)
     try {
-      await raise(ticketMsg.trim(), ticketContact.trim())
+      const ticket = await raise(ticketMsg.trim(), ticketContact.trim())
+      setNotified(ticket.notified)
       setSubmitted(true)
     } catch {
       setSendError(true)
@@ -254,7 +257,9 @@ export default function SupportWidget() {
                     <Check size={22} weight="bold" />
                   </span>
                   <p className="mt-4 text-sm text-ink-soft">
-                    Got it — your message has reached our team. We'll get back to you.
+                    {notified
+                      ? "Got it — your message has reached our team. We'll get back to you."
+                      : "Saved, but we couldn't reach the team just now — try again shortly, or reopen Compass later."}
                   </p>
                 </div>
               )}

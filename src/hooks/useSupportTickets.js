@@ -27,9 +27,19 @@ export function useSupportTickets() {
       status: 'open',
       created_at: new Date().toISOString(),
     }
-    await submitNetlifyForm('support-ticket', { message, contact })
+    // The local record is the source of truth (see the module comment) —
+    // a failed/timed-out Netlify Forms notification shouldn't block that,
+    // same reasoning as PractitionerProfile's booking confirmation. Track
+    // whether the team was actually notified so the caller can say so
+    // honestly instead of always claiming it reached them.
+    let notified = true
+    try {
+      await submitNetlifyForm('support-ticket', { message, contact })
+    } catch {
+      notified = false
+    }
     setTickets((prev) => [...prev, ticket])
-    return ticket
+    return { ...ticket, notified }
   }, [])
 
   return { tickets, raise }

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Plus, PencilSimple, Trash, X } from '@phosphor-icons/react'
+import { Plus, PencilSimple, Trash, X, ArrowsClockwise } from '@phosphor-icons/react'
 import { adminFetch } from '../../lib/adminApi.js'
 import Button from '../ui/Button.jsx'
 
@@ -44,14 +44,35 @@ function toFormValues(row) {
   }
 }
 
-function parseJsonField(value, label) {
+// requiredKeys catches the shape mismatch that plain Array.isArray() lets
+// through — e.g. typing ["Sarthak", "Very good sessions!"] for Testimonials
+// (a flat array of strings) instead of [{"name": "Sarthak", "text": "Very
+// good sessions!"}]. Both are valid JSON arrays, but only the second one
+// has the fields PractitionerProfile.jsx actually reads — the first just
+// renders as silent empty quotes on the live page with no error anywhere.
+function parseJsonField(value, label, requiredKeys) {
+  let parsed
   try {
-    const parsed = JSON.parse(value)
-    if (!Array.isArray(parsed)) throw new Error('must be a JSON array')
-    return { value: parsed, error: null }
+    parsed = JSON.parse(value)
   } catch (err) {
     return { value: null, error: `${label}: ${err.message}` }
   }
+  if (!Array.isArray(parsed)) {
+    return { value: null, error: `${label}: must be a JSON array` }
+  }
+  for (const [i, entry] of parsed.entries()) {
+    if (typeof entry !== 'object' || entry === null || Array.isArray(entry)) {
+      return {
+        value: null,
+        error: `${label}: entry ${i + 1} must be an object with ${requiredKeys.join(', ')} — got ${JSON.stringify(entry)}`,
+      }
+    }
+    const missing = requiredKeys.filter((k) => !(k in entry))
+    if (missing.length) {
+      return { value: null, error: `${label}: entry ${i + 1} is missing ${missing.join(', ')}` }
+    }
+  }
+  return { value: parsed, error: null }
 }
 
 export default function PractitionerAdminPanel({ onAuthError }) {
@@ -61,6 +82,8 @@ export default function PractitionerAdminPanel({ onAuthError }) {
   const [form, setForm] = useState(emptyForm)
   const [saveError, setSaveError] = useState(null)
   const [saving, setSaving] = useState(false)
+  const [syncing, setSyncing] = useState(false)
+  const [syncResult, setSyncResult] = useState(null)
 
   const load = () => {
     setLoadError(null)
@@ -73,6 +96,21 @@ export default function PractitionerAdminPanel({ onAuthError }) {
   }
 
   useEffect(load, [])
+
+  const syncFromSheet = async () => {
+    setSyncing(true)
+    setSyncResult(null)
+    try {
+      const result = await adminFetch('/api/admin/sync-practitioners', { method: 'POST' })
+      setSyncResult(result)
+      load()
+    } catch (err) {
+      if (err.message.includes('Session expired')) onAuthError()
+      else setSyncResult({ error: err.message })
+    } finally {
+      setSyncing(false)
+    }
+  }
 
   const startCreate = () => {
     setForm(emptyForm)
@@ -99,9 +137,15 @@ export default function PractitionerAdminPanel({ onAuthError }) {
 
   const save = async () => {
     setSaveError(null)
-    const journey = parseJsonField(form.journey, 'Journey')
-    const sessionTypes = parseJsonField(form.session_types, 'Session types')
-    const testimonials = parseJsonField(form.testimonials, 'Testimonials')
+    const journey = parseJsonField(form.journey, 'Journey', ['when', 'what'])
+    const sessionTypes = parseJsonField(form.session_types, 'Session types', [
+      'id',
+      'label',
+      'duration',
+      'price',
+      'description',
+    ])
+    const testimonials = parseJsonField(form.testimonials, 'Testimonials', ['name', 'text'])
     const jsonError = journey.error || sessionTypes.error || testimonials.error
     if (jsonError) {
       setSaveError(jsonError)
@@ -294,12 +338,47 @@ export default function PractitionerAdminPanel({ onAuthError }) {
 
   return (
     <div>
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-2">
         <h3 className="font-display text-lg font-semibold text-indigo-900">Practitioners</h3>
-        <Button as="button" onClick={startCreate} variant="primary" className="!min-h-9 !py-2 text-sm">
-          <Plus size={15} weight="bold" /> Add
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            as="button"
+            onClick={syncFromSheet}
+            variant="outline"
+            disabled={syncing}
+            className="!min-h-9 !py-2 text-sm"
+          >
+            <ArrowsClockwise size={15} weight="bold" className={syncing ? 'animate-spin' : ''} />
+            {syncing ? 'Syncing…' : 'Sync from Sheet'}
+          </Button>
+          <Button as="button" onClick={startCreate} variant="primary" className="!min-h-9 !py-2 text-sm">
+            <Plus size={15} weight="bold" /> Add
+          </Button>
+        </div>
       </div>
+
+      {syncResult && (
+        <div className="mt-4 rounded-2xl border border-indigo-900/10 bg-white/60 p-4 text-sm">
+          {syncResult.error ? (
+            <p className="text-red-600">{syncResult.error}</p>
+          ) : (
+            <>
+              <p className="text-ink">
+                Synced {syncResult.synced} of {syncResult.total} row{syncResult.total === 1 ? '' : 's'}.
+              </p>
+              {syncResult.errors.length > 0 && (
+                <ul className="mt-2 list-disc space-y-1 pl-5 text-red-600">
+                  {syncResult.errors.map((e, i) => (
+                    <li key={i}>
+                      Row {e.row}{e.id ? ` (${e.id})` : ''}: {e.error}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </>
+          )}
+        </div>
+      )}
 
       {loadError && <p className="mt-4 text-sm text-red-600">{loadError}</p>}
       {!loadError && !items && <p className="mt-4 text-sm text-ink-soft">Loading…</p>}
