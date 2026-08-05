@@ -2,12 +2,18 @@ import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '../lib/supabaseClient.js'
 import { isMockUser } from '../lib/mockAuth.js'
 
+const MOCK_BOOKINGS_KEY = 'lh:mockBookings'
+
 // Bookings, per signed-in user. Requires the bookings table + RLS in
 // supabase/bookings.sql. Same load/save shape as useProfile.js.
 //
 // The demo account's id ('mock-test-user') isn't a real uuid, so it can't
 // be written to the bookings table's uuid-typed user_id column anyway —
-// add/cancel just operate on local state for it instead of hitting Supabase.
+// add/cancel persist to sessionStorage instead (same pattern AtlasChat
+// uses for mock chat history). Without this, each screen that calls this
+// hook gets its own isolated useState, so a booking added on
+// PractitionerProfile would never show up on MySessions — they're two
+// separate hook instances with no shared store between them.
 
 function fromRow(row) {
   return {
@@ -58,6 +64,11 @@ export function useUserBookings(user) {
       return
     }
     if (isMockUser(user)) {
+      try {
+        setBookings(JSON.parse(sessionStorage.getItem(MOCK_BOOKINGS_KEY)) || [])
+      } catch {
+        setBookings([])
+      }
       setLoading(false)
       setLoadError(null)
       return
@@ -83,7 +94,17 @@ export function useUserBookings(user) {
   const add = useCallback(
     async (booking) => {
       if (isMockUser(user)) {
-        setBookings((prev) => [...prev, booking])
+        let next
+        setBookings((prev) => {
+          next = [...prev, booking]
+          return next
+        })
+        try {
+          sessionStorage.setItem(MOCK_BOOKINGS_KEY, JSON.stringify(next))
+        } catch {
+          // sessionStorage unavailable — booking still shows for this
+          // screen's own state, just won't carry over to another screen
+        }
         return { error: null }
       }
       const { error } = await supabase.from('bookings').insert(toRow(booking, user.id))
@@ -96,7 +117,16 @@ export function useUserBookings(user) {
   const cancel = useCallback(
     async (id) => {
       if (isMockUser(user)) {
-        setBookings((prev) => prev.filter((b) => b.id !== id))
+        let next
+        setBookings((prev) => {
+          next = prev.filter((b) => b.id !== id)
+          return next
+        })
+        try {
+          sessionStorage.setItem(MOCK_BOOKINGS_KEY, JSON.stringify(next))
+        } catch {
+          // ignore
+        }
         return { error: null }
       }
       const { error } = await supabase.from('bookings').delete().eq('id', id).eq('user_id', user.id)
