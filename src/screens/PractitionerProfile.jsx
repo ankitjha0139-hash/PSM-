@@ -1,8 +1,9 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { ArrowLeft, ArrowRight, Check, SealCheck, Star, CalendarPlus } from '@phosphor-icons/react'
 import { usePractitioners } from '../hooks/usePractitioners.js'
 import { getSlotDays, makeBookingId, downloadIcs } from '../lib/bookingUtils.js'
 import { useUserBookings } from '../hooks/useUserBookings.js'
+import { useProfile } from '../hooks/useProfile.js'
 import { submitNetlifyForm } from '../lib/netlifyForms.js'
 import { capture } from '../lib/analytics.js'
 import BookingSteps from '../components/BookingSteps.jsx'
@@ -73,9 +74,50 @@ export default function PractitionerProfile({ practitionerId, onBack, user, onSi
   const [notified, setNotified] = useState(false)
   const [saving, setSaving] = useState(false)
   const [bookingError, setBookingError] = useState(false)
+  const [showConfirmToast, setShowConfirmToast] = useState(false)
+  const [availability, setAvailability] = useState(null)
   const { add } = useUserBookings(user)
+  const { profile, save: saveProfile } = useProfile(user)
 
-  const slotDays = useMemo(() => getSlotDays(practitioner?.id), [practitioner?.id])
+  // Real per-practitioner availability, across every user, not just this
+  // one — see netlify/functions/practitioner-availability.mjs for why this
+  // has to be a server call rather than a direct Supabase query (RLS on
+  // the bookings table only allows a user to see their own rows). Falls
+  // back to the old deterministic-hash slots (via getSlotDays's second
+  // arg being undefined) until this resolves, or if it fails.
+  useEffect(() => {
+    if (!practitioner?.id) return
+    let cancelled = false
+    fetch(`/api/practitioner-availability?practitionerId=${encodeURIComponent(practitioner.id)}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (!cancelled && Array.isArray(data)) setAvailability(data)
+      })
+      .catch(() => {
+        // Leave availability as null — slotDays' hash fallback still
+        // renders something sensible instead of a blank slot picker.
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [practitioner?.id])
+
+  useEffect(() => {
+    if (!showConfirmToast) return
+    const timer = setTimeout(() => setShowConfirmToast(false), 3000)
+    return () => clearTimeout(timer)
+  }, [showConfirmToast])
+
+  // Google always provides a name; the profile's phone is optional and
+  // only present once someone has entered it before. When both exist,
+  // the contact step is skipped entirely rather than just pre-filled —
+  // per instructions, a signed-in user with a complete profile shouldn't
+  // be asked again.
+  const knownName = user?.user_metadata?.full_name?.trim() || ''
+  const knownPhone = profile?.phone?.trim() || ''
+  const hasFullContactInfo = Boolean(knownName && knownPhone)
+
+  const slotDays = useMemo(() => getSlotDays(practitioner?.id, availability), [practitioner?.id, availability])
   const selectedDay = slotDays.find((d) => d.dateKey === dayKey)
 
   if (practitionersLoading) {
@@ -99,8 +141,24 @@ export default function PractitionerProfile({ practitionerId, onBack, user, onSi
       onSignIn()
       return
     }
+    // Seeded from the profile so a full-contact-info user never sees the
+    // "Almost there" step at all (see hasFullContactInfo below) — and so
+    // a partial-info user's known field is already filled in if they do
+    // hit that step.
+    setContactName(knownName)
+    setContact(knownPhone)
     setSessionType(st)
     setStep('slot')
+  }
+
+  const refetchAvailability = () => {
+    if (!practitioner?.id) return
+    fetch(`/api/practitioner-availability?practitionerId=${encodeURIComponent(practitioner.id)}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data)) setAvailability(data)
+      })
+      .catch(() => {})
   }
 
   const confirmBooking = async () => {
@@ -145,10 +203,21 @@ export default function PractitionerProfile({ practitionerId, onBack, user, onSi
     if (error) {
       setSaving(false)
       setBookingError(true)
+      // Most likely cause of a failure at this point is someone else
+      // grabbing the same slot first (unique_practitioner_slot in
+      // supabase/bookings.sql) — refresh so the picker reflects reality
+      // instead of still showing it as open.
+      refetchAvailability()
       return
+    }
+    // Silent save, per instructions — only runs when the profile didn't
+    // already have a phone number, so this is the one time we asked.
+    if (!knownPhone && contact.trim()) {
+      saveProfile({ phone: contact.trim() })
     }
     setBooking(b)
     setNotified(sent)
+    setShowConfirmToast(true)
     setSaving(false)
     setStep('confirmed')
     capture('booking_confirmed', { practitionerId: practitioner.id, sessionLabel: sessionType.label })
@@ -157,6 +226,13 @@ export default function PractitionerProfile({ practitionerId, onBack, user, onSi
   if (step === 'confirmed') {
     return (
       <section className="mx-auto max-w-lg px-5 py-16 text-center sm:px-8">
+        {showConfirmToast && (
+          <div className="fixed inset-x-0 top-4 z-50 flex justify-center px-4">
+            <div className="flex items-center gap-2 rounded-full bg-indigo-900 px-4 py-2.5 text-sm font-semibold text-cream shadow-lift">
+              <Check size={16} weight="bold" /> Booking confirmed!
+            </div>
+          </div>
+        )}
         <BookingSteps current="confirmed" />
         <span className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-sage-50 text-sage-600">
           <Check size={26} weight="bold" />
@@ -321,8 +397,18 @@ export default function PractitionerProfile({ practitionerId, onBack, user, onSi
             <p className="mt-5 text-sm text-ink-faint">Pick a day to see available times.</p>
           )}
 
-          <Button as="button" onClick={() => setStep('contact')} variant="primary" disabled={!time} className="mt-6">
-            Continue <ArrowRight size={16} weight="bold" />
+          {bookingError && (
+            <p className="mt-3 text-sm text-red-600">Couldn't save your booking — check your connection and try again.</p>
+          )}
+
+          <Button
+            as="button"
+            onClick={() => (hasFullContactInfo ? confirmBooking() : setStep('contact'))}
+            variant="primary"
+            disabled={!time || saving}
+            className="mt-6"
+          >
+            {saving ? 'Booking…' : <>Continue <ArrowRight size={16} weight="bold" /></>}
           </Button>
         </div>
       </section>

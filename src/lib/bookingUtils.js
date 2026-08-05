@@ -23,9 +23,16 @@ function localDateKey(date) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
 }
 
-// Next 6 days starting tomorrow, each with time slots; roughly a third
-// show as taken so availability looks lived-in rather than infinite.
-export function getSlotDays(practitionerId) {
+// Next 6 days starting tomorrow, each with time slots. When realTaken is
+// given (a list of { date_key, time } rows from the real bookings table,
+// see /api/practitioner-availability), a slot is taken exactly when a
+// real booking exists for it. Without it (availability still loading, or
+// the caller doesn't need real data, e.g. the directory card's "next
+// available" hint), falls back to a deterministic hash so the same
+// practitioner shows the same fake availability on every visit instead of
+// looking either empty or broken.
+export function getSlotDays(practitionerId, realTaken) {
+  const takenSet = realTaken ? new Set(realTaken.map((s) => `${s.date_key}|${s.time}`)) : null
   const days = []
   for (let d = 1; d <= 6; d++) {
     const date = new Date()
@@ -33,7 +40,9 @@ export function getSlotDays(practitionerId) {
     const dateKey = localDateKey(date)
     const slots = TIMES.map((time) => ({
       time,
-      taken: hash(`${practitionerId}|${dateKey}|${time}`) % 3 === 0,
+      taken: takenSet
+        ? takenSet.has(`${dateKey}|${time}`)
+        : hash(`${practitionerId}|${dateKey}|${time}`) % 3 === 0,
     }))
     days.push({
       date,

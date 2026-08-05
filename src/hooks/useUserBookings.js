@@ -4,6 +4,21 @@ import { isMockUser } from '../lib/mockAuth.js'
 
 const MOCK_BOOKINGS_KEY = 'lh:mockBookings'
 
+// Postgres's "no such table" signal (see useProfile.js's identical check) —
+// surfaced as a specific message here rather than a raw Postgres error,
+// since "the booking silently didn't save" is a much worse failure mode
+// to debug than "the confirmation screen shows an error" would be.
+function isMissingTableError(error) {
+  return error?.code === 'PGRST205' || /Could not find the table/i.test(error?.message || '')
+}
+
+// The unique_practitioner_slot constraint in supabase/bookings.sql —
+// someone else booked this exact slot between this user loading
+// availability and confirming.
+function isDuplicateSlotError(error) {
+  return error?.code === '23505'
+}
+
 // Bookings, per signed-in user. Requires the bookings table + RLS in
 // supabase/bookings.sql. Same load/save shape as useProfile.js.
 //
@@ -108,7 +123,16 @@ export function useUserBookings(user) {
         return { error: null }
       }
       const { error } = await supabase.from('bookings').insert(toRow(booking, user.id))
-      if (!error) setBookings((prev) => [...prev, booking])
+      if (!error) {
+        setBookings((prev) => [...prev, booking])
+        return { error: null }
+      }
+      if (isDuplicateSlotError(error)) {
+        return { error: { message: 'That slot was just booked by someone else. Please pick another time.' } }
+      }
+      if (isMissingTableError(error)) {
+        return { error: { message: 'Bookings are not set up on this Supabase project yet — run supabase/bookings.sql.' } }
+      }
       return { error }
     },
     [user]
