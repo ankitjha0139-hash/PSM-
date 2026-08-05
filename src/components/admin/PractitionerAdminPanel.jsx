@@ -235,7 +235,7 @@ export default function PractitionerAdminPanel({ onAuthError }) {
             <input value={form.photo} onChange={(e) => setForm({ ...form, photo: e.target.value })} className={inputClass} />
           </label>
           <label className="space-y-1.5">
-            <span className={labelClass}>Video link — YouTube/Vimeo (optional)</span>
+            <span className={labelClass}>Video link: YouTube, Vimeo, or Google Drive (optional)</span>
             <input
               value={form.video_url}
               onChange={(e) => setForm({ ...form, video_url: e.target.value })}

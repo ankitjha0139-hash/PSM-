@@ -10,8 +10,9 @@ import Button from '../components/ui/Button.jsx'
 import EmptyState from '../components/EmptyState.jsx'
 
 // Practitioners paste a normal share URL in the admin panel (youtu.be,
-// youtube.com/watch, vimeo.com/…) — this turns that into the iframe-embed
-// form. Returns null for anything else so we never render a broken embed.
+// youtube.com/watch, vimeo.com, or a Google Drive share link), and this
+// turns that into the iframe-embed form. Returns null for anything else
+// so we never render a broken embed.
 function toEmbedUrl(url) {
   if (!url) return null
   try {
@@ -38,6 +39,15 @@ function toEmbedUrl(url) {
       return id ? `https://player.vimeo.com/video/${id}` : null
     }
     if (host === 'player.vimeo.com') return url
+    if (host === 'drive.google.com') {
+      // Share-link forms: /file/d/<id>/view?usp=sharing, or
+      // /open?id=<id> / /uc?id=<id>. The file must be shared as "Anyone
+      // with the link" or the embed shows an access-denied page instead
+      // of the video.
+      const fileMatch = u.pathname.match(/\/file\/d\/([^/]+)/)
+      const id = fileMatch ? fileMatch[1] : u.searchParams.get('id')
+      return id ? `https://drive.google.com/file/d/${id}/preview` : null
+    }
     return null
   } catch {
     return null
