@@ -19,6 +19,34 @@ function isDuplicateSlotError(error) {
   return error?.code === '23505'
 }
 
+// supabase-js's underlying fetch has no default timeout — the exact same
+// issue netlifyForms.js had (see its comment). Without this, a slow or
+// stuck connection to Supabase leaves confirmBooking's "Booking…" button
+// (or My Sessions' loading state) waiting forever with no way out. Races
+// the real query against a timeout that resolves to an error instead of
+// rejecting, so callers can keep using the same `{ data, error }` shape.
+//
+// Important limitation this alone does NOT fix: racing a promise doesn't
+// cancel the underlying request. On a slow-but-working connection, the
+// insert in add() below can still land on the server seconds after we've
+// already given up waiting for it — telling the user "timed out, try
+// again" at that point would be actively wrong, not just impatient. add()
+// verifies against reality before reporting failure; see the comment
+// there.
+const BOOKINGS_TIMEOUT_MS = 8000
+const VERIFY_TIMEOUT_MS = 5000
+const TIMEOUT_ERROR = { message: 'Request timed out. Check your connection and try again.', code: 'CLIENT_TIMEOUT' }
+const UNKNOWN_STATUS_ERROR = {
+  message: "We couldn't confirm whether your booking went through — check My Sessions in a moment before trying again.",
+}
+
+function withTimeout(queryPromise, ms = BOOKINGS_TIMEOUT_MS) {
+  return Promise.race([
+    queryPromise,
+    new Promise((resolve) => setTimeout(() => resolve({ data: null, error: TIMEOUT_ERROR }), ms)),
+  ])
+}
+
 // Bookings, per signed-in user. Requires the bookings table + RLS in
 // supabase/bookings.sql. Same load/save shape as useProfile.js.
 //
@@ -90,17 +118,14 @@ export function useUserBookings(user) {
     }
     let cancelled = false
     setLoading(true)
-    supabase
-      .from('bookings')
-      .select('*')
-      .eq('user_id', user.id)
-      .order('date_key', { ascending: true })
-      .then(({ data, error }) => {
-        if (cancelled) return
-        setBookings(error ? [] : data.map(fromRow))
-        setLoadError(error ? error.message : null)
-        setLoading(false)
-      })
+    withTimeout(
+      supabase.from('bookings').select('*').eq('user_id', user.id).order('date_key', { ascending: true })
+    ).then(({ data, error }) => {
+      if (cancelled) return
+      setBookings(error ? [] : data.map(fromRow))
+      setLoadError(error ? error.message : null)
+      setLoading(false)
+    })
     return () => {
       cancelled = true
     }
@@ -122,10 +147,32 @@ export function useUserBookings(user) {
         }
         return { error: null }
       }
-      const { error } = await supabase.from('bookings').insert(toRow(booking, user.id))
+      let { error } = await withTimeout(supabase.from('bookings').insert(toRow(booking, user.id)))
+
+      if (error?.code === 'CLIENT_TIMEOUT') {
+        // The insert request itself is still out there — a timeout only
+        // means we stopped waiting, not that Supabase didn't process it.
+        // booking.id was generated client-side before this call, so it's
+        // stable to check for regardless of which side finished first.
+        const check = await withTimeout(
+          supabase.from('bookings').select('id').eq('id', booking.id).maybeSingle(),
+          VERIFY_TIMEOUT_MS
+        )
+        if (check.data) {
+          error = null
+        } else if (check.error?.code === 'CLIENT_TIMEOUT') {
+          error = UNKNOWN_STATUS_ERROR
+        }
+        // else: genuinely not found — fall through with the original
+        // timeout error below, safe to let the user retry.
+      }
+
       if (!error) {
         setBookings((prev) => [...prev, booking])
         return { error: null }
+      }
+      if (error === UNKNOWN_STATUS_ERROR) {
+        return { error }
       }
       if (isDuplicateSlotError(error)) {
         return { error: { message: 'That slot was just booked by someone else. Please pick another time.' } }
@@ -153,7 +200,7 @@ export function useUserBookings(user) {
         }
         return { error: null }
       }
-      const { error } = await supabase.from('bookings').delete().eq('id', id).eq('user_id', user.id)
+      const { error } = await withTimeout(supabase.from('bookings').delete().eq('id', id).eq('user_id', user.id))
       if (!error) setBookings((prev) => prev.filter((b) => b.id !== id))
       return { error }
     },

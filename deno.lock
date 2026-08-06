@@ -20,7 +20,9 @@
         "npm:framer-motion@^12.43.0",
         "npm:netlify-cli@^27.0.1",
         "npm:oxlint@^1.75.0",
+        "npm:posthog-js@^1.409.3",
         "npm:react-dom@^19.2.8",
+        "npm:react-markdown@^10.1.0",
         "npm:react@^19.2.8",
         "npm:tailwindcss@^4.3.3",
         "npm:vite@^8.2.0"

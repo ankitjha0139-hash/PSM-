@@ -27,52 +27,61 @@ export default function TopNav({ screen, onNavigate, user, onSignIn, onSignOut }
   }
 
   return (
-    <header className="sticky top-0 z-50 border-b border-indigo-900/10 bg-cream/85 backdrop-blur-lg">
-      <nav
-        aria-label="Primary"
-        className="mx-auto flex h-16 max-w-7xl items-center justify-between px-5 sm:px-8"
-      >
-        <button type="button" onClick={() => go('home')} aria-label="Lighthouse.guide home">
-          <Logo />
-        </button>
-
-        <div className="hidden items-center gap-7 lg:flex">
-          <ul className="flex items-center gap-7">
-            {TABS.map((tab) => (
-              <li key={tab.id}>
-                <button
-                  type="button"
-                  onClick={() => go(tab.id)}
-                  aria-current={activeTab === tab.id ? 'page' : undefined}
-                  className={`text-[15px] font-medium transition-colors ${
-                    activeTab === tab.id ? 'text-indigo-900' : 'text-ink-soft hover:text-indigo-900'
-                  }`}
-                >
-                  {tab.label}
-                </button>
-              </li>
-            ))}
-          </ul>
-          <AccountButton
-            user={user}
-            onSignIn={onSignIn}
-            onSignOut={onSignOut}
-            onOpenProfile={() => go('profile')}
-            onOpenSessions={() => go('mySessions')}
-          />
-        </div>
-
-        <button
-          type="button"
-          onClick={() => setOpen(true)}
-          aria-label="Open menu"
-          aria-expanded={open}
-          className="grid h-11 w-11 place-items-center rounded-full text-indigo-900 hover:bg-indigo-900/5 lg:hidden"
+    <>
+      <header className="sticky top-0 z-50 border-b border-indigo-900/10 bg-cream/85 backdrop-blur-lg">
+        <nav
+          aria-label="Primary"
+          className="mx-auto flex h-16 max-w-7xl items-center justify-between px-5 sm:px-8"
         >
-          <List size={24} weight="bold" />
-        </button>
-      </nav>
+          <button type="button" onClick={() => go('home')} aria-label="Lighthouse.guide home">
+            <Logo />
+          </button>
 
+          <div className="hidden items-center gap-7 lg:flex">
+            <ul className="flex items-center gap-7">
+              {TABS.map((tab) => (
+                <li key={tab.id}>
+                  <button
+                    type="button"
+                    onClick={() => go(tab.id)}
+                    aria-current={activeTab === tab.id ? 'page' : undefined}
+                    className={`text-[15px] font-medium transition-colors ${
+                      activeTab === tab.id ? 'text-indigo-900' : 'text-ink-soft hover:text-indigo-900'
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                </li>
+              ))}
+            </ul>
+            <AccountButton
+              user={user}
+              onSignIn={onSignIn}
+              onSignOut={onSignOut}
+              onOpenProfile={() => go('profile')}
+              onOpenSessions={() => go('mySessions')}
+            />
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setOpen(true)}
+            aria-label="Open menu"
+            aria-expanded={open}
+            className="grid h-11 w-11 place-items-center rounded-full text-indigo-900 hover:bg-indigo-900/5 lg:hidden"
+          >
+            <List size={24} weight="bold" />
+          </button>
+        </nav>
+      </header>
+
+      {/* Rendered as a sibling of <header>, not inside it — the header's
+          backdrop-blur-lg establishes a CSS containing block for `fixed`
+          descendants (same as transform/filter would), which used to trap
+          this "fixed inset-0" overlay inside the header's own ~64px-tall
+          box instead of the viewport. Its content then overflowed that
+          box with no background behind it, painting on top of whatever
+          page content came next. */}
       <AnimatePresence>
         {open && (
           <motion.div
@@ -136,6 +145,6 @@ export default function TopNav({ screen, onNavigate, user, onSignIn, onSignOut }
           </motion.div>
         )}
       </AnimatePresence>
-    </header>
+    </>
   )
 }

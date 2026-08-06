@@ -88,7 +88,11 @@ export default function PractitionerProfile({ practitionerId, onBack, user, onSi
   useEffect(() => {
     if (!practitioner?.id) return
     let cancelled = false
-    fetch(`/api/practitioner-availability?practitionerId=${encodeURIComponent(practitioner.id)}`)
+    const controller = new AbortController()
+    const timer = setTimeout(() => controller.abort(), 8000)
+    fetch(`/api/practitioner-availability?practitionerId=${encodeURIComponent(practitioner.id)}`, {
+      signal: controller.signal,
+    })
       .then((res) => res.json())
       .then((data) => {
         if (!cancelled && Array.isArray(data)) setAvailability(data)
@@ -97,8 +101,11 @@ export default function PractitionerProfile({ practitionerId, onBack, user, onSi
         // Leave availability as null — slotDays' hash fallback still
         // renders something sensible instead of a blank slot picker.
       })
+      .finally(() => clearTimeout(timer))
     return () => {
       cancelled = true
+      controller.abort()
+      clearTimeout(timer)
     }
   }, [practitioner?.id])
 
