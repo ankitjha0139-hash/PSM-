@@ -172,7 +172,7 @@ export default function PractitionerProfile({ practitionerId, onBack, user, onSi
       sessionLabel: sessionType.label,
       duration: sessionType.duration,
       price: sessionType.price,
-      dateKey,
+      dateKey: selectedDay.dateKey,
       dateLabel: selectedDay.dateLabel,
       dayLabel: selectedDay.dayLabel,
       time,
