@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { capture } from './lib/analytics.js'
 import TopNav from './components/TopNav.jsx'
 import SignInModal from './components/SignInModal.jsx'
 import SupportWidget from './components/SupportWidget.jsx'
@@ -58,6 +59,19 @@ export default function App() {
       // works within the session, it just won't survive a reload.
     }
   }, [screen, careerId, practitionerId])
+
+  // Screens are React state, not URLs (see readInitialScreen above) — the
+  // browser's actual URL never changes when navigating between them, so
+  // PostHog's automatic $pageview only fires once per visit and can't tell
+  // Explore from Atlas from Home. This is the only per-screen signal
+  // PostHog gets, so funnel steps like "viewed Explore" or "opened Atlas"
+  // filter on screen_viewed where screen = 'explore' / 'atlas', not a
+  // dedicated event per screen. Fires on mount too (not just later
+  // navigation), since the effect runs once for whatever `screen` starts
+  // as — a restored session or a fresh 'home' landing both count.
+  useEffect(() => {
+    capture('screen_viewed', { screen })
+  }, [screen])
 
   const navigate = (next) => {
     setScreen(next)
