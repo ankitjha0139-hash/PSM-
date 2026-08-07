@@ -26,3 +26,15 @@ export function capture(event, properties) {
   if (!ready) return
   posthog.capture(event, properties)
 }
+
+// Without this, PostHog never learns that the anonymous pre-sign-in
+// visitor and the authenticated user are the same person — the pageview
+// stays on one (anonymous, device-ID) person record and signed_in lands on
+// another, so a landing -> signed_in -> booking_confirmed funnel always
+// reads ~0% regardless of real conversion, since nobody's person record
+// satisfies every step. Call this at the moment sign-in succeeds, before
+// (or alongside) capturing signed_in.
+export function identify(id, properties) {
+  if (!ready) return
+  posthog.identify(id, properties)
+}

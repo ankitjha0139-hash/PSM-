@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabaseClient.js'
-import { capture } from '../lib/analytics.js'
+import { capture, identify } from '../lib/analytics.js'
 import { MOCK_CREDENTIALS, MOCK_USER } from '../lib/mockAuth.js'
 
 // Session state shared by anything that needs to know "is someone signed
@@ -24,7 +24,10 @@ export function useAuth() {
     })
 
     const { data: listener } = supabase.auth.onAuthStateChange((event, newSession) => {
-      if (event === 'SIGNED_IN') capture('signed_in')
+      if (event === 'SIGNED_IN' && newSession?.user) {
+        identify(newSession.user.id, { email: newSession.user.email })
+        capture('signed_in')
+      }
       setSession(newSession)
     })
 
@@ -42,6 +45,11 @@ export function useAuth() {
   // exists and why it's deliberately not a general registration system.
   const signInWithUsername = (username, password) => {
     if (username === MOCK_CREDENTIALS.username && password === MOCK_CREDENTIALS.password) {
+      // Identifying the demo account too (not skipping it) keeps signed_in
+      // consistently tied to a real PostHog person either way, and gives
+      // "Filter test accounts" a stable, obvious target (email: 'test')
+      // instead of a different anonymous device ID every demo session.
+      identify(MOCK_USER.id, { email: MOCK_USER.email })
       capture('signed_in')
       setMockUser(MOCK_USER)
       return { error: null }
